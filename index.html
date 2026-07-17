@@ -193,8 +193,10 @@
     }
 
     // 云端读写函数
-    async function syncToCloud(data) {
+      // 重写 syncToCloud 支持重试
+    async function syncToCloud(data, retryCount = 0) {
         if (!cloudEnabled) return;
+        const maxRetries = 3;
         try {
             const url = `https://api.jsonbin.io/v3/b/${cloudBinId}`;
             const response = await fetch(url, {
@@ -209,43 +211,28 @@
                 throw new Error(`HTTP ${response.status}`);
             }
             console.log('✅ 云端同步成功');
+            // 如果之前是禁用状态，恢复启用
+            if (!cloudEnabled) {
+                cloudEnabled = true;
+                updateCloudStatusUI(true);
+            }
             return true;
         } catch (e) {
-            console.warn('❌ 云端同步失败:', e);
-            if (cloudEnabled) {
-                cloudEnabled = false;
-                updateCloudStatusUI(false);
-                alert('⚠️ 云端同步失败，已自动断开连接。请检查 Bin ID 和 Secret Key 是否正确。');
-            }
-            return false;
-        }
-    }
-
-    async function fetchFromCloud() {
-        if (!cloudEnabled) return null;
-        try {
-            const url = `https://api.jsonbin.io/v3/b/${cloudBinId}/latest`;
-            const response = await fetch(url, {
-                headers: {
-                    'X-Master-Key': cloudSecretKey
-                }
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            const result = await response.json();
-            if (result && result.record) {
-                return result.record;
+            console.warn(`❌ 云端同步失败 (尝试 ${retryCount + 1}/${maxRetries}):`, e);
+            if (retryCount < maxRetries - 1) {
+                // 延迟后重试（指数退避）
+                await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+                return syncToCloud(data, retryCount + 1);
             } else {
-                throw new Error('数据格式错误');
+                // 重试失败，仅显示警告，不禁用同步，避免永久禁用
+                console.warn('❌ 云端同步多次失败，请稍后手动同步。');
+                // 可选：仍然显示连接状态，但不自动禁用
+                return false;
             }
-        } catch (e) {
-            console.warn('❌ 从云端拉取数据失败:', e);
-            return null;
         }
     }
 
-    // 重写 saveData（支持云端同步）
+    // 重写 saveData（增加同步状态保持）
     function saveData(customers) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(customers));
         const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
@@ -258,8 +245,18 @@
                 updateFileStatus();
             });
         }
+        // 始终尝试同步，但不再因失败禁用云端
         if (cloudEnabled) {
             syncToCloud(customers);
+        } else {
+            // 如果云端被禁用了，但配置存在，尝试重新启用
+            const binId = localStorage.getItem(CLOUD_BIN_KEY);
+            const secret = localStorage.getItem(CLOUD_SECRET_KEY);
+            if (binId && secret) {
+                // 尝试重新启用（不自动启用，等待用户操作或手动同步）
+                // 这里我们可以在下次 saveData 时检测并尝试恢复，但为了避免意外，还是让用户手动点击“启用”或“立即同步”
+                // 所以这里不做自动启用，留给用户操作。
+            }
         }
     }
 
@@ -1945,21 +1942,29 @@
         }
     });
 
-    document.getElementById('cloudSyncBtn').addEventListener('click', function() {
+        document.getElementById('cloudSyncBtn').addEventListener('click', function() {
         const currentData = loadData();
         if (currentData.length === 0) {
             alert('本地无数据，请先录入数据或从云端恢复。');
             return;
         }
-        if (!cloudEnabled) {
-            alert('请先启用云端自动同步。');
+        // 检查配置是否存在
+        const binId = localStorage.getItem(CLOUD_BIN_KEY);
+        const secret = localStorage.getItem(CLOUD_SECRET_KEY);
+        if (!binId || !secret) {
+            alert('请先配置 Bin ID 和 Secret Key。');
             return;
+        }
+        // 启用云端（如果未启用）
+        if (!cloudEnabled) {
+            cloudEnabled = true;
+            updateCloudStatusUI(true);
         }
         syncToCloud(currentData).then(success => {
             if (success) {
                 alert('✅ 手动同步成功！');
             } else {
-                alert('❌ 同步失败，请检查配置。');
+                alert('❌ 同步失败，请检查网络或配置。');
             }
         });
     });
