@@ -500,27 +500,36 @@
             }
         }
 
-        // 自动同步（页面加载时调用）
-        async function autoSyncOnLoad() {
-            if (!cloudEnabled) return;
-            try {
-                const cloudData = await fetchFromCloud();
-                if (!cloudData || !Array.isArray(cloudData)) return;
-                const localData = loadData();
-                if (localData.length === 0) {
-                    saveData(cloudData);
-                    refreshData();
-                    console.log('📥 已从云端加载数据（本地为空）');
-                } else if (cloudData.length > 0 && cloudData.length !== localData.length) {
-                    if (confirm(`云端有 ${cloudData.length} 位客户，本地有 ${localData.length} 位客户。是否用云端数据覆盖本地？`)) {
-                        saveData(cloudData);
-                        refreshData();
-                    }
-                }
-            } catch (e) {
-                console.warn('自动同步失败:', e);
+        // 自动同步（页面加载时调用）- 改进版
+async function autoSyncOnLoad() {
+    if (!cloudEnabled) return;
+    try {
+        const cloudData = await fetchFromCloud();
+        if (!cloudData || !Array.isArray(cloudData)) return;
+        const localData = loadData();
+        // 如果本地无数据，直接加载云端
+        if (localData.length === 0) {
+            saveData(cloudData);
+            refreshData();
+            console.log('📥 已从云端加载数据（本地为空）');
+            return;
+        }
+        // 如果云端有数据，询问用户是否覆盖本地
+        if (cloudData.length > 0) {
+            // 检查云端是否比本地新（通过比较最后更新时间，但我们没有存储云端时间，所以用长度对比）
+            // 为了更精准，我们直接询问用户是否拉取
+            if (confirm(`云端有 ${cloudData.length} 位客户，本地有 ${localData.length} 位客户。\n是否从云端拉取最新数据（将覆盖本地所有更改）？`)) {
+                saveData(cloudData);
+                refreshData();
+                alert('✅ 已从云端恢复最新数据。');
+            } else {
+                console.log('用户取消从云端拉取数据。');
             }
         }
+    } catch (e) {
+        console.warn('自动同步失败:', e);
+    }
+}
 
         // ----- 原有函数（完整实现） -----
         function loadData() {
