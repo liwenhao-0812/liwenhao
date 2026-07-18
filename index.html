@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>保单管理系统 v27</title>
+    <title>保单管理系统 v28</title>
     <style>
-        *{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f5f7fa;padding:16px 12px 100px;color:#1e293b}.app{max-width:600px;margin:0 auto}.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px}.header h1{font-size:22px;font-weight:600;color:#0f172a;display:flex;align-items:center;gap:8px}.header .btn-group{display:flex;gap:8px;flex-wrap:wrap}.header .btn{padding:8px 16px;background:#3b82f6;color:#fff;border:none;border-radius:30px;font-size:14px;font-weight:500;cursor:pointer}.header .btn.secondary{background:#64748b}.header .btn.outline{background:transparent;color:#3b82f6;border:1px solid #3b82f6}.search-box{display:flex;gap:10px;margin-bottom:12px;position:sticky;top:0;z-index:10;background:#f5f7fa;padding:8px 0}.search-box input{flex:1;padding:12px 16px;border:1px solid #d1d5db;border-radius:30px;font-size:16px;background:#fff;outline:none}.search-box input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.2)}.search-box .sync-btn{padding:8px 16px;background:#8b5cf6;color:#fff;border:none;border-radius:30px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap}.search-box .sync-btn:active{background:#7c3aed}.result-count{font-size:14px;color:#64748b;margin-bottom:12px}.customer-item{background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:10px;border:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;cursor:pointer;transition:transform .1s}.customer-item:active{transform:scale(.98);background:#f8fafc}.customer-item .info{flex:1;min-width:160px}.customer-item .info .name{font-weight:600;font-size:17px}.customer-item .info .detail{font-size:13px;color:#64748b;margin-top:2px}.customer-item .info .detail .tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:12px;background:#fef3c7;color:#b45309;margin-left:6px}.customer-item .badge{background:#dbeafe;color:#1d4ed8;padding:2px 10px;border-radius:20px;font-size:12px}.customer-item .contact-summary{font-size:13px;color:#334155;margin-top:4px;background:#f1f5f9;padding:2px 10px;border-radius:12px;display:inline-block}.detail-header{background:#fff;border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid #e9edf2}.detail-header .name{font-size:22px;font-weight:600;display:flex;align-items:center;flex-wrap:wrap;gap:8px}.detail-header .meta{font-size:14px;color:#334155;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px 16px}.detail-header .meta .label{color:#94a3b8}.detail-header .warning{color:#b45309;background:#fef3c7;padding:4px 12px;border-radius:20px;font-size:13px;display:inline-block;margin-top:4px}.contact-area{background:#eef2ff;border-radius:12px;padding:12px 14px;margin:8px 0 12px;border:1px solid #c7d2fe}.contact-area .add-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px}.contact-area .add-row .label{font-weight:500;color:#4338ca;margin-right:4px}.contact-area .add-row select{padding:6px 10px;border-radius:20px;border:1px solid #c7d2fe;background:#fff;font-size:14px;flex:1;min-width:120px}.contact-area .add-row .record-btn{background:#4338ca;color:#fff;border:none;border-radius:30px;padding:6px 18px;font-size:14px;font-weight:500;cursor:pointer}.contact-area .add-row .record-btn:active{background:#3730a3}.contact-area .history-title{font-size:14px;font-weight:500;color:#4338ca;margin:6px 0 4px}.contact-area .history-list{max-height:100px;overflow-y:auto;font-size:13px;color:#475569;background:#fff;border-radius:8px;padding:4px 8px;border:1px solid #e2e8f0}.contact-area .history-list .h-item{padding:2px 0;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between}.contact-area .history-list .h-item .h-date{color:#94a3b8;margin-right:12px}.family-section{margin:12px 0 16px;background:#f8fafc;border-radius:12px;padding:12px}.family-section .title{font-weight:600;font-size:16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}.family-section .member-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed #e2e8f0;font-size:14px}.family-section .member-item:last-child{border-bottom:none}.family-section .member-item .info{flex:1}.family-section .member-item .actions button{padding:0 8px;font-size:12px;background:none;border:none;color:#3b82f6;cursor:pointer}.family-section .member-item .actions button.del{color:#ef4444}.policy-group{margin-bottom:16px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;overflow:hidden}.policy-group .main-policy{background:#f1f5f9;padding:12px 14px;border-bottom:1px solid #e2e8f0}.policy-group .main-policy .main-title{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:#475569;margin-bottom:4px}.policy-group .main-policy .main-title .sub-count{background:#dbeafe;color:#1d4ed8;padding:0 8px;border-radius:12px;font-size:12px}.policy-group .sub-policies{padding:8px 14px 12px;background:#fafcff}.policy-group .sub-policy-item{margin-top:8px;border-left:3px solid #94a3b8;padding-left:12px}.policy-group .sub-policy-item .sub-title{font-size:13px;color:#64748b;margin-bottom:4px}.policy-item .row{display:flex;flex-wrap:wrap;gap:2px 16px}.policy-item .row .field{color:#64748b;min-width:70px}.policy-item .row .value{font-weight:500;color:#0f172a;word-break:break-word}.policy-item .row .value.highlight{color:#2563eb}.policy-item .warning-tag{color:#b45309;background:#fef3c7;padding:1px 8px;border-radius:12px;font-size:12px;display:inline-block;margin-left:6px}.policy-item .error-list{background:#fee2e2;border-radius:6px;padding:6px 10px;margin:6px 0 4px;font-size:13px;color:#b91c1c;border-left:3px solid #ef4444}.policy-item .error-list .err-item{display:flex;align-items:center;gap:4px}.tag{display:inline-block;font-size:12px;padding:1px 10px;border-radius:20px;background:#dbeafe;color:#1d4ed8;margin-right:4px}.tag.附加险{background:#fce7f3;color:#be185d}.tag.失效{background:#fee2e2;color:#b91c1c}.tag.有效{background:#dcfce7;color:#15803d}.relation-tag{display:inline-block;font-size:12px;padding:1px 10px;border-radius:20px;background:#e0e7ff;color:#4338ca;margin-left:6px}.link-btn{font-size:12px;padding:1px 10px;border-radius:20px;border:1px solid #3b82f6;background:#fff;color:#3b82f6;cursor:pointer;margin-left:6px}.link-btn:hover{background:#eff6ff}.policy-actions{margin-top:8px;display:flex;gap:8px;justify-content:flex-end;border-top:1px dashed #e2e8f0;padding-top:6px}.policy-actions button{padding:2px 12px;border:none;border-radius:16px;font-size:12px;cursor:pointer;background:#e2e8f0}.policy-actions button.edit-btn{background:#dbeafe;color:#1d4ed8}.policy-actions button.del-policy-btn{background:#fee2e2;color:#b91c1c}.service-record{margin-top:10px;border-top:1px dashed #e2e8f0;padding-top:10px}.service-record .record-item{font-size:13px;color:#475569;padding:4px 0;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px}.service-record .record-item .content{flex:1}.service-record .record-item .date{color:#94a3b8;margin-right:8px}.service-record .record-item .rec-actions{display:flex;gap:4px}.service-record .record-item .rec-actions button{background:none;border:none;color:#3b82f6;cursor:pointer;font-size:12px;padding:0 4px}.service-record .record-item .rec-actions button.del{color:#ef4444}.service-record .add-service{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}.service-record .add-service input{flex:1;padding:6px 10px;border:1px solid #d1d5db;border-radius:20px;font-size:13px;min-width:120px}.service-record .add-service button{background:#3b82f6;color:#fff;border:none;border-radius:20px;padding:6px 16px;font-size:13px;cursor:pointer}.admin-toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}.admin-toolbar button{padding:10px 18px;background:#3b82f6;color:#fff;border:none;border-radius:30px;font-size:14px;font-weight:500;cursor:pointer;flex:1;min-width:80px}.admin-toolbar button.danger{background:#ef4444}.admin-toolbar button.secondary{background:#64748b}.admin-toolbar button.file-btn{background:#8b5cf6}.admin-toolbar button.file-btn.active{background:#7c3aed;box-shadow:0 0 0 2px #ddd6fe}.client-item{background:#fff;border-radius:12px;padding:12px 16px;margin-bottom:10px;border:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center}.client-item .info{flex:1}.client-item .info .name{font-weight:600;font-size:16px}.client-item .info .detail{font-size:13px;color:#64748b}.client-item .actions button{margin-left:6px;padding:4px 12px;border:none;border-radius:20px;font-size:12px;background:#e2e8f0;cursor:pointer}.client-item .actions button.edit{background:#dbeafe;color:#1d4ed8}.client-item .actions button.del{background:#fee2e2;color:#b91c1c}.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;z-index:999;padding:20px}.modal-overlay.active{display:flex}.modal{background:#fff;border-radius:20px;max-width:500px;width:100%;padding:24px 20px;max-height:90vh;overflow-y:auto;position:relative}.modal h2{font-size:20px;margin-bottom:16px}.modal .close{position:absolute;top:12px;right:16px;font-size:24px;cursor:pointer;color:#94a3b8}.modal label{display:block;font-size:14px;font-weight:500;margin:10px 0 4px}.modal input,.modal select,.modal textarea{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px}.modal textarea{min-height:60px;font-family:inherit}.modal .btn-row{display:flex;gap:10px;margin-top:16px}.modal .btn-row button{flex:1;padding:10px;border:none;border-radius:30px;font-weight:500;cursor:pointer}.modal .btn-row .primary{background:#3b82f6;color:#fff}.modal .btn-row .danger{background:#ef4444;color:#fff}.modal .btn-row .secondary{background:#e2e8f0;color:#1e293b}.no-result{text-align:center;padding:40px 20px;color:#94a3b8;font-size:16px}.no-result .sub{font-size:14px;color:#94a3b8;margin-top:8px}.no-result .action-btn{display:inline-block;margin-top:12px;padding:8px 24px;background:#3b82f6;color:#fff;border:none;border-radius:30px;font-size:14px;cursor:pointer;text-decoration:none}.footer-tip{text-align:center;font-size:12px;color:#94a3b8;margin-top:20px;border-top:1px solid #e2e8f0;padding-top:20px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap}.footer-tip .file-status{color:#8b5cf6;font-weight:500}.footer-tip .update-time{color:#64748b}.footer-tip #cloudStatusFooter{font-weight:500}.hidden{display:none}.back-btn{margin-bottom:12px;display:inline-block}.preview-box{background:#f1f5f9;padding:10px;border-radius:8px;margin:10px 0;font-size:14px;white-space:pre-wrap;word-break:break-all;max-height:150px;overflow-y:auto}.extra-field-group{margin-top:12px;border-top:1px solid #e2e8f0;padding-top:12px}.extra-field-group .field-row{display:flex;gap:8px;margin-bottom:6px;align-items:center}.extra-field-group .field-row input{flex:1}.extra-field-group .field-row .del-field-btn{background:#fee2e2;color:#b91c1c;border:none;border-radius:20px;padding:4px 10px;font-size:12px;cursor:pointer}.extra-field-group .preset-btn{padding:2px 10px;border:1px solid #d1d5db;border-radius:16px;background:#fff;font-size:12px;cursor:pointer;margin:2px}.extra-field-group .preset-btn:hover{background:#f1f5f9}.beneficiary-row{display:flex;gap:8px;align-items:center;margin-bottom:4px}.beneficiary-row input{flex:1}.beneficiary-row .del-bene-btn{background:#fee2e2;color:#b91c1c;border:none;border-radius:20px;padding:2px 10px;font-size:12px;cursor:pointer}.bene-summary{font-size:13px;color:#64748b}.policy-code{font-size:15px;font-weight:600;background:#f1f5f9;padding:1px 6px;border-radius:4px;display:inline-block}.required-star{color:#ef4444;margin-right:4px}.floating-back{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:100;background:rgba(59,130,246,0.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;border:none;border-radius:40px;padding:12px 28px;font-size:16px;font-weight:500;box-shadow:0 6px 24px rgba(59,130,246,0.4);display:none;align-items:center;gap:8px;cursor:pointer;transition:transform .15s,opacity .2s}.floating-back:active{transform:translateX(-50%) scale(0.95)}.floating-back.visible{display:flex}.app{padding-bottom:100px}
+        *{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f5f7fa;padding:16px 12px 100px;color:#1e293b}.app{max-width:600px;margin:0 auto}.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px}.header h1{font-size:22px;font-weight:600;color:#0f172a;display:flex;align-items:center;gap:8px}.header .btn-group{display:flex;gap:8px;flex-wrap:wrap}.header .btn{padding:8px 16px;background:#3b82f6;color:#fff;border:none;border-radius:30px;font-size:14px;font-weight:500;cursor:pointer}.header .btn.secondary{background:#64748b}.header .btn.outline{background:transparent;color:#3b82f6;border:1px solid #3b82f6}.search-box{display:flex;gap:10px;margin-bottom:12px;position:sticky;top:0;z-index:10;background:#f5f7fa;padding:8px 0}.search-box input{flex:1;padding:12px 16px;border:1px solid #d1d5db;border-radius:30px;font-size:16px;background:#fff;outline:none}.search-box input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.2)}.search-box .sync-btn{padding:8px 16px;background:#8b5cf6;color:#fff;border:none;border-radius:30px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap}.search-box .sync-btn:active{background:#7c3aed}.result-count{font-size:14px;color:#64748b;margin-bottom:12px}.customer-item{background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:10px;border:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;cursor:pointer;transition:transform .1s}.customer-item:active{transform:scale(.98);background:#f8fafc}.customer-item .info{flex:1;min-width:160px}.customer-item .info .name{font-weight:600;font-size:17px}.customer-item .info .detail{font-size:13px;color:#64748b;margin-top:2px}.customer-item .info .detail .tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:12px;background:#fef3c7;color:#b45309;margin-left:6px}.customer-item .badge{background:#dbeafe;color:#1d4ed8;padding:2px 10px;border-radius:20px;font-size:12px}.customer-item .contact-summary{font-size:13px;color:#334155;margin-top:4px;background:#f1f5f9;padding:2px 10px;border-radius:12px;display:inline-block}.detail-header{background:#fff;border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid #e9edf2}.detail-header .name{font-size:22px;font-weight:600;display:flex;align-items:center;flex-wrap:wrap;gap:8px}.detail-header .meta{font-size:14px;color:#334155;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px 16px}.detail-header .meta .label{color:#94a3b8}.detail-header .warning{color:#b45309;background:#fef3c7;padding:4px 12px;border-radius:20px;font-size:13px;display:inline-block;margin-top:4px}.contact-area{background:#eef2ff;border-radius:12px;padding:12px 14px;margin:8px 0 12px;border:1px solid #c7d2fe}.contact-area .add-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px}.contact-area .add-row .label{font-weight:500;color:#4338ca;margin-right:4px}.contact-area .add-row select{padding:6px 10px;border-radius:20px;border:1px solid #c7d2fe;background:#fff;font-size:14px;flex:1;min-width:120px}.contact-area .add-row .record-btn{background:#4338ca;color:#fff;border:none;border-radius:30px;padding:6px 18px;font-size:14px;font-weight:500;cursor:pointer}.contact-area .add-row .record-btn:active{background:#3730a3}.contact-area .history-title{font-size:14px;font-weight:500;color:#4338ca;margin:6px 0 4px}.contact-area .history-list{max-height:100px;overflow-y:auto;font-size:13px;color:#475569;background:#fff;border-radius:8px;padding:4px 8px;border:1px solid #e2e8f0}.contact-area .history-list .h-item{padding:2px 0;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between}.contact-area .history-list .h-item .h-date{color:#94a3b8;margin-right:12px}.family-section{margin:12px 0 16px;background:#f8fafc;border-radius:12px;padding:12px}.family-section .title{font-weight:600;font-size:16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}.family-section .member-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed #e2e8f0;font-size:14px}.family-section .member-item:last-child{border-bottom:none}.family-section .member-item .info{flex:1}.family-section .member-item .actions button{padding:0 8px;font-size:12px;background:none;border:none;color:#3b82f6;cursor:pointer}.family-section .member-item .actions button.del{color:#ef4444}.policy-group{margin-bottom:16px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;overflow:hidden}.policy-group .main-policy{background:#f1f5f9;padding:12px 14px;border-bottom:1px solid #e2e8f0}.policy-group .main-policy .main-title{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:#475569;margin-bottom:4px}.policy-group .main-policy .main-title .sub-count{background:#dbeafe;color:#1d4ed8;padding:0 8px;border-radius:12px;font-size:12px}.policy-group .sub-policies{padding:8px 14px 12px;background:#fafcff}.policy-group .sub-policy-item{margin-top:8px;border-left:3px solid #94a3b8;padding-left:12px}.policy-group .sub-policy-item .sub-title{font-size:13px;color:#64748b;margin-bottom:4px}.policy-item .row{display:flex;flex-wrap:wrap;gap:2px 16px}.policy-item .row .field{color:#64748b;min-width:70px}.policy-item .row .value{font-weight:500;color:#0f172a;word-break:break-word}.policy-item .row .value.highlight{color:#2563eb}.policy-item .warning-tag{color:#b45309;background:#fef3c7;padding:1px 8px;border-radius:12px;font-size:12px;display:inline-block;margin-left:6px}.policy-item .error-list{background:#fee2e2;border-radius:6px;padding:6px 10px;margin:6px 0 4px;font-size:13px;color:#b91c1c;border-left:3px solid #ef4444}.policy-item .error-list .err-item{display:flex;align-items:center;gap:4px}.tag{display:inline-block;font-size:12px;padding:1px 10px;border-radius:20px;background:#dbeafe;color:#1d4ed8;margin-right:4px}.tag.附加险{background:#fce7f3;color:#be185d}.tag.失效{background:#fee2e2;color:#b91c1c}.tag.有效{background:#dcfce7;color:#15803d}.relation-tag{display:inline-block;font-size:12px;padding:1px 10px;border-radius:20px;background:#e0e7ff;color:#4338ca;margin-left:6px}.link-btn{font-size:12px;padding:1px 10px;border-radius:20px;border:1px solid #3b82f6;background:#fff;color:#3b82f6;cursor:pointer;margin-left:6px}.link-btn:hover{background:#eff6ff}.policy-actions{margin-top:8px;display:flex;gap:8px;justify-content:flex-end;border-top:1px dashed #e2e8f0;padding-top:6px}.policy-actions button{padding:2px 12px;border:none;border-radius:16px;font-size:12px;cursor:pointer;background:#e2e8f0}.policy-actions button.edit-btn{background:#dbeafe;color:#1d4ed8}.policy-actions button.del-policy-btn{background:#fee2e2;color:#b91c1c}.service-record{margin-top:10px;border-top:1px dashed #e2e8f0;padding-top:10px}.service-record .record-item{font-size:13px;color:#475569;padding:4px 0;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px}.service-record .record-item .content{flex:1}.service-record .record-item .date{color:#94a3b8;margin-right:8px}.service-record .record-item .rec-actions{display:flex;gap:4px}.service-record .record-item .rec-actions button{background:none;border:none;color:#3b82f6;cursor:pointer;font-size:12px;padding:0 4px}.service-record .record-item .rec-actions button.del{color:#ef4444}.service-record .add-service{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}.service-record .add-service input{flex:1;padding:6px 10px;border:1px solid #d1d5db;border-radius:20px;font-size:13px;min-width:120px}.service-record .add-service button{background:#3b82f6;color:#fff;border:none;border-radius:20px;padding:6px 16px;font-size:13px;cursor:pointer}.admin-toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}.admin-toolbar button{padding:10px 18px;background:#3b82f6;color:#fff;border:none;border-radius:30px;font-size:14px;font-weight:500;cursor:pointer;flex:1;min-width:80px}.admin-toolbar button.danger{background:#ef4444}.admin-toolbar button.secondary{background:#64748b}.admin-toolbar button.file-btn{background:#8b5cf6}.admin-toolbar button.file-btn.active{background:#7c3aed;box-shadow:0 0 0 2px #ddd6fe}.admin-toolbar .template-btn{background:#16a34a}.admin-toolbar .template-btn:active{background:#15803d}.client-item{background:#fff;border-radius:12px;padding:12px 16px;margin-bottom:10px;border:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center}.client-item .info{flex:1}.client-item .info .name{font-weight:600;font-size:16px}.client-item .info .detail{font-size:13px;color:#64748b}.client-item .actions button{margin-left:6px;padding:4px 12px;border:none;border-radius:20px;font-size:12px;background:#e2e8f0;cursor:pointer}.client-item .actions button.edit{background:#dbeafe;color:#1d4ed8}.client-item .actions button.del{background:#fee2e2;color:#b91c1c}.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;z-index:999;padding:20px}.modal-overlay.active{display:flex}.modal{background:#fff;border-radius:20px;max-width:500px;width:100%;padding:24px 20px;max-height:90vh;overflow-y:auto;position:relative}.modal h2{font-size:20px;margin-bottom:16px}.modal .close{position:absolute;top:12px;right:16px;font-size:24px;cursor:pointer;color:#94a3b8}.modal label{display:block;font-size:14px;font-weight:500;margin:10px 0 4px}.modal input,.modal select,.modal textarea{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px}.modal textarea{min-height:60px;font-family:inherit}.modal .btn-row{display:flex;gap:10px;margin-top:16px}.modal .btn-row button{flex:1;padding:10px;border:none;border-radius:30px;font-weight:500;cursor:pointer}.modal .btn-row .primary{background:#3b82f6;color:#fff}.modal .btn-row .danger{background:#ef4444;color:#fff}.modal .btn-row .secondary{background:#e2e8f0;color:#1e293b}.no-result{text-align:center;padding:40px 20px;color:#94a3b8;font-size:16px}.no-result .sub{font-size:14px;color:#94a3b8;margin-top:8px}.no-result .action-btn{display:inline-block;margin-top:12px;padding:8px 24px;background:#3b82f6;color:#fff;border:none;border-radius:30px;font-size:14px;cursor:pointer;text-decoration:none}.footer-tip{text-align:center;font-size:12px;color:#94a3b8;margin-top:20px;border-top:1px solid #e2e8f0;padding-top:20px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap}.footer-tip .file-status{color:#8b5cf6;font-weight:500}.footer-tip .update-time{color:#64748b}.footer-tip #cloudStatusFooter{font-weight:500}.hidden{display:none}.back-btn{margin-bottom:12px;display:inline-block}.preview-box{background:#f1f5f9;padding:10px;border-radius:8px;margin:10px 0;font-size:14px;white-space:pre-wrap;word-break:break-all;max-height:150px;overflow-y:auto}.extra-field-group{margin-top:12px;border-top:1px solid #e2e8f0;padding-top:12px}.extra-field-group .field-row{display:flex;gap:8px;margin-bottom:6px;align-items:center}.extra-field-group .field-row input{flex:1}.extra-field-group .field-row .del-field-btn{background:#fee2e2;color:#b91c1c;border:none;border-radius:20px;padding:4px 10px;font-size:12px;cursor:pointer}.extra-field-group .preset-btn{padding:2px 10px;border:1px solid #d1d5db;border-radius:16px;background:#fff;font-size:12px;cursor:pointer;margin:2px}.extra-field-group .preset-btn:hover{background:#f1f5f9}.beneficiary-row{display:flex;gap:8px;align-items:center;margin-bottom:4px}.beneficiary-row input{flex:1}.beneficiary-row .del-bene-btn{background:#fee2e2;color:#b91c1c;border:none;border-radius:20px;padding:2px 10px;font-size:12px;cursor:pointer}.bene-summary{font-size:13px;color:#64748b}.policy-code{font-size:15px;font-weight:600;background:#f1f5f9;padding:1px 6px;border-radius:4px;display:inline-block}.required-star{color:#ef4444;margin-right:4px}.floating-back{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:100;background:rgba(59,130,246,0.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;border:none;border-radius:40px;padding:12px 28px;font-size:16px;font-weight:500;box-shadow:0 6px 24px rgba(59,130,246,0.4);display:none;align-items:center;gap:8px;cursor:pointer;transition:transform .15s,opacity .2s}.floating-back:active{transform:translateX(-50%) scale(0.95)}.floating-back.visible{display:flex}.app{padding-bottom:100px}
 
         .cloud-config {
             background: #f1f5f9;
@@ -192,6 +192,7 @@
             <div class="admin-toolbar">
                 <button id="addClientBtn">➕ 新增客户</button>
                 <button id="importDataBtn">📥 导入表格</button>
+                <button id="downloadTemplateBtn" class="template-btn">📥 下载模板</button>
                 <button id="exportDataBtn" class="secondary">📤 导出JSON</button>
                 <button id="restoreDataBtn" class="secondary">📥 恢复JSON</button>
                 <button id="linkFileBtn" class="file-btn">📎 关联文件</button>
@@ -232,10 +233,10 @@
 
     <script>
         // ============================================================
-        // 身份验证模块
+        // 身份验证模块（同 v27）
         // ============================================================
         (function() {
-            const PASSWORD = 'liwenhao1234';  // ⬅️ 可修改密码
+            const PASSWORD = 'admin123';  // ⬅️ 可修改密码
             const SESSION_KEY = 'policy_login';
             const SESSION_EXPIRE_DAYS = 7;
 
@@ -320,7 +321,7 @@
         // ============================================================
         // 核心业务逻辑
         // ============================================================
-        const STORAGE_KEY = 'policy_manager_v27';
+        const STORAGE_KEY = 'policy_manager_v28';
         const UPDATE_TIME_KEY = 'policy_manager_last_update';
         const CLOUD_BIN_KEY = 'policy_cloud_bin';
         const CLOUD_SECRET_KEY = 'policy_cloud_secret';
@@ -330,7 +331,7 @@
         let cloudBinId = '';
         let cloudSecretKey = '';
 
-        // ----- 数据层函数 -----
+        // ----- 数据层函数（同 v27） -----
         function loadData() {
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
@@ -363,7 +364,7 @@
             else el.textContent = '最后保存：' + getLastUpdateTime();
         }
 
-        // ----- 云端同步（含重试） -----
+        // ----- 云端同步（同 v27） -----
         function loadCloudConfig() {
             cloudBinId = localStorage.getItem(CLOUD_BIN_KEY) || '';
             cloudSecretKey = localStorage.getItem(CLOUD_SECRET_KEY) || '';
@@ -544,7 +545,7 @@
             }
         }
 
-        // ----- 工具函数 -----
+        // ----- 工具函数（同 v27） -----
         function calculateAge(idCard) {
             if (!idCard || idCard.length < 18) return null;
             const birth = idCard.substring(6, 14);
@@ -601,7 +602,7 @@
             return errors;
         }
 
-        // ----- 导入表格（解析） -----
+        // ----- 导入表格相关（支持制表符、竖线，追加模式） -----
         function parseTable(text) {
             const lines = text.split('\n').filter(line => line.trim() !== '');
             if (lines.length < 2) return [];
@@ -649,6 +650,74 @@
             return data;
         }
 
+        // 导入数据并合并到现有客户（追加模式）
+        function mergeImportData(newCustomers) {
+            const existing = loadData();
+            // 构建现有客户的查找索引（姓名+身份证）
+            const index = {};
+            existing.forEach(c => {
+                const key = (c.name || '') + '|' + (c.idCard || '');
+                index[key] = c;
+            });
+
+            let addedCount = 0;
+            let skippedCount = 0;
+            newCustomers.forEach(nc => {
+                const key = (nc.name || '') + '|' + (nc.idCard || '');
+                if (index[key]) {
+                    // 客户已存在，跳过（可改为更新逻辑，但用户要求新增，故跳过）
+                    skippedCount++;
+                } else {
+                    existing.push(nc);
+                    index[key] = nc;
+                    addedCount++;
+                }
+            });
+
+            if (addedCount === 0 && skippedCount > 0) {
+                alert(`所有客户均已存在，无需添加（共跳过 ${skippedCount} 条）。`);
+                return false;
+            }
+            if (addedCount > 0) {
+                saveData(existing);
+                refreshData();
+                alert(`✅ 成功新增 ${addedCount} 位客户，跳过 ${skippedCount} 位已存在客户。`);
+                return true;
+            }
+            return false;
+        }
+
+        // 下载模板（制表符分隔的 TSV 文件）
+        function downloadTemplate() {
+            const headers = [
+                '投保人姓名', '投保人身份证号', '联系电话', '通信地址',
+                '险种名称', '保单代码', '险种代码', '主险', '保单状态',
+                '生效日', '缴费方式', '年缴保费（元）', '缴费期限（年）',
+                '被保险人', '与被保人关系', '被保人身份证', '被保人手机号码',
+                '受益人', '备注'
+            ];
+            // 空行示例（用户可删除）
+            const exampleRow = [
+                '张三', '110101199001011234', '13800138000', '北京市朝阳区',
+                '国寿防癌疾病保险', '2017442001512015003623', '201744', '主险', '有效',
+                '20160112', '年缴', '780', '20',
+                '李四', '儿子', '110101199001011235', '13800138001',
+                '李四', '保单备注'
+            ];
+            // 表头用制表符连接，每行用换行
+            const tsvContent = headers.join('\t') + '\n' + exampleRow.join('\t') + '\n';
+            const blob = new Blob([tsvContent], { type: 'text/tab-separated-values;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '导入模板.tsv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 原有的 importDataFromText 保持不变，但我们将它用于解析，然后调用 mergeImportData
         function importDataFromText(rawText) {
             const rows = parseTable(rawText);
             if (rows.length === 0) throw new Error('未能解析出数据行，请检查是否包含表头。');
@@ -677,6 +746,7 @@
             const premiumKey = allKeys.find(k => k.replace(/\s/g, '') === '年缴保费（元）');
             const termKey = allKeys.find(k => k.replace(/\s/g, '') === '缴费期限（年）');
             const insuredKey = allKeys.find(k => k.replace(/\s/g, '') === '被保险人');
+            const insuredRelKey = allKeys.find(k => k.replace(/\s/g, '') === '与被保人关系');
             const insuredIdKey = allKeys.find(k => k.replace(/\s/g, '') === '被保人身份证');
             const insuredPhoneKey = allKeys.find(k => k.replace(/\s/g, '') === '被保人手机号码');
             const beneKey = allKeys.find(k => k.replace(/\s/g, '') === '受益人');
@@ -715,7 +785,7 @@
                         annualPremium: premiumKey ? (p[premiumKey] || '') : '',
                         paymentTerm: termKey ? (p[termKey] || '') : '',
                         insured: insuredKey ? (p[insuredKey] || '') : '',
-                        insuredRelation: '',
+                        insuredRelation: insuredRelKey ? (p[insuredRelKey] || '') : '',
                         insuredId: insuredIdKey ? (p[insuredIdKey] || '') : '',
                         insuredPhone: insuredPhoneKey ? (p[insuredPhoneKey] || '') : '',
                         beneficiaries: beneficiaries,
@@ -731,7 +801,7 @@
         }
 
         // ============================================================
-        // UI 核心函数
+        // UI 核心函数（同 v27，保留所有功能）
         // ============================================================
         let currentData = loadData();
         let currentView = 'list';
@@ -755,7 +825,7 @@
         const pageTitle = document.getElementById('pageTitle');
         const floatingBackBtn = document.getElementById('floatingBackBtn');
 
-        // ----- History 管理 -----
+        // ----- History 管理（同 v27） -----
         function pushHistory(view, data) {
             let hash = '#list';
             let state = { view: 'list' };
@@ -896,7 +966,7 @@
             return currentData.find(c => c.name === name);
         }
 
-        // ----- 列表渲染（与 v26 相同） -----
+        // ----- 列表渲染（同 v27） -----
         function renderList() {
             const q = searchInput.value.trim().toLowerCase();
             let matched = [];
@@ -976,7 +1046,7 @@
             });
         }
 
-        // ----- 详情渲染（含导出按钮） -----
+        // ----- 详情渲染（含导出按钮，同 v27） -----
         function renderDetail(name) {
             const client = getClient(name);
             if (!client) { detailContent.innerHTML = `<div class="no-result">客户不存在</div>`; return; }
@@ -1041,7 +1111,7 @@
             }
             html += `</div>`;
 
-            // 保单分组（与 v26 相同）
+            // 保单分组（同 v27）
             const mainPolicies = client.policies.filter(p => p.mainType === '主险');
             const subPolicies = client.policies.filter(p => p.mainType === '附加险');
             const subMap = {};
@@ -1190,7 +1260,7 @@
             setTimeout(bindServiceEvents, 0);
         }
 
-        // ----- 渲染单笔保单（与 v26 相同） -----
+        // ----- 渲染单笔保单（同 v27） -----
         function renderPolicyItem(policy, client, isMain) {
             const idx = client.policies.indexOf(policy);
             const completePolicy = isPolicyComplete(policy);
@@ -1300,7 +1370,7 @@
             return html;
         }
 
-        // ----- 服务记录事件绑定 -----
+        // ----- 服务记录事件绑定（同 v27） -----
         function bindServiceEvents() {
             detailContent.querySelectorAll('.service-add-btn').forEach(btn => {
                 btn.removeEventListener('click', handleServiceAdd);
@@ -1373,7 +1443,7 @@
             renderDetail(name);
         }
 
-        // ----- 家庭成员管理 -----
+        // ----- 家庭成员管理（同 v27） -----
         function openAddFamilyMember(name, prefill = {}) {
             const client = getClient(name);
             if (!client) { alert('客户数据不存在'); return; }
@@ -1444,7 +1514,7 @@
             document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
         }
 
-        // ----- 编辑保单（同 v26） -----
+        // ----- 编辑保单（同 v27） -----
         function openEditPolicy(name, index) {
             const client = getClient(name);
             if (!client) return;
@@ -1536,7 +1606,7 @@
             html += `<div class="btn-row"><button class="primary" id="saveEditPolicy">保存修改</button><button class="secondary" id="cancelModalBtn">取消</button></div>`;
             openModal(html);
 
-            // 交互逻辑（与 v26 相同）
+            // 交互逻辑（同 v27）
             document.getElementById('editMainType').addEventListener('change', function() {
                 const group = document.getElementById('parentPolicyGroup');
                 if (this.value === '附加险') group.style.display = 'block';
@@ -1732,7 +1802,7 @@
             if (currentView === 'detail') renderDetail(name);
         }
 
-        // ----- 管理后台 -----
+        // ----- 管理后台（新增下载模板和追加导入） -----
         function renderAdmin() {
             if (currentData.length === 0) {
                 adminClientList.innerHTML = `
@@ -1776,7 +1846,7 @@
         modalClose.addEventListener('click', closeModal);
         modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
 
-        // ----- 编辑客户 -----
+        // ----- 编辑客户（同 v27） -----
         function openEditClient(name) {
             const client = getClient(name);
             if (!client) return;
@@ -1911,13 +1981,14 @@
             document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
         }
 
-        // ----- 导入表格 -----
+        // ----- 导入表格（追加模式） -----
         function openImportModal() {
-            let html = `<h2>📥 导入表格数据</h2>`;
+            let html = `<h2>📥 导入表格（追加模式）</h2>`;
             html += `<p style="font-size:14px;color:#64748b;margin-bottom:10px;">请将从Excel复制的表格文本（<strong>必须包含表头</strong>）粘贴到下方：</p>`;
-            html += `<textarea id="importTextArea" placeholder="粘贴竖线分隔的表格数据..." style="min-height:200px;"></textarea>`;
+            html += `<p style="font-size:13px;color:#16a34a;margin-bottom:6px;">✅ 本模式为<strong>追加导入</strong>，新客户将添加，已存在客户（按姓名+身份证匹配）将被跳过。</p>`;
+            html += `<textarea id="importTextArea" placeholder="粘贴竖线或制表符分隔的表格数据..." style="min-height:200px;"></textarea>`;
             html += `<div class="preview-box" id="importPreview">等待解析...</div>`;
-            html += `<div class="btn-row"><button class="primary" id="confirmImport">导入（覆盖当前数据）</button><button class="secondary" id="cancelModalBtn">取消</button></div>`;
+            html += `<div class="btn-row"><button class="primary" id="confirmImport">追加导入</button><button class="secondary" id="cancelModalBtn">取消</button></div>`;
             openModal(html);
 
             const textarea = document.getElementById('importTextArea');
@@ -1928,7 +1999,7 @@
                     const raw = this.value;
                     if (!raw.trim()) { preview.textContent = '等待粘贴数据...'; return; }
                     const customers = importDataFromText(raw);
-                    preview.textContent = `✅ 解析成功：${customers.length} 位客户，总保单 ${customers.reduce((s,c) => s + c.policies.length, 0)} 条。`;
+                    preview.textContent = `✅ 解析成功：${customers.length} 位客户，总保单 ${customers.reduce((s,c) => s + c.policies.length, 0)} 条。将追加导入，已存在客户将被跳过。`;
                 } catch(e) {
                     preview.textContent = '❌ ' + e.message;
                 }
@@ -1940,12 +2011,9 @@
                 try {
                     const imported = importDataFromText(raw);
                     if (imported.length === 0) { alert('未解析到有效数据'); return; }
-                    if (!confirm(`将导入 ${imported.length} 位客户，当前数据将被覆盖，确定吗？`)) return;
-                    saveData(imported);
-                    refreshData();
+                    // 合并导入
+                    mergeImportData(imported);
                     closeModal();
-                    alert(`✅ 成功导入 ${imported.length} 位客户，共 ${imported.reduce((s,c) => s + c.policies.length, 0)} 条保单！`);
-                    switchView('list');
                 } catch(e) {
                     alert('导入失败：' + e.message);
                 }
@@ -1953,7 +2021,7 @@
             document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
         }
 
-        // ----- 导出JSON -----
+        // ----- 导出JSON（同 v27） -----
         function exportData() {
             if (currentData.length === 0) { alert('当前没有数据可导出。'); return; }
             const dataStr = JSON.stringify(currentData, null, 2);
@@ -1969,7 +2037,7 @@
             alert('📤 导出成功！文件已下载，请妥善保存。');
         }
 
-        // ----- 恢复JSON -----
+        // ----- 恢复JSON（同 v27） -----
         function restoreFromJSON() {
             const input = document.createElement('input');
             input.type = 'file';
@@ -2007,7 +2075,7 @@
         }
 
         // ============================================================
-        // 导出 Word 功能
+        // 导出 Word 功能（同 v27）
         // ============================================================
         function exportToWord(client) {
             if (!client) return;
@@ -2155,7 +2223,7 @@
         }
 
         // ============================================================
-        // 云端事件绑定
+        // 云端事件绑定（同 v27）
         // ============================================================
         document.getElementById('cloudEnableBtn').addEventListener('click', function() {
             const binId = document.getElementById('cloudBinId').value.trim();
@@ -2206,6 +2274,11 @@
             } catch (e) { alert('同步出错：' + e.message); }
             finally { btn.textContent = '🔄 同步'; btn.disabled = false; }
         });
+
+        // ============================================================
+        // 下载模板
+        // ============================================================
+        document.getElementById('downloadTemplateBtn').addEventListener('click', downloadTemplate);
 
         // ============================================================
         // 原有事件绑定
