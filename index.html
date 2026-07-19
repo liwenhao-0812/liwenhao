@@ -167,9 +167,9 @@
             background: none;
             border: none;
             color: #3b82f6;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
-            padding: 2px 6px;
+            padding: 2px 4px;
             line-height: 1;
         }
         .address-row .action-btn:active {
@@ -1188,16 +1188,22 @@
             html += `<span><span class="label">${ageStr}</span></span>`;
             html += `</div>`;
 
-            // ===== 新增：地址、工作信息、照片区域（在 meta 下方） =====
+                       // ===== 地址、工作信息、照片区域 =====
             html += `<div style="width:100%; margin-top:8px; border-top:1px solid #e2e8f0; padding-top:8px;">`;
 
-            // 通信地址（带定位）
-            html += `<div style="margin-bottom:4px;"><span class="label">通信地址</span> ${client.address || '未填写'}`;
+            // 编辑全部按钮（放在区域顶部）
+            html += `<div style="display:flex; justify-content:flex-end; margin-bottom:6px;"><button class="action-btn" onclick="openEditAddress('${client.name}')">✏️ 编辑全部</button></div>`;
+
+            // 通信地址（带定位，无编辑按钮）
+            html += `<div style="margin-bottom:4px; display:flex; flex-wrap:wrap; align-items:center; gap:4px;">`;
+            html += `<span class="label">通信地址</span>`;
+            html += `<span style="flex:1;">${client.address || '未填写'}</span>`;
             if (client.address) {
                 html += `<button class="action-btn" onclick="openMap('${client.address.replace(/'/g, "\\'")}')" title="高德定位">📍</button>`;
             }
             html += `</div>`;
-            // 通信地址照片（缩略图改小为50px）
+
+            // 通信地址照片
             if (client.addressPhotos && client.addressPhotos.length > 0) {
                 html += `<div class="photo-thumbnails">`;
                 client.addressPhotos.forEach(photo => {
@@ -1209,15 +1215,21 @@
                 html += `<div class="photo-thumbnails"><button class="add-photo-btn" data-target="addressPhotos" data-name="${client.name}">📷 添加照片</button></div>`;
             }
 
-            // 工作单位
-            html += `<div style="margin:6px 0 2px;"><span class="label">工作单位</span> ${client.workCompany || '未填写'}</div>`;
+            // 工作单位（无编辑按钮）
+            html += `<div style="margin:6px 0 2px; display:flex; flex-wrap:wrap; align-items:center; gap:4px;">`;
+            html += `<span class="label">工作单位</span>`;
+            html += `<span style="flex:1;">${client.workCompany || '未填写'}</span>`;
+            html += `</div>`;
 
-            // 工作地址（带定位）
-            html += `<div style="margin-bottom:4px;"><span class="label">工作地址</span> ${client.workAddress || '未填写'}`;
+            // 工作地址（带定位，无编辑按钮）
+            html += `<div style="margin-bottom:4px; display:flex; flex-wrap:wrap; align-items:center; gap:4px;">`;
+            html += `<span class="label">工作地址</span>`;
+            html += `<span style="flex:1;">${client.workAddress || '未填写'}</span>`;
             if (client.workAddress) {
                 html += `<button class="action-btn" onclick="openMap('${client.workAddress.replace(/'/g, "\\'")}')" title="高德定位">📍</button>`;
             }
             html += `</div>`;
+
             // 工作地址照片
             if (client.workPhotos && client.workPhotos.length > 0) {
                 html += `<div class="photo-thumbnails">`;
@@ -2076,7 +2088,28 @@
             });
             document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
         }
-
+        // 快速编辑地址和工作信息（在详情页调用）
+        function openEditAddress(name) {
+            const client = getClient(name);
+            if (!client) { alert('客户不存在'); return; }
+            let html = `<h2>编辑地址与工作信息</h2>`;
+            html += `<label>通信地址</label><textarea id="editAddress">${client.address || ''}</textarea>`;
+            html += `<label>工作单位</label><input id="editWorkCompany" value="${client.workCompany || ''}" placeholder="单位名称">`;
+            html += `<label>工作地址</label><textarea id="editWorkAddress">${client.workAddress || ''}</textarea>`;
+            html += `<div class="btn-row"><button class="primary" id="saveAddressBtn">保存</button><button class="secondary" id="cancelModalBtn">取消</button></div>`;
+            openModal(html);
+            document.getElementById('saveAddressBtn').addEventListener('click', () => {
+                client.address = document.getElementById('editAddress').value.trim();
+                client.workCompany = document.getElementById('editWorkCompany').value.trim();
+                client.workAddress = document.getElementById('editWorkAddress').value.trim();
+                saveData(currentData);
+                refreshData();
+                closeModal();
+                if (currentView === 'detail') renderDetail(name);
+            });
+            document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+        }
+        
         function deleteClient(name) {
             currentData = currentData.filter(c => c.name !== name);
             saveData(currentData);
