@@ -151,6 +151,60 @@
         .export-btn:active {
             background: #15803d;
         }
+                /* 新增：地址行与图片、定位按钮 */
+        .address-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            margin-top: 2px;
+        }
+        .address-row .address-text {
+            flex: 1;
+            min-width: 120px;
+        }
+        .address-row .action-btn {
+            background: none;
+            border: none;
+            color: #3b82f6;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 2px 6px;
+            line-height: 1;
+        }
+        .address-row .action-btn:active {
+            opacity: 0.6;
+        }
+        .photo-thumbnails {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+        }
+        .photo-thumbnails img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+        }
+        .photo-thumbnails .add-photo-btn {
+            width: 50px;
+            height: 50px;
+            border: 1px dashed #94a3b8;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #94a3b8;
+            cursor: pointer;
+            background: none;
+        }
+        .photo-thumbnails .add-photo-btn:active {
+            background: #f1f5f9;
+        }
     </style>
 </head>
 <body>
@@ -601,7 +655,54 @@
             if (!address || address.trim() === '') errors.push('投保人通信地址缺失（被保人联系地址未填写）');
             return errors;
         }
+        // ----- 新增：图片压缩与定位 -----
+        function compressImage(file, maxSizeKB = 200) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        let canvas = document.createElement('canvas');
+                        let ctx = canvas.getContext('2d');
+                        let width = img.width;
+                        let height = img.height;
+                        let quality = 0.92;
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+                        let dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        let size = dataUrl.length / 1024;
+                        while (size > maxSizeKB && quality > 0.1) {
+                            quality -= 0.1;
+                            dataUrl = canvas.toDataURL('image/jpeg', quality);
+                            size = dataUrl.length / 1024;
+                        }
+                        if (size > maxSizeKB) {
+                            const scale = Math.sqrt(maxSizeKB / size);
+                            canvas.width = Math.floor(width * scale);
+                            canvas.height = Math.floor(height * scale);
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                        }
+                        resolve(dataUrl);
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
 
+        function openMap(address) {
+            if (!address || address.trim() === '') {
+                alert('地址为空，无法定位');
+                return;
+            }
+            const encoded = encodeURIComponent(address.trim());
+            const url = `https://uri.amap.com/search?keyword=${encoded}`;
+            window.open(url, '_blank');
+        }
         // ----- 导入表格相关（支持制表符、竖线，追加模式） -----
         function parseTable(text) {
             const lines = text.split('\n').filter(line => line.trim() !== '');
@@ -1047,7 +1148,7 @@
         }
 
         // ----- 详情渲染（含导出按钮，同 v27） -----
-        function renderDetail(name) {
+     function renderDetail(name) {
             const client = getClient(name);
             if (!client) { detailContent.innerHTML = `<div class="no-result">客户不存在</div>`; return; }
             const age = calculateAge(client.idCard);
@@ -1079,15 +1180,63 @@
             }
             html += `</div>`;
             html += `</div>`;
+
+            // ===== 修改部分开始：身份证、电话、年龄在同一行 =====
             html += `<div class="meta">`;
             if (client.idCard) html += `<span><span class="label">身份证</span> ${client.idCard}</span>`;
             if (client.phone) html += `<span><span class="label">电话</span> ${client.phone}</span>`;
-            if (client.address) html += `<span><span class="label">地址</span> ${client.address}</span>`;
             html += `<span><span class="label">${ageStr}</span></span>`;
             html += `</div>`;
+
+            // ===== 新增：地址、工作信息、照片区域（在 meta 下方） =====
+            html += `<div style="width:100%; margin-top:8px; border-top:1px solid #e2e8f0; padding-top:8px;">`;
+
+            // 通信地址（带定位）
+            html += `<div style="margin-bottom:4px;"><span class="label">通信地址</span> ${client.address || '未填写'}`;
+            if (client.address) {
+                html += `<button class="action-btn" onclick="openMap('${client.address.replace(/'/g, "\\'")}')" title="高德定位">📍</button>`;
+            }
+            html += `</div>`;
+            // 通信地址照片（缩略图改小为50px）
+            if (client.addressPhotos && client.addressPhotos.length > 0) {
+                html += `<div class="photo-thumbnails">`;
+                client.addressPhotos.forEach(photo => {
+                    html += `<img src="${photo}" onclick="window.open('${photo}','_blank')" alt="地址照片" style="width:50px;height:50px;">`;
+                });
+                html += `<button class="add-photo-btn" data-target="addressPhotos" data-name="${client.name}" style="width:50px;height:50px;font-size:20px;">+</button>`;
+                html += `</div>`;
+            } else {
+                html += `<div class="photo-thumbnails"><button class="add-photo-btn" data-target="addressPhotos" data-name="${client.name}">📷 添加照片</button></div>`;
+            }
+
+            // 工作单位
+            html += `<div style="margin:6px 0 2px;"><span class="label">工作单位</span> ${client.workCompany || '未填写'}</div>`;
+
+            // 工作地址（带定位）
+            html += `<div style="margin-bottom:4px;"><span class="label">工作地址</span> ${client.workAddress || '未填写'}`;
+            if (client.workAddress) {
+                html += `<button class="action-btn" onclick="openMap('${client.workAddress.replace(/'/g, "\\'")}')" title="高德定位">📍</button>`;
+            }
+            html += `</div>`;
+            // 工作地址照片
+            if (client.workPhotos && client.workPhotos.length > 0) {
+                html += `<div class="photo-thumbnails">`;
+                client.workPhotos.forEach(photo => {
+                    html += `<img src="${photo}" onclick="window.open('${photo}','_blank')" alt="工作地址照片" style="width:50px;height:50px;">`;
+                });
+                html += `<button class="add-photo-btn" data-target="workPhotos" data-name="${client.name}" style="width:50px;height:50px;font-size:20px;">+</button>`;
+                html += `</div>`;
+            } else {
+                html += `<div class="photo-thumbnails"><button class="add-photo-btn" data-target="workPhotos" data-name="${client.name}">📷 添加照片</button></div>`;
+            }
+
+            html += `</div>`;
+            // ===== 修改结束 =====
+
             html += warnMsg;
             html += `</div>`;
 
+            // ----- 以下为家庭成员、保单列表（保持不变） -----
             // 家庭成员
             html += `<div class="family-section">`;
             html += `<div class="title">👨‍👩‍👧‍👦 家庭成员 <button class="btn outline" style="font-size:12px;padding:2px 10px;" id="addFamilyBtn">➕ 添加</button></div>`;
@@ -1172,7 +1321,39 @@
             html += `</div>`;
 
             detailContent.innerHTML = html;
-
+            // 绑定图片上传
+            detailContent.querySelectorAll('.add-photo-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const name = this.dataset.name;
+                    const target = this.dataset.target; // 'addressPhotos' 或 'workPhotos'
+                    const clientObj = getClient(name);
+                    if (!clientObj) return;
+                    const currentPhotos = clientObj[target] || [];
+                    if (currentPhotos.length >= 5) {
+                        alert('最多可上传5张照片');
+                        return;
+                    }
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.capture = 'environment';
+                    input.multiple = false;
+                    input.onchange = async function(e) {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        try {
+                            const base64 = await compressImage(file, 200);
+                            if (!clientObj[target]) clientObj[target] = [];
+                            clientObj[target].push(base64);
+                            saveData(currentData);
+                            renderDetail(name);
+                        } catch (err) {
+                            alert('图片处理失败：' + err.message);
+                        }
+                    };
+                    input.click();
+                });
+            });
             // 绑定导出按钮事件
             document.getElementById('exportWordBtn').addEventListener('click', function() {
                 const client = getClient(name);
@@ -1850,12 +2031,30 @@
         function openEditClient(name) {
             const client = getClient(name);
             if (!client) return;
+            // 确保字段存在
+            if (!client.workCompany) client.workCompany = '';
+            if (!client.workAddress) client.workAddress = '';
+            if (!client.addressPhotos) client.addressPhotos = [];
+            if (!client.workPhotos) client.workPhotos = [];
+
             let html = `<h2>编辑客户</h2><label>投保人姓名 *</label><input id="editName" value="${client.name}">`;
             html += `<label>身份证号</label><input id="editIdCard" value="${client.idCard || ''}">`;
             html += `<label>联系电话</label><input id="editPhone" value="${client.phone || ''}">`;
             html += `<label>通信地址</label><textarea id="editAddress">${client.address || ''}</textarea>`;
+            // 新增工作单位、工作地址
+            html += `<label>工作单位</label><input id="editWorkCompany" value="${client.workCompany || ''}" placeholder="单位名称">`;
+            html += `<label>工作地址</label><textarea id="editWorkAddress">${client.workAddress || ''}</textarea>`;
+            // 显示已有照片（仅展示，不可编辑，可删除）
+            if (client.addressPhotos.length > 0 || client.workPhotos.length > 0) {
+                html += `<label>已存照片</label><div style="display:flex;flex-wrap:wrap;gap:6px;">`;
+                [...client.addressPhotos, ...client.workPhotos].forEach((photo, idx) => {
+                    html += `<img src="${photo}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;cursor:pointer;" onclick="window.open('${photo}','_blank')">`;
+                });
+                html += `</div>`;
+            }
             html += `<div class="btn-row"><button class="primary" id="saveClientBtn">保存</button><button class="secondary" id="cancelModalBtn">取消</button></div>`;
             openModal(html);
+
             document.getElementById('saveClientBtn').addEventListener('click', () => {
                 const newName = document.getElementById('editName').value.trim();
                 if (!newName) { alert('姓名不能为空'); return; }
@@ -1864,6 +2063,9 @@
                 client.idCard = document.getElementById('editIdCard').value.trim();
                 client.phone = document.getElementById('editPhone').value.trim();
                 client.address = document.getElementById('editAddress').value.trim();
+                client.workCompany = document.getElementById('editWorkCompany').value.trim();
+                client.workAddress = document.getElementById('editWorkAddress').value.trim();
+                // 照片保留原样
                 saveData(currentData);
                 refreshData();
                 closeModal();
@@ -1881,27 +2083,35 @@
             refreshData();
             if (currentView === 'detail' && currentDetailName === name) switchView('list');
         }
-
+        
         function openAddClient() {
             let html = `<h2>新增客户</h2><label>投保人姓名 *</label><input id="newName" placeholder="姓名">`;
             html += `<label>身份证号</label><input id="newIdCard">`;
             html += `<label>联系电话</label><input id="newPhone">`;
             html += `<label>通信地址</label><textarea id="newAddress"></textarea>`;
+            html += `<label>工作单位</label><input id="newWorkCompany" placeholder="单位名称">`;
+            html += `<label>工作地址</label><textarea id="newWorkAddress"></textarea>`;
             html += `<div class="btn-row"><button class="primary" id="confirmAddClient">创建</button><button class="secondary" id="cancelModalBtn">取消</button></div>`;
             openModal(html);
+
             document.getElementById('confirmAddClient').addEventListener('click', () => {
                 const name = document.getElementById('newName').value.trim();
                 if (!name) { alert('姓名不能为空'); return; }
                 if (currentData.some(c => c.name === name)) { alert('该姓名已存在'); return; }
-                currentData.push({
+                const newClient = {
                     name,
                     idCard: document.getElementById('newIdCard').value.trim(),
                     phone: document.getElementById('newPhone').value.trim(),
                     address: document.getElementById('newAddress').value.trim(),
+                    workCompany: document.getElementById('newWorkCompany').value.trim(),
+                    workAddress: document.getElementById('newWorkAddress').value.trim(),
+                    addressPhotos: [],
+                    workPhotos: [],
                     policies: [],
                     familyMembers: [],
                     contactHistory: []
-                });
+                };
+                currentData.push(newClient);
                 saveData(currentData);
                 refreshData();
                 closeModal();
@@ -2113,6 +2323,8 @@
                         <tr><td class="label">年龄</td><td>${ageStr}</td></tr>
                         <tr><td class="label">联系电话</td><td>${client.phone || '未提供'}</td></tr>
                         <tr><td class="label">通信地址</td><td>${client.address || '未提供'}</td></tr>
+                        <tr><td class="label">工作单位</td><td>${client.workCompany || '未提供'}</td></tr>
+                        <tr><td class="label">工作地址</td><td>${client.workAddress || '未提供'}</td></tr>
                     </table>
                 </div>
 
