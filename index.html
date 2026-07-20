@@ -171,7 +171,67 @@
         .export-btn:active {
             background: #15803d;
         }
-                /* 新增：地址行与图片、定位按钮 */
+                /* 搜索框布局 */
+.search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #f5f7fa;
+    padding: 8px 0;
+    align-items: center;
+}
+.search-input-wrapper {
+    flex: 1;
+    position: relative;
+}
+.search-input-wrapper input {
+    width: 100%;
+    padding: 12px 40px 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 30px;
+    font-size: 16px;
+    background: #fff;
+    outline: none;
+}
+.search-input-wrapper input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+}
+.clear-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px 6px;
+    display: none;  /* 默认隐藏，有文字时显示 */
+    border-radius: 50%;
+    line-height: 1;
+}
+.clear-btn:hover {
+    background: #f1f5f9;
+    color: #475569;
+}
+.search-box .sync-btn {
+    padding: 8px 16px;
+    background: #8b5cf6;
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+        /* 新增：地址行与图片、定位按钮 */
         .address-row {
             display: flex;
             flex-wrap: wrap;
@@ -251,10 +311,13 @@
             </div>
         </div>
         <div id="listView">
-            <div class="search-box">
+        <div class="search-box">
+            <div class="search-input-wrapper">
                 <input type="text" id="searchInput" placeholder="输入投保人或被保人姓名…" autofocus>
-                <button class="sync-btn" id="homeSyncBtn">🔄 同步</button>
+                <button class="clear-btn" id="clearSearchBtn">✕</button>
             </div>
+                <button class="sync-btn" id="homeSyncBtn">🔄 同步</button>
+        </div>
             <div class="result-count" id="resultCount"></div>
             <div id="customerList"></div>
         </div>
@@ -933,6 +996,7 @@
         const adminView = document.getElementById('adminView');
         const switchBtn = document.getElementById('switchBtn');
         const searchInput = document.getElementById('searchInput');
+        const clearBtn = document.getElementById('clearSearchBtn');
         const customerList = document.getElementById('customerList');
         const resultCount = document.getElementById('resultCount');
         const detailContent = document.getElementById('detailContent');
@@ -2586,9 +2650,21 @@
         backToListFromAdmin.addEventListener('click', () => {
             if (currentView === 'admin') window.history.back();
         });
-
-        searchInput.addEventListener('input', () => { if (currentView === 'list') renderList(); });
-
+        // 输入事件：控制清除按钮显隐 + 刷新列表
+       searchInput.addEventListener('input', function() {
+            if (this.value.length > 0) {
+                clearBtn.style.display = 'block';
+            } else {
+                clearBtn.style.display = 'none';
+             }
+            if (currentView === 'list') renderList();
+        });
+        // 清除按钮点击事件
+        clearBtn.addEventListener('click', function() {
+                searchInput.value = '';
+            this.style.display = 'none';
+            if (currentView === 'list') renderList();
+        });
         document.getElementById('addClientBtn').addEventListener('click', openAddClient);
         document.getElementById('importDataBtn').addEventListener('click', openImportModal);
         document.getElementById('exportDataBtn').addEventListener('click', exportData);
