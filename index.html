@@ -876,15 +876,15 @@
             const headers = [
                 '投保人姓名', '投保人身份证号', '联系电话', '通信地址',
                 '险种名称', '保单代码', '险种代码', '主险', '保单状态',
-                '生效日', '缴费方式', '年缴保费（元）', '缴费期限（年）',
+                '生效日', '缴费方式', '年缴保费（元）', '保额（元）', '缴费期限（年）',
                 '被保险人', '与被保人关系', '被保人身份证', '被保人手机号码',
                 '受益人', '备注'
             ];
             // 空行示例（用户可删除）
             const exampleRow = [
-                '张三', '110101199001011234', '13800138000', '北京市朝阳区',
+               '张三', '110101199001011234', '13800138000', '北京市朝阳区',
                 '国寿防癌疾病保险', '2017442001512015003623', '201744', '主险', '有效',
-                '20160112', '年缴', '780', '20',
+                '20160112', '年缴', '780', '100000', '20',
                 '李四', '儿子', '110101199001011235', '13800138001',
                 '李四', '保单备注'
             ];
@@ -928,6 +928,7 @@
             const effKey = allKeys.find(k => k.replace(/\s/g, '') === '生效日');
             const payKey = allKeys.find(k => k.replace(/\s/g, '') === '缴费方式');
             const premiumKey = allKeys.find(k => k.replace(/\s/g, '') === '年缴保费（元）');
+            const sumInsuredKey = allKeys.find(k => k.replace(/\s/g, '') === '保额（元）');
             const termKey = allKeys.find(k => k.replace(/\s/g, '') === '缴费期限（年）');
             const insuredKey = allKeys.find(k => k.replace(/\s/g, '') === '被保险人');
             const insuredRelKey = allKeys.find(k => k.replace(/\s/g, '') === '与被保人关系');
@@ -946,6 +947,10 @@
                     if (!address && addrKey && p[addrKey]) address = p[addrKey].trim();
                 }
                 const policies = pols.map(p => {
+                    const sumInsuredVal = sumInsuredKey ? (p[sumInsuredKey] || '').trim() : '';
+                    if (!sumInsuredVal || isNaN(parseFloat(sumInsuredVal)) || parseFloat(sumInsuredVal) < 0) {
+                        return null; // 保额无效，跳过该保单
+                    }
                     let beneficiaries = [];
                     const beneVal = (beneKey && p[beneKey]) ? p[beneKey].trim() : '';
                     if (beneVal) {
@@ -959,7 +964,7 @@
                         }
                     }
                     return {
-                        policyCode: policyCodeKey ? (p[policyCodeKey] || '') : '',
+                       policyCode: policyCodeKey ? (p[policyCodeKey] || '') : '',
                         insuranceName: insNameKey ? (p[insNameKey] || '') : '',
                         codeType: codeTypeKey ? (p[codeTypeKey] || '') : '',
                         mainType: mainTypeKey ? (p[mainTypeKey] || '主险') : '主险',
@@ -967,6 +972,7 @@
                         effectiveDate: effKey ? (p[effKey] || '') : '',
                         paymentMethod: payKey ? (p[payKey] || '年缴') : '年缴',
                         annualPremium: premiumKey ? (p[premiumKey] || '') : '',
+                        sumInsured: sumInsuredVal,   // 新增保额
                         paymentTerm: termKey ? (p[termKey] || '') : '',
                         insured: insuredKey ? (p[insuredKey] || '') : '',
                         insuredRelation: insuredRelKey ? (p[insuredRelKey] || '') : '',
@@ -978,7 +984,7 @@
                         extraFields: {},
                         serviceRecords: []
                     };
-                });
+                }).filter(p => p !== null); // 过滤掉无效保单
                 customers.push({ name, idCard, phone, address, policies, familyMembers: [], contactHistory: [] });
             }
             return customers;
@@ -1611,7 +1617,14 @@
             html += `<div class="row"><span class="field">险种代码</span><span class="value"><span class="policy-code">${policy.codeType || '无'}</span></span></div>`;
             if (policy.annualPremium) html += `<div class="row"><span class="field">年缴保费</span><span class="value highlight">${policy.annualPremium} 元</span> ${policy.paymentTerm ? '共 '+policy.paymentTerm+' 年' : ''}</div>`;
             else html += `<div class="row"><span class="field">年缴保费</span><span class="value" style="color:#b45309;">缺失</span></div>`;
-
+            // 显示保额（必填，但若为空则显示“未填写”）
+            if (policy.sumInsured) {
+                const sumInsuredNum = parseFloat(policy.sumInsured);
+                const display = sumInsuredNum >= 10000 ? (sumInsuredNum / 10000).toFixed(1) + '万' : sumInsuredNum.toFixed(0);
+                html += `<div class="row"><span class="field">保额</span><span class="value highlight">${display} 元</span></div>`;
+            } else {
+                html += `<div class="row"><span class="field">保额</span><span class="value" style="color:#b45309;">未填写</span></div>`;
+            }
             const effDate = policy.effectiveDate;
             if (effDate) {
                 const formatted = formatDate(effDate);
@@ -1848,6 +1861,7 @@
             html += `<label>生效日</label><input id="editEffective" value="${policy.effectiveDate || ''}" placeholder="YYYYMMDD">`;
             html += `<label>缴费方式</label><input id="editPayment" value="${policy.paymentMethod || '年缴'}">`;
             html += `<label>年缴保费（元）</label><input id="editPremium" value="${policy.annualPremium || ''}" placeholder="金额">`;
+                        html += `<label><span class="required-star">*</span>保额（元）</label><input id="editSumInsured" value="${policy.sumInsured || ''}" placeholder="如 100000" style="width:100%;padding:8px;border-radius:8px;border:1px solid #d1d5db;margin-top:4px;">`;
             html += `<label>缴费期限（年）</label><input id="editTerm" value="${policy.paymentTerm || ''}" placeholder="年数">`;
             html += `<label>被保险人</label><input id="editInsured" value="${policy.insured || ''}" placeholder="姓名">`;
             html += `<label>被保人身份证</label><input id="editInsuredId" value="${policy.insuredId || ''}" placeholder="18位身份证">`;
@@ -2031,6 +2045,11 @@
             });
 
             document.getElementById('saveEditPolicy').addEventListener('click', () => {
+                const sumInsured = document.getElementById('editSumInsured').value.trim();
+                if (!sumInsured || isNaN(parseFloat(sumInsured)) || parseFloat(sumInsured) < 0) {
+                    alert('请填写有效的保额（数字，单位为元）');
+                    return;
+                }
                 const beneRows = beneContainer.querySelectorAll('.beneficiary-row');
                 const beneficiaries = [];
                 let totalQuota = 0;
@@ -2262,7 +2281,7 @@
             document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
         }
 
-        function openAddPolicy(name) {
+            function openAddPolicy(name) {
             const client = getClient(name);
             if (!client) return;
             const mainPolicies = client.policies.filter(p => p.mainType === '主险' && p.policyCode);
@@ -2285,6 +2304,9 @@
             html += `<label>生效日</label><input id="newEffective" placeholder="YYYYMMDD">`;
             html += `<label>缴费方式</label><input id="newPayment" value="年缴">`;
             html += `<label>年缴保费（元）</label><input id="newPremium" placeholder="金额">`;
+            // ----- 新增保额输入框（必填） -----
+            html += `<label><span class="required-star">*</span>保额（元）</label><input id="newSumInsured" placeholder="如 100000" style="width:100%;padding:8px;border-radius:8px;border:1px solid #d1d5db;margin-top:4px;">`;
+            // -----
             html += `<label>缴费期限（年）</label><input id="newTerm" placeholder="年数">`;
             html += `<label>被保险人</label><input id="newInsured" placeholder="姓名">`;
             html += `<label>被保人身份证</label><input id="newInsuredId" placeholder="18位身份证">`;
@@ -2300,6 +2322,14 @@
             });
 
             document.getElementById('confirmAddPolicy').addEventListener('click', () => {
+                // ----- 校验保额必填 -----
+                const sumInsured = document.getElementById('newSumInsured').value.trim();
+                if (!sumInsured || isNaN(parseFloat(sumInsured)) || parseFloat(sumInsured) < 0) {
+                    alert('请填写有效的保额（数字，单位为元）');
+                    return;
+                }
+                // -----
+
                 const mainType = document.getElementById('newMainType').value;
                 let parentPolicyCode = '';
                 if (mainType === '附加险') {
@@ -2316,6 +2346,7 @@
                     effectiveDate: document.getElementById('newEffective').value.trim(),
                     paymentMethod: document.getElementById('newPayment').value.trim() || '年缴',
                     annualPremium: document.getElementById('newPremium').value.trim(),
+                    sumInsured: sumInsured, // 新增保额
                     paymentTerm: document.getElementById('newTerm').value.trim(),
                     insured: document.getElementById('newInsured').value.trim(),
                     insuredId: document.getElementById('newInsuredId').value.trim(),
