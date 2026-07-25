@@ -1342,7 +1342,7 @@ button {
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="保单管理">
 <link rel="apple-touch-icon" href="/liwenhao/icon-192.png">
-<link rel="manifest" href="/liwenhao/manifest.json">
+<link rel="manifest" href="/liwenhao/manifest.json?v=6">
 </head>
 <body>
 
@@ -5059,7 +5059,7 @@ window.closeApkGuide = function() {
 /* ========== Service Worker 注册（仅用于更新检测） ========== */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/liwenhao/sw.js', { scope: '/liwenhao/' }).then(function(reg) {
+    navigator.serviceWorker.register('/liwenhao/sw.js?v=6', { scope: '/liwenhao/' }).then(function(reg) {
       _swReg = reg;
       console.log('SW registered:', reg.scope);
       reg.addEventListener('updatefound', function() {
