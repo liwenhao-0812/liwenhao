@@ -4858,6 +4858,13 @@ var _isApkEnv = (function() {
   return false;
 })();
 
+/* APK 环境：立刻移除 manifest 链接，防止浏览器弹出原生安装提示 */
+if (_isApkEnv) {
+  var manifestLink = document.querySelector('link[rel="manifest"]');
+  if (manifestLink) manifestLink.remove();
+  console.log('APK模式：已移除manifest，禁用PWA安装提示');
+}
+
 var _deferredPrompt = null;
 var _swReg = null;
 var _pwaBarInjected = false;
@@ -4913,10 +4920,10 @@ function pwaInstallClick() {
   }
 }
 
-/* ========== Service Worker 注册（仅用于更新检测） ========== */
-if ('serviceWorker' in navigator) {
+/* ========== Service Worker 注册（仅用于更新检测，APK环境跳过） ========== */
+if (!_isApkEnv && 'serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/liwenhao/sw.js?v=8', { scope: '/liwenhao/' }).then(function(reg) {
+    navigator.serviceWorker.register('/liwenhao/sw.js?v=9', { scope: '/liwenhao/' }).then(function(reg) {
       _swReg = reg;
       console.log('SW registered:', reg.scope);
       reg.addEventListener('updatefound', function() {
