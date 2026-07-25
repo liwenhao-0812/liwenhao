@@ -1134,6 +1134,68 @@ button {
   color: #fff;
 }
 
+/* ======== APK 下载引导弹窗 ======== */
+.apk-guide-popup {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 10003;
+  background: rgba(0,0,0,0.6);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.apk-guide-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px 24px 24px;
+  max-width: 320px;
+  width: 100%;
+  text-align: center;
+  animation: popIn 0.35s ease;
+}
+.apk-guide-card .apk-icon {
+  font-size: 56px;
+  margin-bottom: 12px;
+}
+.apk-guide-card h3 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1a2744;
+  margin: 0;
+}
+.apk-guide-card .apk-download-btn {
+  display: block;
+  background: #059669;
+  color: #fff;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 16px;
+  text-decoration: none;
+  margin: 8px 0;
+  transition: all 0.2s;
+}
+.apk-guide-card .apk-download-btn:active {
+  transform: scale(0.95);
+  background: #047857;
+}
+.apk-guide-card .apk-close-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 13px;
+  padding: 8px;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
 /* ======== toast消息 ======== */
 .toast-container {
   position: fixed;
@@ -1297,12 +1359,12 @@ button {
 <div class="pwa-install-bar" id="pwaInstallBar" style="display:flex;">
   <div style="position:relative;display:flex;justify-content:space-between;align-items:center;width:100%;">
     <div>
-      <div class="install-text">安装到手机</div>
-      <div class="install-sub">像原生APP一样快速打开</div>
+      <div class="install-text" id="installText">下载安装 APP</div>
+      <div class="install-sub" id="installSub">点击右侧按钮下载APK安装包</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <button class="btn-install" id="pwaInstallBtn" onclick="pwaInstallClick()">立即安装</button>
-      <a href="https://raw.githubusercontent.com/liwenhao-0812/liwenhao/master/baodan-app.apk" class="btn-download-apk" id="btnDownloadApk" style="display:none;">下载APK</a>
+      <a href="https://raw.githubusercontent.com/liwenhao-0812/liwenhao/master/baodan-app.apk" class="btn-download-apk" id="btnDownloadApk">下载APK</a>
+      <button class="btn-install" id="pwaInstallBtn" onclick="pwaInstallClick()" style="display:none;">安装</button>
     </div>
     <button class="btn-install-close" onclick="document.getElementById('pwaInstallBar').style.display='none'">&times;</button>
   </div>
@@ -1314,6 +1376,17 @@ button {
     <h3 id="guideTitle">安装到手机桌面</h3>
     <div id="guideSteps"></div>
     <button class="btn-close-guide" onclick="document.getElementById('pwaGuideModal').classList.remove('show')">我知道了</button>
+  </div>
+</div>
+
+<!-- APK 下载引导弹窗（OEM浏览器自动弹出） -->
+<div class="apk-guide-popup" id="apkGuidePopup">
+  <div class="apk-guide-card">
+    <div class="apk-icon">&#128241;</div>
+    <h3>安装保单管理 APP</h3>
+    <p style="color:#64748b;margin:6px 0 16px;font-size:13px;">真正的 Android 应用，不是网页快捷方式</p>
+    <a href="https://raw.githubusercontent.com/liwenhao-0812/liwenhao/master/baodan-app.apk" class="apk-download-btn" onclick="closeApkGuide()">&#128229; 下载安装包 (98KB)</a>
+    <button class="apk-close-btn" onclick="closeApkGuide()">稍后再说</button>
   </div>
 </div>
 
@@ -4938,25 +5011,50 @@ window.copyPWAUrl = function() {
   }
 };
 
-/* 3秒后检测 OEM 浏览器 */
-setTimeout(function() {
-  if (!_deferredPrompt) {
-    var ua = navigator.userAgent;
-    var isAndroid = /Android/.test(ua);
-    var isOEM = /HeyTapBrowser|OppoBrowser|RealmeBrowser|MiuiBrowser|XiaoMi|HuaweiBrowser|HMBrowser|VivoBrowser|MZBrowser|MeiZu/.test(ua);
-    var isChromeLike = /Chrome/.test(ua) && !/Edg|OPR|Samsung|QQBrowser|UCBrowser/.test(ua);
-    if (isAndroid && (isOEM || isChromeLike)) {
-      var installText = document.querySelector('.install-text');
-      var installSub = document.querySelector('.install-sub');
+/* 检测浏览器并调整按钮显示 */
+(function() {
+  /* 如果 beforeinstallprompt 已触发（真正的 Chrome/Edge），显示 PWA 安装按钮 */
+  if (_deferredPrompt) {
+    var btnInstall = document.getElementById('pwaInstallBtn');
+    var btnApk = document.getElementById('btnDownloadApk');
+    var installText = document.getElementById('installText');
+    var installSub = document.getElementById('installSub');
+    if (btnInstall) btnInstall.style.display = 'inline-block';
+    if (btnApk) btnApk.style.display = 'none';
+    if (installText) installText.textContent = '安装到手机';
+    if (installSub) installSub.textContent = '像原生APP一样快速打开';
+  }
+  /* 延迟再检测一次（beforeinstallprompt 可能稍后才触发） */
+  setTimeout(function() {
+    if (_deferredPrompt) {
       var btnInstall = document.getElementById('pwaInstallBtn');
       var btnApk = document.getElementById('btnDownloadApk');
-      if (installText) installText.textContent = '下载 APK 安装';
-      if (installSub) installSub.textContent = '真正的APP，非网页快捷方式';
-      if (btnInstall) btnInstall.style.display = 'none';
-      if (btnApk) btnApk.style.display = 'inline-block';
+      var installText = document.getElementById('installText');
+      var installSub = document.getElementById('installSub');
+      if (btnInstall) btnInstall.style.display = 'inline-block';
+      if (btnApk) btnApk.style.display = 'none';
+      if (installText) installText.textContent = '安装到手机';
+      if (installSub) installSub.textContent = '点击安装，像原生APP一样快速打开';
+    } else {
+      /* beforeinstallprompt 未触发，弹出 APK 下载引导 */
+      showApkGuidePopup();
     }
+  }, 3000);
+})();
+
+/* 弹出 APK 下载引导弹窗 */
+function showApkGuidePopup() {
+  var modal = document.getElementById('apkGuidePopup');
+  if (modal) {
+    modal.style.display = 'flex';
   }
-}, 3000);
+}
+
+/* 关闭 APK 引导弹窗 */
+window.closeApkGuide = function() {
+  var modal = document.getElementById('apkGuidePopup');
+  if (modal) modal.style.display = 'none';
+};
 
 /* ========== Service Worker 注册（仅用于更新检测） ========== */
 if ('serviceWorker' in navigator) {
