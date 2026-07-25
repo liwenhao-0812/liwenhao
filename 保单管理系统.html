@@ -592,6 +592,19 @@ button {
   margin-top: 4px;
   font-weight: 500;
 }
+.policy-detail-header .btn-sm {
+  color: #ffffff !important;
+  border-color: rgba(255,255,255,0.5) !important;
+  background: rgba(255,255,255,0.1) !important;
+}
+.policy-detail-header .btn-sm:hover {
+  background: rgba(255,255,255,0.25) !important;
+  border-color: rgba(255,255,255,0.8) !important;
+}
+.policy-detail-header .btn-sm.btn-danger {
+  background: rgba(220,38,38,0.3) !important;
+  border-color: rgba(220,38,38,0.5) !important;
+}
 .policy-detail-body {
   padding: 16px 18px;
 }
@@ -619,41 +632,41 @@ button {
   border-bottom-color: #1a2744;
 }
 .policy-detail-body .info-block.amount-block {
-  background: #fef2f2;
-  border-color: #fecaca;
+  background: #f8fafc;
+  border-color: #cbd5e1;
 }
 .policy-detail-body .info-block.amount-block h6 {
-  color: #991b1b;
-  border-bottom-color: #fca5a5;
+  color: #0f172a;
+  border-bottom-color: #94a3b8;
 }
 .policy-detail-body .amount-item {
   text-align: center;
-  padding: 14px;
+  padding: 10px;
   background: #ffffff;
   border-radius: 8px;
-  border: 1.5px solid #fecaca;
+  border: 1.5px solid #d1d5db;
 }
 .policy-detail-body .amount-item .amount-label {
-  font-size: 13px;
-  color: #991b1b;
-  margin-bottom: 4px;
-  font-weight: 700;
+  font-size: 12px;
+  color: #475569;
+  margin-bottom: 2px;
+  font-weight: 600;
 }
 .policy-detail-body .amount-item .amount-value {
-  font-size: 28px;
-  font-weight: 900;
-  color: #c41e3a;
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
 }
 .policy-detail-body .amount-item.sum-insured-item {
-  border-color: #fcd34d;
+  border-color: #cbd5e1;
 }
 .policy-detail-body .amount-item.sum-insured-item .amount-label {
-  color: #92400e;
+  color: #475569;
 }
 .policy-detail-body .amount-item.sum-insured-item .amount-value {
-  font-size: 28px;
-  font-weight: 900;
-  color: #b45309;
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a2744;
 }
 
 /* ======== 返回按钮 ======== */
@@ -740,8 +753,8 @@ button {
   border-bottom: 2px solid #0f1a2e;
 }
 .policy-table tr:hover { background: var(--color-accent-pale); }
-.policy-table .col-premium { font-size: 20px; font-weight: 900; color: #c41e3a; }
-.policy-table .col-sum-insured { font-size: 20px; font-weight: 900; color: #b45309; }
+.policy-table .col-premium { font-size: 20px; font-weight: 900; color: #0f172a; }
+.policy-table .col-sum-insured { font-size: 20px; font-weight: 900; color: #1a2744; }
 
 /* ======== 模态框 ======== */
 .modal-overlay {
@@ -1183,6 +1196,7 @@ button {
     <!-- ====== 首页（仪表盘） ====== -->
     <div class="tab-content active" id="tabHome">
       <div class="stats-grid" id="dashboardStats"></div>
+      <div id="survivalAlertContainer"></div>
       <div class="card" id="dashInsuranceTypes">
         <div class="card-title">险种分布统计</div>
         <div id="insuranceTypeChart"></div>
@@ -1486,8 +1500,10 @@ button {
         </select>
       </div>
       <div class="form-group">
-        <label>关联主险代码（附加险/万能险时填写）</label>
-        <input type="text" id="parentPolicyCode" placeholder="关联的主险保单代码">
+        <label>关联主险代码（附加险/万能险时选择）</label>
+        <select id="parentPolicyCode">
+          <option value="">不关联（独立保单）</option>
+        </select>
       </div>
       <div class="form-group">
         <label>保单状态</label>
@@ -1495,6 +1511,12 @@ button {
           <option value="有效">有效</option>
           <option value="失效">失效</option>
         </select>
+      </div>
+      <div class="form-group">
+        <label class="checkbox-wrap">
+          <input type="checkbox" id="hasDividend">
+          <span>本保单有分红</span>
+        </label>
       </div>
       <div class="form-group">
         <label>生效日期</label>
@@ -1526,11 +1548,20 @@ button {
       </div>
       <div class="form-group">
         <label>被保人姓名</label>
-        <input type="text" id="insuredName" placeholder="被保人姓名（默认同投保人）">
+        <input type="text" id="insuredName" placeholder="被保人姓名（默认同投保人）" onchange="autoFillInsuredRelation()">
       </div>
       <div class="form-group">
         <label>与被保人关系</label>
-        <input type="text" id="insuredRelation" placeholder="如：本人、配偶、子女">
+        <select id="insuredRelation" onchange="onInsuredRelationChange()">
+          <option value="">请选择关系</option>
+          <option value="本人">本人</option>
+          <option value="丈夫">丈夫</option>
+          <option value="妻子">妻子</option>
+          <option value="儿子">儿子</option>
+          <option value="女儿">女儿</option>
+          <option value="父亲">父亲</option>
+          <option value="母亲">母亲</option>
+        </select>
       </div>
       <div class="form-group">
         <label>被保人身份证号</label>
@@ -1557,6 +1588,10 @@ button {
       <div class="form-group">
         <label>生存金金额（元）</label>
         <input type="number" id="survivalBenefitAmount" placeholder="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>起领日期（首次领取日期）</label>
+        <input type="date" id="survivalStartDate" onchange="autoCalcSurvivalNextDate()">
       </div>
       <div class="form-group">
         <label>最近一次领取日期</label>
@@ -2355,6 +2390,44 @@ function renderDashboard() {
     '<div class="stat-card yellow"><div class="stat-value">' + monthNew + '</div><div class="stat-label">本月新增保单</div></div>';
   document.getElementById('dashboardStats').innerHTML = statsHtml;
 
+  /* 生存金到期提醒（30天内） */
+  var survivalAlerts = [];
+  var today = new Date();
+  today.setHours(0,0,0,0);
+  clientData.forEach(function(c) {
+    (c.policies || []).forEach(function(p) {
+      if (p.survivalBenefit && p.survivalBenefit.type && p.survivalBenefit.nextDate) {
+        var nd = p.survivalBenefit.nextDate;
+        var nextDateObj = new Date(nd.substring(0,4) + '-' + nd.substring(4,6) + '-' + nd.substring(6,8));
+        var diffDays = Math.ceil((nextDateObj - today) / 86400000);
+        if (diffDays <= 30 && diffDays >= 0) {
+          survivalAlerts.push({
+            clientName: c.name || '',
+            policyCode: p.policyCode || '',
+            insuranceName: p.insuranceName || '',
+            amount: p.survivalBenefit.amount || 0,
+            nextDate: formatDate(nd),
+            daysLeft: diffDays
+          });
+        }
+      }
+    });
+  });
+  var survivalAlertHtml = '';
+  if (survivalAlerts.length > 0) {
+    survivalAlertHtml = '<div class="card" style="border:2px solid #ef4444;"><div class="card-title" style="color:#dc2626;border-bottom-color:#ef4444;">⚠ 生存金即将到期提醒（30天内）</div>';
+    survivalAlerts.forEach(function(a) {
+      survivalAlertHtml += '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:#fef2f2;border-radius:8px;margin-bottom:6px;flex-wrap:wrap;gap:8px;">' +
+        '<div><strong>' + a.clientName + '</strong> - ' + a.insuranceName + ' (' + a.policyCode + ')</div>' +
+        '<div style="display:flex;align-items:center;gap:12px;">' +
+        '<span style="font-weight:700;color:#0f172a;">' + formatMoney(a.amount) + ' 元</span>' +
+        '<span style="font-weight:700;color:#dc2626;">' + a.nextDate + '</span>' +
+        '<span class="tag tag-red">仅剩 ' + a.daysLeft + ' 天</span>' +
+        '</div></div>';
+    });
+    survivalAlertHtml += '</div>';
+  }
+
   /* 险种分布 - 简易柱状图 */
   var chartHtml = '<div style="overflow-x:auto;padding-bottom:8px;"><div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;min-height:200px;padding:10px 4px 4px;">';
   var maxCount = 1;
@@ -2370,6 +2443,9 @@ function renderDashboard() {
   });
   chartHtml += '</div></div>';
   document.getElementById('insuranceTypeChart').innerHTML = chartHtml || '<div class="empty-state"><p>暂无数据</p></div>';
+
+  /* 生存金提醒 */
+  document.getElementById('survivalAlertContainer').innerHTML = survivalAlertHtml;
 
   /* 管理员面板 */
   if (currentUser === 'admin') {
@@ -2639,6 +2715,18 @@ function backToQueryList() {
   window.scrollTo(0, 0);
 }
 
+/* 滚动到保单详情锚点 */
+function scrollToPolicyDetail(anchorId) {
+  var el = document.getElementById(anchorId);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    /* 高亮闪烁 */
+    el.style.transition = 'box-shadow 0.3s';
+    el.style.boxShadow = '0 0 0 4px rgba(26,39,68,0.3)';
+    setTimeout(function() { el.style.boxShadow = ''; }, 1500);
+  }
+}
+
 /* 渲染详情面板 */
 function renderDetailPanel(idx) {
   var panel = document.getElementById('detailPanel');
@@ -2650,11 +2738,49 @@ function renderDetailPanel(idx) {
   /* 返回按钮 */
   var html = '<button class="back-btn" onclick="backToQueryList()">&#8592; 返回查询列表</button>';
 
-  /* 客户姓名单独显示 - 高亮卡片 */
+  /* 客户姓名单独显示 - 高亮卡片 + 年龄 */
+  /* 计算周岁年龄 */
+  var ageDisplay = '';
+  if (c.idCard && c.idCard.length >= 14) {
+    try {
+      var by = parseInt(c.idCard.substring(6, 10));
+      var bm = parseInt(c.idCard.substring(10, 12));
+      var bd = parseInt(c.idCard.substring(12, 14));
+      if (by > 1900 && by < 2100) {
+        var now = new Date();
+        var ageYears = now.getFullYear() - by;
+        /* 检查是否已过生日 */
+        var hasBirthdayThisYear = (now.getMonth() + 1 > bm) || (now.getMonth() + 1 === bm && now.getDate() >= bd);
+        if (!hasBirthdayThisYear) ageYears--;
+        ageDisplay = ' <span style="font-size:22px;font-weight:400;color:rgba(255,255,255,0.7);">' + ageYears + '岁</span>';
+      }
+    } catch(e) {}
+  }
   html += '<div class="client-name-hero">' +
-    '<h3>' + (c.name || '未命名') + '</h3>' +
+    '<h3>' + (c.name || '未命名') + ageDisplay + '</h3>' +
     '<div class="client-meta-info">' + (c.phone || '') + (c.idCard ? ' | ' + c.idCard : '') + '</div>' +
     '</div>';
+
+  /* 联系记录 - 放在最上面 */
+  html += '<div class="card"><div class="card-title">联系记录' +
+    '<button class="btn-sm btn-primary" onclick="openAddContactModal(' + idx + ')">添加联系记录</button></div>';
+  if (c.contactHistory && c.contactHistory.length > 0) {
+    html += '<div class="timeline">';
+    c.contactHistory.forEach(function(ch) {
+      var cls = 'success';
+      if (ch.status === '未联系上' || ch.status === '电话挂断') cls = 'danger';
+      else if (ch.status === '已加微信') cls = 'warning';
+      html += '<div class="timeline-item ' + cls + '">' +
+        '<div class="timeline-date">' + formatDate(ch.date) + ' | <span class="tag tag-' +
+        (ch.status === '已电话联系' || ch.status === '面见客户' ? 'green' : ch.status === '未联系上' || ch.status === '电话挂断' ? 'red' : 'yellow') +
+        '">' + (ch.status || '') + '</span></div>' +
+        '<div class="timeline-content">' + (ch.note || '') + '</div></div>';
+    });
+    html += '</div>';
+  } else {
+    html += '<div class="empty-state"><p>暂无联系记录</p></div>';
+  }
+  html += '</div>';
 
   /* 信息完整性提醒 */
   var incomplete = getClientAllIncompleteFields(c);
@@ -2699,31 +2825,29 @@ function renderDetailPanel(idx) {
   }
   html += '</div></div>';
 
-  /* 保单列表（概览表格） */
+  /* 保单列表 - 紧凑版，点击可展开详情 */
   html += '<div class="card"><div class="card-title">保单列表' +
     '<button class="btn-sm btn-primary" onclick="openAddPolicyModal(' + idx + ')">添加保单</button></div>';
 
   if (!c.policies || c.policies.length === 0) {
     html += '<div class="empty-state"><p>暂无保单</p></div>';
   } else {
-    html += '<div class="table-responsive"><table class="policy-table">' +
-      '<thead><tr><th>代码</th><th>险种</th><th>类型</th><th>状态</th><th>保费</th><th>保额</th><th>被保人</th><th>操作</th></tr></thead><tbody>';
+    html += '<div class="table-responsive"><table class="policy-table" style="font-size:12px;">' +
+      '<thead><tr><th>代码</th><th>险种</th><th>类型</th><th>状态</th><th>保费</th><th>被保人</th></tr></thead><tbody>';
     c.policies.forEach(function(p, pIdx) {
       var statusClass = p.status === '有效' ? 'tag-green' : 'tag-red';
       var typeTag = p.mainType === '附加险' ? 'tag-yellow' : p.mainType === '万能险' ? 'tag-purple' : 'tag-blue';
-      html += '<tr>' +
+      html += '<tr style="cursor:pointer;" onclick="scrollToPolicyDetail(\'policyDetail_' + pIdx + '\')">' +
         '<td>' + (p.policyCode || '') + '</td>' +
         '<td>' + (p.insuranceName || '') + '</td>' +
         '<td><span class="tag ' + typeTag + '">' + (p.mainType || '主险') + '</span></td>' +
         '<td><span class="tag ' + statusClass + '">' + (p.status || '有效') + '</span></td>' +
-        '<td class="col-premium">' + formatMoney(p.annualPremium) + '</td>' +
-        '<td class="col-sum-insured">' + formatMoney(p.sumInsured) + '</td>' +
+        '<td style="font-weight:700;color:#0f172a;">' + formatMoney(p.annualPremium) + '</td>' +
         '<td>' + (p.insured || c.name || '-') + '</td>' +
-        '<td><button class="btn-sm btn-outline" onclick="editPolicy(' + idx + ',' + pIdx + ')">编辑</button> ' +
-        '<button class="btn-sm btn-danger" onclick="deletePolicy(' + idx + ',' + pIdx + ')">删除</button></td>' +
         '</tr>';
     });
     html += '</tbody></table></div>';
+    html += '<div style="font-size:12px;color:#64748b;margin-top:6px;">点击表格行跳转到对应保单详情</div>';
   }
   html += '</div>';
 
@@ -2752,24 +2876,31 @@ function renderDetailPanel(idx) {
 
       /* 保单标题与操作 */
       var typeLabel = p.mainType === '附加险' ? '附加险' : p.mainType === '万能险' ? '万能险' : '主险';
+      detail += '<div id="policyDetail_' + pIdx + '" class="policy-detail-card">';
       detail += '<div class="policy-detail-header">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">' +
         '<h5>' + (p.insuranceName || '') + '</h5>' +
         '<div style="display:flex;gap:6px;align-items:center;">' +
         '<span class="tag ' + (typeLabel === '附加险' ? 'tag-yellow' : typeLabel === '万能险' ? 'tag-purple' : 'tag-blue') + '">' + typeLabel + '</span>' +
         '<span class="tag ' + (p.status === '有效' ? 'tag-green' : 'tag-red') + '">' + (p.status || '有效') + '</span>' +
+        (p.hasDividend ? '<span class="tag tag-purple" style="background:#fef3c7;color:#92400e;">有分红</span>' : '') +
         '<button class="btn-sm btn-outline" onclick="editPolicy(' + idx + ',' + pIdx + ')">编辑</button>' +
         '<button class="btn-sm btn-danger" onclick="deletePolicy(' + idx + ',' + pIdx + ')">删除</button>' +
         '</div></div>' +
-        '<div class="policy-meta">保单号：' + (p.policyCode || '-') + (p.codeType ? ' &nbsp;|&nbsp; 险种代码：' + p.codeType : '') + '</div>' +
+        '<div class="policy-meta" style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">' +
+        '<span>保单号：' + (p.policyCode || '-') + '</span>' +
+        (p.codeType ? '<span style="color:rgba(255,255,255,0.65);">险种代码：' + p.codeType + '</span>' : '') +
+        '<span style="background:rgba(34,197,94,0.2);color:#4ade80;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700;">生效日：' + formatDate(p.effectiveDate) + '</span>' +
+        (p.maturityDate ? '<span style="background:rgba(251,191,36,0.2);color:#fbbf24;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700;">满期日：' + formatDate(p.maturityDate) + '</span>' : '') +
+        '</div>' +
         '</div>';
 
       detail += '<div class="policy-detail-body">';
 
-      /* 被保人信息 */
+      /* 被保人信息 - 加大字体 */
       detail += '<div class="info-block insured-block">' +
         '<h6>被保人信息</h6>' +
-        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px;font-size:13px;color:#1e293b;">' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:16px;color:#0f172a;font-weight:500;">' +
         '<p><strong>姓名：</strong>' + (p.insured || c.name || '-') + '</p>' +
         '<p><strong>关系：</strong>' + (p.insuredRelation || '-') + '</p>' +
         '<p><strong>身份证号：</strong>' + (p.insuredId || c.idCard || '-') + '</p>' +
@@ -2777,18 +2908,16 @@ function renderDetailPanel(idx) {
         '<p><strong>联系地址：</strong>' + (p.insuredAddress || c.address || '-') + '</p>' +
         '</div></div>';
 
-      /* 金额与缴费信息 */
+      /* 金额与缴费信息 - 深色系 */
       detail += '<div class="info-block amount-block">' +
         '<h6>金额信息</h6>' +
         '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;font-size:13px;">' +
         '<div class="amount-item"><div class="amount-label">年缴保费</div><div class="amount-value">' + formatMoney(p.annualPremium) + '</div></div>' +
         '<div class="amount-item sum-insured-item"><div class="amount-label">保额</div><div class="amount-value">' + formatMoney(p.sumInsured) + '</div></div>' +
         '</div>' +
-        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;font-size:13px;margin-top:10px;color:#1e293b;">' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;font-size:13px;margin-top:10px;color:#0f172a;">' +
         '<p><strong>缴费方式：</strong>' + (p.paymentMethod || '-') + '</p>' +
         '<p><strong>缴费期限：</strong>' + (p.paymentTerm || '-') + ' 年</p>' +
-        '<p><strong>生效日期：</strong>' + formatDate(p.effectiveDate) + '</p>' +
-        '<p><strong>满期日期：</strong>' + formatDate(p.maturityDate) + '</p>' +
         (p.parentPolicyCode ? '<p><strong>关联主险：</strong>' + p.parentPolicyCode + '</p>' : '') +
         '</div></div>';
 
@@ -2796,6 +2925,23 @@ function renderDetailPanel(idx) {
       if (p.survivalBenefit && p.survivalBenefit.type) {
         var sb = p.survivalBenefit;
         var typeLabel = sb.type === 'annual' ? '每年领取' : sb.type === 'triennial' ? '每3年领取' : '到期领取';
+        /* 计算距离下次领取还有多少天 */
+        var daysUntilNext = '';
+        var alertClass = '';
+        if (sb.nextDate) {
+          var nextDateObj = new Date(sb.nextDate.substring(0, 4) + '-' + sb.nextDate.substring(4, 6) + '-' + sb.nextDate.substring(6, 8));
+          var today = new Date();
+          today.setHours(0,0,0,0);
+          var diffDays = Math.ceil((nextDateObj - today) / 86400000);
+          if (diffDays <= 30 && diffDays >= 0) {
+            alertClass = ' style="border-color:#ef4444 !important;background:#fef2f2 !important;"';
+            daysUntilNext = '<span style="color:#dc2626;font-weight:800;font-size:14px;">⚠ 仅剩 ' + diffDays + ' 天</span>';
+          } else if (diffDays < 0) {
+            daysUntilNext = '<span style="color:#dc2626;font-weight:700;">已过期 ' + Math.abs(diffDays) + ' 天</span>';
+          } else {
+            daysUntilNext = '<span style="color:#475569;">还有 ' + diffDays + ' 天</span>';
+          }
+        }
         detail += '<div style="background:#f0fdf4;border:2px solid #22c55e;border-radius:10px;padding:16px;margin-bottom:10px;">' +
           '<h6 style="font-size:14px;color:#166534;margin-bottom:12px;border-bottom:2px solid #86efac;padding-bottom:8px;font-weight:700;">生存金信息</h6>' +
           '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;font-size:13px;">' +
@@ -2803,8 +2949,9 @@ function renderDetailPanel(idx) {
           '<div style="text-align:center;padding:10px;background:#ffffff;border:1.5px solid #fbbf24;border-radius:8px;"><div style="font-size:12px;color:#92400e;margin-bottom:4px;font-weight:700;">生存金金额</div><div style="font-size:22px;font-weight:900;color:#b45309;">' + formatMoney(sb.amount) + ' 元</div></div>' +
           '</div>' +
           '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;font-size:14px;margin-top:12px;color:#0f172a;">' +
+          (sb.startDate ? '<p><strong>起领日期：</strong>' + formatDate(sb.startDate) + '</p>' : '') +
           '<p><strong>最近领取：</strong>' + formatDate(sb.lastDate) + '</p>' +
-          '<p><strong>下次领取：</strong>' + formatDate(sb.nextDate) + '</p>' +
+          '<p' + alertClass + '><strong>下次领取：</strong>' + formatDate(sb.nextDate) + ' ' + daysUntilNext + '</p>' +
           (sb.note ? '<p><strong>备注：</strong>' + sb.note + '</p>' : '') +
           '</div></div>';
       }
@@ -2843,6 +2990,7 @@ function renderDetailPanel(idx) {
       detail += '</div>';
 
       detail += '</div>'; /* policy-detail-body */
+      detail += '</div>'; /* policy-detail-card */
       return detail;
     }
 
@@ -2895,27 +3043,6 @@ function renderDetailPanel(idx) {
 
     html += '</div>';
   }
-
-  /* 联系记录 */
-  html += '<div class="card"><div class="card-title">联系记录' +
-    '<button class="btn-sm btn-primary" onclick="openAddContactModal(' + idx + ')">添加联系记录</button></div>';
-  if (c.contactHistory && c.contactHistory.length > 0) {
-    html += '<div class="timeline">';
-    c.contactHistory.forEach(function(ch) {
-      var cls = 'success';
-      if (ch.status === '未联系上' || ch.status === '电话挂断') cls = 'danger';
-      else if (ch.status === '已加微信') cls = 'warning';
-      html += '<div class="timeline-item ' + cls + '">' +
-        '<div class="timeline-date">' + formatDate(ch.date) + ' | <span class="tag tag-' +
-        (ch.status === '已电话联系' || ch.status === '面见客户' ? 'green' : ch.status === '未联系上' || ch.status === '电话挂断' ? 'red' : 'yellow') +
-        '">' + (ch.status || '') + '</span></div>' +
-        '<div class="timeline-content">' + (ch.note || '') + '</div></div>';
-    });
-    html += '</div>';
-  } else {
-    html += '<div class="empty-state"><p>暂无联系记录</p></div>';
-  }
-  html += '</div>';
 
   panel.innerHTML = html;
 }
@@ -3047,7 +3174,84 @@ function openAddPolicyModal(clientIdx) {
   document.getElementById('policyClientIndex').value = clientIdx;
   document.getElementById('policyEditIndex').value = -1;
   clearPolicyForm();
+  /* 填充关联主险下拉 */
+  populateParentPolicyDropdown(clientIdx, '');
+  /* 默认填入投保人姓名作为被保人 */
+  document.getElementById('insuredName').value = clientData[clientIdx].name || '';
+  document.getElementById('insuredRelation').value = '本人';
   openModal('policyModal');
+}
+
+/* 填充关联主险保单下拉 */
+function populateParentPolicyDropdown(clientIdx, selectedCode) {
+  var select = document.getElementById('parentPolicyCode');
+  select.innerHTML = '<option value="">不关联（独立保单）</option>';
+  var c = clientData[clientIdx];
+  if (!c || !c.policies) return;
+  c.policies.forEach(function(p) {
+    if (p.mainType === '主险' || (!p.mainType)) {
+      var opt = document.createElement('option');
+      opt.value = p.policyCode;
+      opt.textContent = p.policyCode + ' - ' + (p.insuranceName || '');
+      if (p.policyCode === selectedCode) opt.selected = true;
+      select.appendChild(opt);
+    }
+  });
+}
+
+/* 自动填充被保人关系 */
+function autoFillInsuredRelation() {
+  var insuredName = document.getElementById('insuredName').value.trim();
+  var clientIdx = parseInt(document.getElementById('policyClientIndex').value);
+  if (clientIdx >= 0 && clientData[clientIdx]) {
+    var clientName = clientData[clientIdx].name || '';
+    if (insuredName === clientName) {
+      document.getElementById('insuredRelation').value = '本人';
+    }
+  }
+}
+
+/* 被保人关系变更时自动添加家庭成员 */
+function onInsuredRelationChange() {
+  var relation = document.getElementById('insuredRelation').value;
+  if (!relation || relation === '本人') return;
+  
+  var insuredName = document.getElementById('insuredName').value.trim();
+  var insuredId = document.getElementById('insuredId').value.trim();
+  var insuredPhone = document.getElementById('insuredPhone').value.trim();
+  var insuredAddress = document.getElementById('insuredAddress').value.trim();
+  
+  if (!insuredName) return;
+  
+  /* 检查是否已存在 */
+  var familyList = document.getElementById('familyMembersList');
+  var existing = familyList.querySelectorAll('.fm-name');
+  for (var i = 0; i < existing.length; i++) {
+    if (existing[i].value.trim() === insuredName) return;
+  }
+  
+  /* 计算年龄 */
+  var age = '';
+  if (insuredId.length >= 14) {
+    try {
+      var by = parseInt(insuredId.substring(6, 10));
+      if (by > 1900 && by < 2100) {
+        age = (new Date().getFullYear() - by);
+      }
+    } catch(e) {}
+  }
+  
+  /* 添加家庭成员 */
+  var container = document.getElementById('familyMembersList');
+  var div = document.createElement('div');
+  div.innerHTML = buildFamilyMemberField({
+    name: insuredName,
+    relationship: relation,
+    idCard: insuredId,
+    phone: insuredPhone,
+    note: (age ? '年龄' + age + '岁' : '') + (insuredAddress ? ' | ' + insuredAddress : '')
+  });
+  container.appendChild(div.firstElementChild);
 }
 
 /* 编辑保单 */
@@ -3060,8 +3264,10 @@ function editPolicy(clientIdx, policyIdx) {
   document.getElementById('insuranceName').value = p.insuranceName || '';
   document.getElementById('codeType').value = p.codeType || '';
   document.getElementById('mainType').value = p.mainType || '主险';
-  document.getElementById('parentPolicyCode').value = p.parentPolicyCode || '';
+  /* 填充关联保单下拉 */
+  populateParentPolicyDropdown(clientIdx, p.parentPolicyCode || '');
   document.getElementById('policyStatus').value = p.status || '有效';
+  document.getElementById('hasDividend').checked = p.hasDividend || false;
   document.getElementById('effectiveDate').value = formatDate(p.effectiveDate);
   document.getElementById('maturityDate').value = formatDate(p.maturityDate);
   document.getElementById('paymentMethod').value = p.paymentMethod || '年缴';
@@ -3079,12 +3285,14 @@ function editPolicy(clientIdx, policyIdx) {
   if (p.survivalBenefit) {
     document.getElementById('survivalBenefitType').value = p.survivalBenefit.type || '';
     document.getElementById('survivalBenefitAmount').value = p.survivalBenefit.amount || '';
+    document.getElementById('survivalStartDate').value = formatDate(p.survivalBenefit.startDate);
     document.getElementById('survivalLastDate').value = formatDate(p.survivalBenefit.lastDate);
     document.getElementById('survivalNextDate').value = formatDate(p.survivalBenefit.nextDate);
     document.getElementById('survivalBenefitNote').value = p.survivalBenefit.note || '';
   } else {
     document.getElementById('survivalBenefitType').value = '';
     document.getElementById('survivalBenefitAmount').value = '';
+    document.getElementById('survivalStartDate').value = '';
     document.getElementById('survivalLastDate').value = '';
     document.getElementById('survivalNextDate').value = '';
     document.getElementById('survivalBenefitNote').value = '';
@@ -3101,10 +3309,10 @@ function editPolicy(clientIdx, policyIdx) {
 
 /* 清空保单表单 */
 function clearPolicyForm() {
-  ['policyCode','insuranceName','codeType','parentPolicyCode','annualPremium',
-   'sumInsured','paymentTerm','insuredName','insuredRelation','insuredId',
+  ['policyCode','insuranceName','codeType','annualPremium',
+   'sumInsured','paymentTerm','insuredName','insuredId',
    'insuredPhone','insuredAddress','policyRemark','survivalBenefitAmount','survivalLastDate',
-   'survivalNextDate','survivalBenefitNote'].forEach(function(id) { document.getElementById(id).value = ''; });
+   'survivalNextDate','survivalBenefitNote','survivalStartDate'].forEach(function(id) { document.getElementById(id).value = ''; });
   document.getElementById('mainType').value = '主险';
   document.getElementById('policyStatus').value = '有效';
   document.getElementById('paymentMethod').value = '年缴';
@@ -3112,6 +3320,10 @@ function clearPolicyForm() {
   document.getElementById('maturityDate').value = '';
   document.getElementById('survivalBenefitType').value = '';
   document.getElementById('beneficiariesList').innerHTML = '';
+  document.getElementById('insuredRelation').value = '';
+  document.getElementById('hasDividend').checked = false;
+  /* 清空关联保单下拉 */
+  document.getElementById('parentPolicyCode').innerHTML = '<option value="">不关联（独立保单）</option>';
 }
 
 /* 构建受益人字段 */
@@ -3163,8 +3375,9 @@ function savePolicy() {
     insuranceName: insuranceName,
     codeType: codeType,
     mainType: document.getElementById('mainType').value,
-    parentPolicyCode: document.getElementById('parentPolicyCode').value.trim(),
+    parentPolicyCode: document.getElementById('parentPolicyCode').value,
     status: document.getElementById('policyStatus').value,
+    hasDividend: document.getElementById('hasDividend').checked,
     effectiveDate: toYMD(document.getElementById('effectiveDate').value),
     maturityDate: toYMD(document.getElementById('maturityDate').value),
     paymentMethod: document.getElementById('paymentMethod').value,
@@ -3172,7 +3385,7 @@ function savePolicy() {
     sumInsured: document.getElementById('sumInsured').value,
     paymentTerm: document.getElementById('paymentTerm').value,
     insured: document.getElementById('insuredName').value.trim() || clientData[parseInt(document.getElementById('policyClientIndex').value)].name,
-    insuredRelation: document.getElementById('insuredRelation').value.trim(),
+    insuredRelation: document.getElementById('insuredRelation').value,
     insuredId: document.getElementById('insuredId').value.trim(),
     insuredPhone: document.getElementById('insuredPhone').value.trim(),
     insuredAddress: document.getElementById('insuredAddress').value.trim(),
@@ -3181,6 +3394,7 @@ function savePolicy() {
     survivalBenefit: {
       type: document.getElementById('survivalBenefitType').value,
       amount: document.getElementById('survivalBenefitAmount').value,
+      startDate: toYMD(document.getElementById('survivalStartDate').value),
       lastDate: toYMD(document.getElementById('survivalLastDate').value),
       nextDate: toYMD(document.getElementById('survivalNextDate').value),
       note: document.getElementById('survivalBenefitNote').value.trim()
@@ -3400,7 +3614,24 @@ function editInsuranceType(oldName, code) {
   if (found) {
     saveInsuranceTypeLib(lib);
     renderInsuranceTypeLib();
-    showToast('险种已更新', 'success');
+    updateInsuranceTypeDatalist();
+    /* 同步更新所有保单中使用该险种名称的记录 */
+    var syncCount = 0;
+    clientData.forEach(function(c) {
+      (c.policies || []).forEach(function(p) {
+        if (p.insuranceName === oldName) {
+          p.insuranceName = newName;
+          p.codeType = newCode;
+          syncCount++;
+        }
+      });
+    });
+    if (syncCount > 0) {
+      savePolicyData();
+      showToast('险种已更新，已同步 ' + syncCount + ' 份保单', 'success');
+    } else {
+      showToast('险种已更新', 'success');
+    }
   }
 }
 
@@ -3454,30 +3685,41 @@ function checkSurvivalBenefitHint(name) {
 /* 自动计算下次领取日期 */
 function autoCalcSurvivalNextDate() {
   var type = document.getElementById('survivalBenefitType').value;
+  var startDateStr = document.getElementById('survivalStartDate').value;
   var lastDateStr = document.getElementById('survivalLastDate').value;
   var nextDateInput = document.getElementById('survivalNextDate');
 
-  if (!type || !lastDateStr) {
-    /* 如果类型为空或没有上次日期，不自动填充（但也不清空已有值） */
+  if (!type) {
     return;
   }
 
-  var parts = lastDateStr.split('-');
+  /* 使用起领日作为计算基准 */
+  var baseDateStr = startDateStr || lastDateStr;
+  if (!baseDateStr) return;
+
+  var parts = baseDateStr.split('-');
   if (parts.length !== 3) return;
   var y = parseInt(parts[0]);
   var m = parseInt(parts[1]);
   var d = parseInt(parts[2]);
 
   var nextDate = null;
+  var today = new Date();
 
   if (type === 'annual') {
-    /* 每年领取：lastDate + 1年 */
-    nextDate = new Date(y + 1, m - 1, d);
+    /* 从起领日开始，计算到当前最近的未领取年份 */
+    var startDate = new Date(y, m - 1, d);
+    nextDate = new Date(startDate);
+    while (nextDate <= today) {
+      nextDate.setFullYear(nextDate.getFullYear() + 1);
+    }
   } else if (type === 'triennial') {
-    /* 每3年领取：lastDate + 3年 */
-    nextDate = new Date(y + 3, m - 1, d);
+    var startDate = new Date(y, m - 1, d);
+    nextDate = new Date(startDate);
+    while (nextDate <= today) {
+      nextDate.setFullYear(nextDate.getFullYear() + 3);
+    }
   } else if (type === 'maturity') {
-    /* 到期领取：lastDate即为到期日，无下次日期 */
     nextDateInput.value = '';
     return;
   }
