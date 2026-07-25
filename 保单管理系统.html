@@ -1474,7 +1474,7 @@ button {
         </select>
       </div>
       <div class="form-group">
-        <label>关联主险代码（附加险时填写）</label>
+        <label>关联主险代码（附加险/万能险时填写）</label>
         <input type="text" id="parentPolicyCode" placeholder="关联的主险保单代码">
       </div>
       <div class="form-group">
@@ -1487,6 +1487,10 @@ button {
       <div class="form-group">
         <label>生效日期</label>
         <input type="date" id="effectiveDate">
+      </div>
+      <div class="form-group">
+        <label>满期日期（非终身险种填写）</label>
+        <input type="date" id="maturityDate">
       </div>
       <div class="form-group">
         <label>缴费方式</label>
@@ -1523,6 +1527,10 @@ button {
       <div class="form-group">
         <label>被保人手机号</label>
         <input type="text" id="insuredPhone" placeholder="被保人手机号">
+      </div>
+      <div class="form-group">
+        <label>被保人联系地址</label>
+        <input type="text" id="insuredAddress" placeholder="被保人联系地址">
       </div>
       <!-- 生存金信息 -->
       <div class="form-group">
@@ -2019,6 +2027,7 @@ function enterMainApp() {
   document.getElementById('currentUserName').textContent = currentUser;
   loadUserData();
   loadCloudSettings();
+  syncExistingPoliciesToLib();
   updateInsuranceTypeDatalist();
   switchTab('home');
   updateBottomStats();
@@ -2516,7 +2525,7 @@ function renderClientList(filtered) {
       item.matchedPolicies.forEach(function(p) { totalPrem += parseFloat(p.annualPremium) || 0; });
       var isActive = selectedClientIdx === item.clientIdx ? ' active' : '';
       html += '<div class="client-item' + isActive + '" onclick="selectClient(' + item.clientIdx + ')">' +
-        '<div class="client-name">' + (c.name || '未命名') +
+        '<div class="client-name">' + (c.name || '未命名') + (hasIncompleteInfo(c) ? ' <span class="tag tag-red" style="font-size:10px;padding:2px 6px;">信息不完整</span>' : '') +
         ' <span class="tag ' + (vCount > 0 ? 'tag-green' : 'tag-red') + '">' + vCount + '/' + pCount + ' 有效</span></div>' +
         '<div class="client-meta">' + (c.phone || '') + ' | 保费: ' + formatMoney(totalPrem) + ' 元/年</div>' +
         '</div>';
@@ -2559,6 +2568,22 @@ function renderDetailPanel(idx) {
     '<h3>' + (c.name || '未命名') + '</h3>' +
     '<div class="client-meta-info">' + (c.phone || '') + (c.idCard ? ' | ' + c.idCard : '') + '</div>' +
     '</div>';
+
+  /* 信息完整性提醒 */
+  var incomplete = getClientAllIncompleteFields(c);
+  if (incomplete.clientMissing.length > 0 || incomplete.policyMissing.length > 0) {
+    html += '<div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:10px;padding:12px 16px;margin-bottom:14px;">' +
+      '<div style="font-size:14px;font-weight:700;color:#991b1b;margin-bottom:6px;">⚠ 信息不完整提醒</div>';
+    if (incomplete.clientMissing.length > 0) {
+      html += '<div style="font-size:13px;color:#7f1d1d;margin-bottom:4px;"><strong>投保人缺失：</strong>' + incomplete.clientMissing.join('、') + '</div>';
+    }
+    if (incomplete.policyMissing.length > 0) {
+      incomplete.policyMissing.forEach(function(pm) {
+        html += '<div style="font-size:13px;color:#7f1d1d;margin-bottom:4px;"><strong>保单 ' + (pm.policyCode || '') + ' 缺失：</strong>' + pm.fields.join('、') + '</div>';
+      });
+    }
+    html += '<div style="font-size:12px;color:#991b1b;margin-top:4px;">请点击编辑按钮补充完整信息</div></div>';
+  }
 
   /* 客户基本信息 */
   html += '<div class="card">' +
@@ -2662,6 +2687,7 @@ function renderDetailPanel(idx) {
         '<p><strong>关系：</strong>' + (p.insuredRelation || '-') + '</p>' +
         '<p><strong>身份证号：</strong>' + (p.insuredId || c.idCard || '-') + '</p>' +
         '<p><strong>联系方式：</strong>' + (p.insuredPhone || c.phone || '-') + '</p>' +
+        '<p><strong>联系地址：</strong>' + (p.insuredAddress || c.address || '-') + '</p>' +
         '</div></div>';
 
       /* 金额与缴费信息 */
@@ -2675,6 +2701,7 @@ function renderDetailPanel(idx) {
         '<p><strong>缴费方式：</strong>' + (p.paymentMethod || '-') + '</p>' +
         '<p><strong>缴费期限：</strong>' + (p.paymentTerm || '-') + ' 年</p>' +
         '<p><strong>生效日期：</strong>' + formatDate(p.effectiveDate) + '</p>' +
+        '<p><strong>满期日期：</strong>' + formatDate(p.maturityDate) + '</p>' +
         (p.parentPolicyCode ? '<p><strong>关联主险：</strong>' + p.parentPolicyCode + '</p>' : '') +
         '</div></div>';
 
@@ -2949,6 +2976,7 @@ function editPolicy(clientIdx, policyIdx) {
   document.getElementById('parentPolicyCode').value = p.parentPolicyCode || '';
   document.getElementById('policyStatus').value = p.status || '有效';
   document.getElementById('effectiveDate').value = formatDate(p.effectiveDate);
+  document.getElementById('maturityDate').value = formatDate(p.maturityDate);
   document.getElementById('paymentMethod').value = p.paymentMethod || '年缴';
   document.getElementById('annualPremium').value = p.annualPremium || '';
   document.getElementById('sumInsured').value = p.sumInsured || '';
@@ -2957,6 +2985,7 @@ function editPolicy(clientIdx, policyIdx) {
   document.getElementById('insuredRelation').value = p.insuredRelation || '';
   document.getElementById('insuredId').value = p.insuredId || '';
   document.getElementById('insuredPhone').value = p.insuredPhone || '';
+  document.getElementById('insuredAddress').value = p.insuredAddress || '';
   document.getElementById('policyRemark').value = p.remark || '';
 
   /* 生存金 */
@@ -2987,12 +3016,13 @@ function editPolicy(clientIdx, policyIdx) {
 function clearPolicyForm() {
   ['policyCode','insuranceName','codeType','parentPolicyCode','annualPremium',
    'sumInsured','paymentTerm','insuredName','insuredRelation','insuredId',
-   'insuredPhone','policyRemark','survivalBenefitAmount','survivalLastDate',
+   'insuredPhone','insuredAddress','policyRemark','survivalBenefitAmount','survivalLastDate',
    'survivalNextDate','survivalBenefitNote'].forEach(function(id) { document.getElementById(id).value = ''; });
   document.getElementById('mainType').value = '主险';
   document.getElementById('policyStatus').value = '有效';
   document.getElementById('paymentMethod').value = '年缴';
   document.getElementById('effectiveDate').value = '';
+  document.getElementById('maturityDate').value = '';
   document.getElementById('survivalBenefitType').value = '';
   document.getElementById('beneficiariesList').innerHTML = '';
 }
@@ -3049,6 +3079,7 @@ function savePolicy() {
     parentPolicyCode: document.getElementById('parentPolicyCode').value.trim(),
     status: document.getElementById('policyStatus').value,
     effectiveDate: toYMD(document.getElementById('effectiveDate').value),
+    maturityDate: toYMD(document.getElementById('maturityDate').value),
     paymentMethod: document.getElementById('paymentMethod').value,
     annualPremium: document.getElementById('annualPremium').value,
     sumInsured: document.getElementById('sumInsured').value,
@@ -3057,6 +3088,7 @@ function savePolicy() {
     insuredRelation: document.getElementById('insuredRelation').value.trim(),
     insuredId: document.getElementById('insuredId').value.trim(),
     insuredPhone: document.getElementById('insuredPhone').value.trim(),
+    insuredAddress: document.getElementById('insuredAddress').value.trim(),
     beneficiaries: beneficiaries,
     remark: document.getElementById('policyRemark').value.trim(),
     survivalBenefit: {
@@ -3105,6 +3137,93 @@ function deletePolicy(clientIdx, policyIdx) {
     }
     showToast('保单已删除', 'success');
   });
+}
+
+/* ======== 保单信息完整性检查 ======== */
+
+/* 获取投保人信息缺失字段 */
+function getClientIncompleteFields(c) {
+  var missing = [];
+  if (!c.idCard || c.idCard.trim() === '') missing.push('身份证');
+  if (!c.phone || c.phone.trim() === '') missing.push('手机号码');
+  if (!c.address || c.address.trim() === '') missing.push('联系地址');
+  return missing;
+}
+
+/* 获取保单信息缺失字段 */
+function getPolicyIncompleteFields(c, p) {
+  var missing = [];
+  if (!p.insuredId || p.insuredId.trim() === '') missing.push('被保人身份证');
+  if (!p.insuredPhone || p.insuredPhone.trim() === '') missing.push('被保人手机号');
+  if (!p.insuredAddress || p.insuredAddress.trim() === '') missing.push('被保人联系地址');
+  return missing;
+}
+
+/* 获取客户所有保单的完整性问题汇总 */
+function getClientAllIncompleteFields(c) {
+  var clientMissing = getClientIncompleteFields(c);
+  var policyMissing = [];
+  if (c.policies) {
+    c.policies.forEach(function(p) {
+      var pm = getPolicyIncompleteFields(c, p);
+      if (pm.length > 0) {
+        policyMissing.push({ policyCode: p.policyCode, fields: pm });
+      }
+    });
+  }
+  return { clientMissing: clientMissing, policyMissing: policyMissing };
+}
+
+/* 检查是否有任何不完整信息 */
+function hasIncompleteInfo(c) {
+  var result = getClientAllIncompleteFields(c);
+  return result.clientMissing.length > 0 || result.policyMissing.length > 0;
+}
+
+/* 从现有保单数据中同步险种到险种库 */
+function syncExistingPoliciesToLib() {
+  var lib = getInsuranceTypeLib();
+  var libNames = lib.map(function(item) { return item.insuranceName; });
+  var addedCount = 0;
+  var noNameCount = 0;
+
+  clientData.forEach(function(c) {
+    (c.policies || []).forEach(function(p) {
+      var name = (p.insuranceName || '').trim();
+      var code = (p.codeType || '').trim();
+
+      if (code) {
+        /* 有代码，不管有没有名称都加入 */
+        if (name && libNames.indexOf(name) === -1) {
+          lib.push({ insuranceName: name, codeType: code });
+          libNames.push(name);
+          addedCount++;
+        } else if (!name) {
+          /* 有代码但没有名称，用代码作为临时名称 */
+          var placeholderName = '[待补充] ' + code;
+          if (libNames.indexOf(placeholderName) === -1) {
+            lib.push({ insuranceName: placeholderName, codeType: code });
+            libNames.push(placeholderName);
+            noNameCount++;
+          }
+        } else if (name && libNames.indexOf(name) !== -1) {
+          /* 名称已存在但代码可能不同，更新代码 */
+          var existing = lib.find(function(item) { return item.insuranceName === name; });
+          if (existing && existing.codeType !== code) {
+            existing.codeType = code;
+          }
+        }
+      }
+    });
+  });
+
+  saveInsuranceTypeLib(lib);
+
+  if (noNameCount > 0) {
+    showToast('已自动收录 ' + addedCount + ' 个险种，其中 ' + noNameCount + ' 个缺少名称（已标记为[待补充]），请在设置-险种库管理中手动修改名称', 'warning');
+  } else if (addedCount > 0) {
+    showToast('已自动收录 ' + addedCount + ' 个新险种到险种库', 'success');
+  }
 }
 
 /* ======== 险种库管理 ======== */
