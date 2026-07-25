@@ -1363,7 +1363,7 @@ button {
       <div class="install-sub" id="installSub">点击右侧按钮下载APK安装包</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <a href="https://raw.githubusercontent.com/liwenhao-0812/liwenhao/master/baodan-app.apk" class="btn-download-apk" id="btnDownloadApk">下载APK</a>
+      <a href="https://raw.githubusercontent.com/liwenhao-0812/liwenhao/master/baodan-app.apk?v=3" class="btn-download-apk" id="btnDownloadApk">下载APK</a>
       <button class="btn-install" id="pwaInstallBtn" onclick="pwaInstallClick()" style="display:none;">安装</button>
     </div>
     <button class="btn-install-close" onclick="document.getElementById('pwaInstallBar').style.display='none'">&times;</button>
@@ -1385,7 +1385,7 @@ button {
     <div class="apk-icon">&#128241;</div>
     <h3>安装保单管理 APP</h3>
     <p style="color:#64748b;margin:6px 0 16px;font-size:13px;">真正的 Android 应用，不是网页快捷方式</p>
-    <a href="https://raw.githubusercontent.com/liwenhao-0812/liwenhao/master/baodan-app.apk" class="apk-download-btn" onclick="closeApkGuide()">&#128229; 下载安装包 (98KB)</a>
+    <a href="https://raw.githubusercontent.com/liwenhao-0812/liwenhao/master/baodan-app.apk?v=3" class="apk-download-btn" onclick="closeApkGuide()">&#128229; 下载安装包 (98KB)</a>
     <button class="apk-close-btn" onclick="closeApkGuide()">稍后再说</button>
   </div>
 </div>
@@ -4980,7 +4980,7 @@ function showInstallGuide() {
       '<div class="guide-step" style="background:#fef3c7;color:#92400e;"><strong>您当前使用的是手机自带浏览器</strong>，该浏览器不支持直接安装应用到桌面</div>' +
       '<div class="guide-step" style="background:#ecfdf5;color:#065f46;"><strong>方案一（推荐）：</strong>点击下方按钮<strong>下载 APK 安装包</strong>，直接安装真正的 APP</div>' +
       '<div class="guide-step"><span class="step-num">2</span>方案二：安装 <strong>Chrome 浏览器</strong>，用 Chrome 打开本页面即可安装</div>';
-    extraBtn = '<a href="https://raw.githubusercontent.com/liwenhao-0812/liwenhao/master/baodan-app.apk" style="display:block;background:#059669;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;text-align:center;margin-top:8px;width:100%;">下载 APK 安装包</a>' +
+    extraBtn = '<a href="https://raw.githubusercontent.com/liwenhao-0812/liwenhao/master/baodan-app.apk?v=3" style="display:block;background:#059669;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;text-align:center;margin-top:8px;width:100%;">下载 APK 安装包</a>' +
                '<button class="btn-copy-url" onclick="copyPWAUrl()">复制链接（用Chrome打开）</button>';
   } else if (isAndroid && (isRealChrome || isEdge || isSamsung)) {
     title = '安卓安装步骤';
@@ -4995,7 +4995,7 @@ function showInstallGuide() {
       '<div class="guide-step" style="background:#fef3c7;color:#92400e;">当前浏览器（QQ/UC）<strong>不支持</strong>安装 PWA 应用</div>' +
       '<div class="guide-step" style="background:#ecfdf5;color:#065f46;"><strong>方案一（推荐）：</strong>点击下方按钮<strong>下载 APK 安装包</strong>，直接安装真正的 APP</div>' +
       '<div class="guide-step"><span class="step-num">2</span>方案二：安装 <strong>Chrome 浏览器</strong>，用 Chrome 打开本页面即可安装</div>';
-    extraBtn = '<a href="https://raw.githubusercontent.com/liwenhao-0812/liwenhao/master/baodan-app.apk" style="display:block;background:#059669;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;text-align:center;margin-top:8px;width:100%;">下载 APK 安装包</a>' +
+    extraBtn = '<a href="https://raw.githubusercontent.com/liwenhao-0812/liwenhao/master/baodan-app.apk?v=3" style="display:block;background:#059669;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;text-align:center;margin-top:8px;width:100%;">下载 APK 安装包</a>' +
                '<button class="btn-copy-url" onclick="copyPWAUrl()">复制链接（用Chrome打开）</button>';
   } else if (isAndroid) {
     title = '推荐：下载 APK 安装包';
@@ -5003,7 +5003,7 @@ function showInstallGuide() {
       '<div class="guide-step" style="background:#fef3c7;color:#92400e;">当前浏览器可能<strong>不支持</strong>安装应用到桌面</div>' +
       '<div class="guide-step" style="background:#ecfdf5;color:#065f46;"><strong>方案一（推荐）：</strong>点击下方按钮<strong>下载 APK 安装包</strong>，直接安装真正的 APP</div>' +
       '<div class="guide-step"><span class="step-num">2</span>方案二：安装 <strong>Chrome 浏览器</strong>，用 Chrome 打开本页面即可安装</div>';
-    extraBtn = '<a href="https://raw.githubusercontent.com/liwenhao-0812/liwenhao/master/baodan-app.apk" style="display:block;background:#059669;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;text-align:center;margin-top:8px;width:100%;">下载 APK 安装包</a>' +
+    extraBtn = '<a href="https://raw.githubusercontent.com/liwenhao-0812/liwenhao/master/baodan-app.apk?v=3" style="display:block;background:#059669;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;text-align:center;margin-top:8px;width:100%;">下载 APK 安装包</a>' +
                '<button class="btn-copy-url" onclick="copyPWAUrl()">复制链接（用Chrome打开）</button>';
   } else {
     title = '安装步骤';
