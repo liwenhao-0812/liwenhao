@@ -1906,6 +1906,10 @@ function enterMainApp() {
   loadUserData();
   startAutoPull();
   updateSettingSyncStatus(true);
+  /* 如果本地没有数据，自动从云端拉取 */
+  if (clientData.length === 0 && reminderData.length === 0) {
+    autoPullFromCloud();
+  }
   syncExistingPoliciesToLib();
   updateInsuranceTypeDatalist();
   switchTab('home');
@@ -2035,6 +2039,34 @@ function pushToCloud() {
     updateSettingSyncStatus(false);
   });
 }
+
+/* 静默自动拉取（首次登录时调用，无提示） */
+var autoPullFromCloud = function() {
+  if (!currentUser) return;
+  var fileName = getDataFileName();
+  fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + fileName + '?ref=' + GITHUB_BRANCH, {
+    headers: { 'Authorization': 'token ' + GITHUB_TOKEN },
+    cache: 'no-store'
+  })
+  .then(function(r) {
+    if (r.status === 404) return null;
+    if (!r.ok) return null;
+    return r.json();
+  })
+  .then(function(fileInfo) {
+    if (!fileInfo) return;
+    var jsonStr = decodeURIComponent(escape(atob(fileInfo.content.replace(/\s/g, ''))));
+    var cloudData = JSON.parse(jsonStr);
+    var localTs = localStorage.getItem('policy_data_' + currentUser + '_timestamp') || '0';
+    if (!cloudData._timestamp || cloudData._timestamp > localTs) {
+      restoreFromCloudData(cloudData);
+      setSyncStatus('synced');
+      updateSettingSyncStatus(true);
+      refreshCurrentTab();
+    }
+  })
+  .catch(function() {});
+};
 
 /* 从 GitHub 拉取 */
 function manualPull() {
