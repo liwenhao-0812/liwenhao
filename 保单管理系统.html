@@ -1,0 +1,3986 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>保单管理系统</title>
+<style>
+/* ======== 全局样式重置 ======== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 16px; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: #f0f4f8;
+  color: #1e293b;
+  min-height: 100vh;
+  line-height: 1.6;
+  overscroll-behavior: contain;
+}
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+button { cursor: pointer; }
+input, select, textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+  background: #fff;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  min-height: 44px;
+  min-width: 44px;
+}
+.btn-primary { background: #3b82f6; color: #fff; }
+.btn-primary:hover { background: #2563eb; }
+.btn-success { background: #22c55e; color: #fff; }
+.btn-success:hover { background: #16a34a; }
+.btn-danger { background: #ef4444; color: #fff; }
+.btn-danger:hover { background: #dc2626; }
+.btn-warning { background: #f59e0b; color: #fff; }
+.btn-warning:hover { background: #d97706; }
+.btn-secondary { background: #64748b; color: #fff; }
+.btn-secondary:hover { background: #475569; }
+.btn-outline {
+  background: transparent;
+  border: 1px solid #3b82f6;
+  color: #3b82f6;
+}
+.btn-outline:hover { background: #3b82f6; color: #fff; }
+.btn-sm { padding: 6px 12px; font-size: 12px; min-height: 36px; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ======== 卡片通用样式 ======== */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  padding: 20px;
+  margin-bottom: 16px;
+  transition: box-shadow 0.2s;
+}
+.card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ======== 状态标签 ======== */
+.tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.tag-green { background: #dcfce7; color: #166534; }
+.tag-red { background: #fee2e2; color: #991b1b; }
+.tag-yellow { background: #fef3c7; color: #92400e; }
+.tag-blue { background: #dbeafe; color: #1e40af; }
+.tag-purple { background: #f3e8ff; color: #6b21a8; }
+.tag-gray { background: #f1f5f9; color: #475569; }
+
+/* ======== 登录/注册页 ======== */
+#authPage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+.auth-container {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  width: 100%;
+  max-width: 420px;
+  padding: 40px 30px;
+}
+.auth-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+.auth-header h1 {
+  font-size: 28px;
+  color: #1e40af;
+  margin-bottom: 8px;
+}
+.auth-header .logo {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 8px;
+}
+.auth-tabs {
+  display: flex;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 24px;
+}
+.auth-tab {
+  flex: 1;
+  padding: 12px;
+  text-align: center;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  transition: all 0.2s;
+}
+.auth-tab.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+.auth-form .form-group {
+  margin-bottom: 16px;
+}
+.auth-form label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #475569;
+}
+.auth-form .btn-primary {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  margin-top: 8px;
+}
+.auth-error {
+  color: #ef4444;
+  font-size: 13px;
+  text-align: center;
+  margin-top: 10px;
+  min-height: 20px;
+}
+
+/* ======== 主界面布局 ======== */
+#mainApp { display: none; min-height: 100vh; }
+.top-bar {
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.top-bar h1 {
+  font-size: 18px;
+  color: #1e40af;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.top-bar .user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+/* 导航栏 */
+.nav-bar {
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0 20px;
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.nav-item {
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  transition: all 0.2s;
+}
+.nav-item.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+.nav-item:hover { color: #3b82f6; }
+
+/* 内容区域 */
+.content { padding: 16px; max-width: 1400px; margin: 0 auto; }
+
+/* 底部状态栏 */
+.bottom-bar {
+  background: #fff;
+  border-top: 1px solid #e2e8f0;
+  padding: 10px 20px;
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  bottom: 0;
+}
+.sync-status { display: flex; align-items: center; gap: 6px; }
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+.sync-dot.offline { background: #ef4444; }
+.sync-dot.syncing { background: #f59e0b; animation: pulse 1s infinite; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ======== 首页 - 仪表盘 ======== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  text-align: center;
+}
+.stat-card .stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #3b82f6;
+}
+.stat-card .stat-label {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 4px;
+}
+.stat-card.green .stat-value { color: #22c55e; }
+.stat-card.red .stat-value { color: #ef4444; }
+.stat-card.yellow .stat-value { color: #f59e0b; }
+
+/* ======== 双栏布局（电脑端） ======== */
+@media (min-width: 768px) {
+  .two-col-layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+}
+
+/* ======== 搜索相关 ======== */
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.search-bar input { flex: 1; min-width: 200px; }
+.search-bar button { white-space: nowrap; }
+.search-result-info {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+.client-item {
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.client-item:hover { border-color: #3b82f6; background: #f0f7ff; }
+.client-item.active { border-color: #3b82f6; background: #eff6ff; }
+.client-item .client-name {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.client-item .client-meta {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* ======== 高级搜索面板 ======== */
+.advanced-search {
+  display: none;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.advanced-search.show { display: block; }
+.advanced-search-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+/* ======== 客户详情 ======== */
+.detail-panel { display: none; }
+.detail-panel.show { display: block; }
+.detail-section { margin-bottom: 20px; }
+.detail-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e2e8f0;
+  color: #1e40af;
+}
+
+/* ======== 返回按钮 ======== */
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1e40af;
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.back-btn:hover { background: #e2e8f0; }
+
+/* ======== 保单分组样式 ======== */
+.policy-group {
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.policy-group-main {
+  background: #f0f7ff;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #1e40af;
+  border-bottom: 1px solid #dbeafe;
+}
+.policy-group-addon {
+  background: #fefce8;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #92400e;
+  border-top: 1px dashed #fde68a;
+}
+.policy-group-universal {
+  background: #fdf2f8;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #9d174d;
+  border-top: 1px dashed #f9a8d4;
+}
+
+/* ======== 保单表格 ======== */
+.policy-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.policy-table th, .policy-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #f1f5f9;
+}
+.policy-table th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+}
+.policy-table tr:hover { background: #f8fafc; }
+
+/* ======== 模态框 ======== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.modal-header h2 { font-size: 18px; }
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #94a3b8;
+  min-width: 36px;
+  min-height: 36px;
+}
+.modal-close:hover { color: #475569; }
+.modal-body .form-group { margin-bottom: 14px; }
+.modal-body label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: #475569;
+}
+.modal-footer {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* ======== 提醒模块 ======== */
+.reminder-list { list-style: none; }
+.reminder-item {
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all 0.2s;
+}
+.reminder-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.reminder-item.overdue { border-left: 4px solid #ef4444; background: #fef2f2; }
+.reminder-item.urgent { border-left: 4px solid #f59e0b; background: #fffbeb; }
+.reminder-item.normal { border-left: 4px solid #3b82f6; }
+.reminder-item.dismissed { opacity: 0.5; }
+.reminder-info h4 { font-size: 14px; margin-bottom: 4px; }
+.reminder-info p { font-size: 12px; color: #64748b; }
+.reminder-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+/* ======== 追踪模块 ======== */
+.timeline { position: relative; padding-left: 30px; }
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e2e8f0;
+}
+.timeline-item {
+  position: relative;
+  padding: 12px 0;
+}
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 18px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+.timeline-item.success::before { background: #22c55e; box-shadow: 0 0 0 2px #22c55e; }
+.timeline-item.warning::before { background: #f59e0b; box-shadow: 0 0 0 2px #f59e0b; }
+.timeline-item.danger::before { background: #ef4444; box-shadow: 0 0 0 2px #ef4444; }
+.timeline-date { font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
+.timeline-content { font-size: 14px; }
+
+/* ======== 定价模块 ======== */
+.rule-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.2s;
+}
+.rule-card:hover { border-color: #3b82f6; }
+.rule-card h4 { font-size: 14px; margin-bottom: 8px; }
+.rule-conditions {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+.calc-result {
+  background: #f0fdf4;
+  border: 2px solid #22c55e;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  margin-top: 16px;
+}
+.calc-result .premium {
+  font-size: 36px;
+  font-weight: 700;
+  color: #166534;
+}
+.calc-result .premium-label {
+  font-size: 14px;
+  color: #4ade80;
+  margin-bottom: 4px;
+}
+
+/* ======== 设置页面 ======== */
+.setting-group {
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+.setting-group h4 {
+  font-size: 14px;
+  margin-bottom: 12px;
+  color: #1e40af;
+}
+
+/* ======== 空状态 ======== */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+}
+.empty-state .empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+.empty-state p {
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+/* ======== toast消息 ======== */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.toast {
+  padding: 12px 20px;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  animation: slideIn 0.3s ease;
+  max-width: 360px;
+}
+.toast.success { background: #22c55e; }
+.toast.error { background: #ef4444; }
+.toast.warning { background: #f59e0b; }
+.toast.info { background: #3b82f6; }
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ======== 滚动条美化 ======== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ======== 隐藏/显示 ======== */
+.hidden { display: none !important; }
+
+/* ======== 管理员用户列表 ======== */
+.user-stat-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+/* ======== 排序下拉 ======== */
+.sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #64748b;
+}
+.sort-bar select {
+  width: auto;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+/* ======== 响应式表格容器 ======== */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ======== 面板过渡 ======== */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ======== 复选框 ======== */
+.checkbox-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.checkbox-wrap input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* ======== 手机端适配 ======== */
+@media (max-width: 600px) {
+  .top-bar { padding: 10px 14px; }
+  .top-bar h1 { font-size: 15px; }
+  .nav-bar { padding: 0 10px; }
+  .nav-item { padding: 12px 14px; font-size: 13px; }
+  .content { padding: 12px; }
+  .card { padding: 14px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card .stat-value { font-size: 22px; }
+  .search-bar { flex-direction: column; }
+  .search-bar input { min-width: 100%; }
+  .modal { padding: 18px; margin: 10px; }
+  .btn-group { flex-direction: column; }
+  .btn-group button { width: 100%; }
+  .advanced-search-grid { grid-template-columns: 1fr; }
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+</head>
+<body>
+
+<!-- Toast消息容器 -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ==================== 登录/注册页 ==================== -->
+<div id="authPage">
+  <div class="auth-container">
+    <div class="auth-header">
+      <span class="logo">&#128196;</span>
+      <h1>保单管理系统</h1>
+      <p style="color:#64748b;font-size:14px;">多用户云端个人保单管理平台</p>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">登录</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">注册</button>
+    </div>
+    <!-- 登录表单 -->
+    <form class="auth-form" id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label>用户名</label>
+        <input type="text" id="loginUsername" placeholder="请输入用户名" required autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>密码</label>
+        <input type="password" id="loginPassword" placeholder="请输入密码" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn-primary">登 录</button>
+      <div class="auth-error" id="loginError"></div>
+    </form>
+    <!-- 注册表单 -->
+    <form class="auth-form hidden" id="registerForm" onsubmit="handleRegister(event)">
+      <div class="form-group">
+        <label>用户名</label>
+        <input type="text" id="regUsername" placeholder="请输入用户名" required autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>密码</label>
+        <input type="password" id="regPassword" placeholder="请输入密码（至少6位）" required minlength="6" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label>确认密码</label>
+        <input type="password" id="regPasswordConfirm" placeholder="请再次输入密码" required autocomplete="new-password">
+      </div>
+      <button type="submit" class="btn-primary">注 册</button>
+      <div class="auth-error" id="regError"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== 主界面 ==================== -->
+<div id="mainApp">
+  <!-- 顶部栏 -->
+  <div class="top-bar">
+    <h1>&#128196; 保单管理系统</h1>
+    <div class="user-info">
+      <span id="currentUserName">用户</span>
+      <button class="btn-sm btn-secondary" onclick="handleLogout()">退出登录</button>
+    </div>
+  </div>
+
+  <!-- 导航栏 -->
+  <div class="nav-bar">
+    <button class="nav-item active" data-tab="home" onclick="switchTab('home')">首页</button>
+    <button class="nav-item" data-tab="query" onclick="switchTab('query')">查询</button>
+    <button class="nav-item" data-tab="reminders" onclick="switchTab('reminders')">提醒</button>
+    <button class="nav-item" data-tab="tracking" onclick="switchTab('tracking')">追踪</button>
+    <button class="nav-item" data-tab="pricing" onclick="switchTab('pricing')">定价</button>
+    <button class="nav-item" data-tab="settings" onclick="switchTab('settings')">设置</button>
+  </div>
+
+  <!-- 内容区域 -->
+  <div class="content">
+
+    <!-- ====== 首页（仪表盘） ====== -->
+    <div class="tab-content active" id="tabHome">
+      <div class="stats-grid" id="dashboardStats"></div>
+      <div class="card" id="dashInsuranceTypes">
+        <div class="card-title">险种分布统计</div>
+        <div id="insuranceTypeChart"></div>
+      </div>
+      <!-- 管理员面板 -->
+      <div class="card hidden" id="adminPanel">
+        <div class="card-title">管理员面板 - 用户列表</div>
+        <div id="adminUserList"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">快捷操作</div>
+        <div class="btn-group">
+          <button class="btn-primary" onclick="openAddClientModal()">添加客户</button>
+          <button class="btn-success" onclick="switchTab('query')">查询保单</button>
+          <button class="btn-warning" onclick="switchTab('reminders')">查看提醒</button>
+          <button class="btn-outline" onclick="batchGenerateReminders()">批量生成提醒</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== 查询页 ====== -->
+    <div class="tab-content" id="tabQuery">
+      <!-- 查询列表视图 -->
+      <div id="queryListView">
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="按投保人/被保人姓名搜索..." oninput="handleSearch()">
+        <button class="btn-primary" onclick="toggleAdvancedSearch()">高级搜索</button>
+        <button class="btn-outline" onclick="clearSearch()">清空</button>
+      </div>
+      <div class="advanced-search" id="advancedSearch">
+        <div class="advanced-search-grid">
+          <div class="form-group">
+            <label>保单代码</label>
+            <input type="text" id="advPolicyCode" placeholder="精确搜索">
+          </div>
+          <div class="form-group">
+            <label>险种名称</label>
+            <input type="text" id="advInsuranceName" placeholder="模糊搜索">
+          </div>
+          <div class="form-group">
+            <label>保单状态</label>
+            <select id="advStatus">
+              <option value="">全部</option>
+              <option value="有效">有效</option>
+              <option value="失效">失效</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>生效日期（起）</label>
+            <input type="date" id="advDateFrom">
+          </div>
+          <div class="form-group">
+            <label>生效日期（止）</label>
+            <input type="date" id="advDateTo">
+          </div>
+          <div class="form-group">
+            <label>年缴保费（最低）</label>
+            <input type="number" id="advPremMin" placeholder="元">
+          </div>
+          <div class="form-group">
+            <label>年缴保费（最高）</label>
+            <input type="number" id="advPremMax" placeholder="元">
+          </div>
+          <div class="form-group">
+            <label>保额（最低）</label>
+            <input type="number" id="advSumMin" placeholder="元">
+          </div>
+          <div class="form-group">
+            <label>保额（最高）</label>
+            <input type="number" id="advSumMax" placeholder="元">
+          </div>
+          <div class="form-group">
+            <label>缴费期限</label>
+            <input type="text" id="advPayTerm" placeholder="如：20">
+          </div>
+          <div class="form-group">
+            <label>被保人身份证</label>
+            <input type="text" id="advInsuredId" placeholder="身份证号">
+          </div>
+          <div class="form-group">
+            <label>联系电话</label>
+            <input type="text" id="advPhone" placeholder="手机号">
+          </div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <button class="btn-primary" onclick="handleSearch()">搜索</button>
+          <button class="btn-outline" onclick="clearAdvancedSearch()">清空条件</button>
+        </div>
+      </div>
+      <div class="search-result-info" id="searchResultInfo"></div>
+      <div class="sort-bar">
+        <span>排序：</span>
+        <select id="sortSelect" onchange="handleSearch()">
+          <option value="name">按姓名</option>
+          <option value="premium-desc">按保费（高到低）</option>
+          <option value="premium-asc">按保费（低到高）</option>
+          <option value="sumInsured-desc">按保额（高到低）</option>
+          <option value="sumInsured-asc">按保额（低到高）</option>
+          <option value="date-desc">按生效日期（新到旧）</option>
+          <option value="date-asc">按生效日期（旧到新）</option>
+        </select>
+      </div>
+      <!-- 客户列表 -->
+      <div id="clientList"></div>
+      </div><!-- /queryListView -->
+
+      <!-- 客户详情视图 -->
+      <div id="clientDetailView" style="display:none;">
+        <div class="detail-panel" id="detailPanel"></div>
+      </div><!-- /clientDetailView -->
+    </div>
+
+    <!-- ====== 提醒页 ====== -->
+    <div class="tab-content" id="tabReminders">
+      <div class="stats-grid" id="reminderStats"></div>
+      <div class="btn-group" style="margin-bottom:16px;">
+        <button class="btn-primary" onclick="openAddReminderModal()">添加提醒</button>
+        <button class="btn-success" onclick="batchGenerateReminders()">批量生成提醒</button>
+        <button class="btn-outline" onclick="dismissAllProcessed()">清除已处理</button>
+      </div>
+      <!-- 筛选 -->
+      <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-sm btn-primary" onclick="filterReminders('all')">全部</button>
+        <button class="btn-sm btn-danger" onclick="filterReminders('overdue')">已过期</button>
+        <button class="btn-sm btn-warning" onclick="filterReminders('urgent')">7天内到期</button>
+        <button class="btn-sm btn-outline" onclick="filterReminders('dismissed')">已处理</button>
+      </div>
+      <div id="reminderList"></div>
+    </div>
+
+    <!-- ====== 追踪页 ====== -->
+    <div class="tab-content" id="tabTracking">
+      <div class="stats-grid" id="trackingStats"></div>
+      <div style="margin-bottom:16px;">
+        <select id="trackClientSelect" onchange="loadTrackingData()" style="width:auto;min-width:200px;">
+          <option value="">选择客户查看追踪信息</option>
+        </select>
+      </div>
+      <div id="trackingContent">
+        <div class="empty-state">
+          <div class="empty-icon">&#128269;</div>
+          <p>请选择一个客户查看追踪详情</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== 定价页 ====== -->
+    <div class="tab-content" id="tabPricing">
+      <h3 style="margin-bottom:16px;">定价规则管理</h3>
+      <div class="btn-group" style="margin-bottom:16px;">
+        <button class="btn-primary" onclick="openAddRuleModal()">创建定价规则</button>
+        <button class="btn-outline" onclick="openCalcModal()">保费计算器</button>
+        <button class="btn-outline" onclick="openBatchCalcModal()">批量计算</button>
+      </div>
+      <div id="ruleList"></div>
+    </div>
+
+    <!-- ====== 设置页 ====== -->
+    <div class="tab-content" id="tabSettings">
+      <div class="card">
+        <div class="card-title">JSONBin 云同步设置</div>
+        <div class="form-group">
+          <label>API Key（X-Master-Key）</label>
+          <input type="text" id="settingApiKey" placeholder="请输入你的 JSONBin.io API Key">
+        </div>
+        <div class="form-group">
+          <label>Bin ID（如已有则填写，新用户留空自动创建）</label>
+          <input type="text" id="settingBinId" placeholder="留空自动创建新 Bin">
+        </div>
+        <div class="btn-group">
+          <button class="btn-primary" onclick="saveCloudSettings()">保存设置</button>
+          <button class="btn-success" onclick="manualPush()">推送到云端</button>
+          <button class="btn-outline" onclick="manualPull()">从云端拉取</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">数据管理</div>
+        <div class="btn-group" style="flex-wrap:wrap;gap:8px;">
+          <button class="btn-warning" onclick="exportData()">导出数据（JSON）</button>
+          <button class="btn-outline" onclick="importDataPrompt()">导入数据（JSON）</button>
+          <button class="btn-success" onclick="importExcelPrompt()">导入Excel</button>
+          <button class="btn-primary" onclick="exportExcelTemplate()">导出Excel模板</button>
+          <button class="btn-danger" onclick="confirmClearData()">清空我的数据</button>
+        </div>
+        <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importData(event)">
+        <input type="file" id="importExcelInput" accept=".xlsx,.xls,.csv" style="display:none;" onchange="importExcelData(event)">
+      </div>
+      <div class="card">
+        <div class="card-title">修改密码</div>
+        <div class="form-group">
+          <label>当前密码</label>
+          <input type="password" id="oldPwd" placeholder="请输入当前密码">
+        </div>
+        <div class="form-group">
+          <label>新密码</label>
+          <input type="password" id="newPwd" placeholder="请输入新密码（至少6位）">
+        </div>
+        <button class="btn-primary" onclick="changePassword()">修改密码</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部状态栏 -->
+  <div class="bottom-bar">
+    <div class="sync-status">
+      <div class="sync-dot" id="syncDot"></div>
+      <span id="syncStatusText">就绪</span>
+    </div>
+    <div id="bottomStats"></div>
+  </div>
+</div>
+
+<!-- ==================== 模态框集合 ==================== -->
+
+<!-- 添加/编辑客户模态框 -->
+<div class="modal-overlay" id="clientModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="clientModalTitle">添加客户</h2>
+      <button class="modal-close" onclick="closeModal('clientModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="clientEditIndex" value="-1">
+      <div class="form-group">
+        <label>投保人姓名 *</label>
+        <input type="text" id="clientName" placeholder="请输入投保人姓名" required>
+      </div>
+      <div class="form-group">
+        <label>身份证号</label>
+        <input type="text" id="clientIdCard" placeholder="请输入身份证号">
+      </div>
+      <div class="form-group">
+        <label>手机号</label>
+        <input type="text" id="clientPhone" placeholder="请输入手机号">
+      </div>
+      <div class="form-group">
+        <label>地址</label>
+        <input type="text" id="clientAddress" placeholder="请输入地址">
+      </div>
+      <div class="form-group">
+        <label>工作单位</label>
+        <input type="text" id="clientWorkCompany" placeholder="请输入工作单位">
+      </div>
+      <div class="form-group">
+        <label>工作地址</label>
+        <input type="text" id="clientWorkAddress" placeholder="请输入工作地址">
+      </div>
+      <!-- 家庭成员 -->
+      <div class="form-group">
+        <label>家庭成员</label>
+        <div id="familyMembersList"></div>
+        <button type="button" class="btn-sm btn-outline" onclick="addFamilyMemberField()">+ 添加家庭成员</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('clientModal')">取消</button>
+      <button class="btn-primary" onclick="saveClient()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 添加/编辑保单模态框 -->
+<div class="modal-overlay" id="policyModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="policyModalTitle">添加保单</h2>
+      <button class="modal-close" onclick="closeModal('policyModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="policyClientIndex" value="-1">
+      <input type="hidden" id="policyEditIndex" value="-1">
+      <div class="form-group">
+        <label>保单代码 *</label>
+        <input type="text" id="policyCode" placeholder="请输入保单代码" required>
+      </div>
+      <div class="form-group">
+        <label>险种名称 *</label>
+        <input type="text" id="insuranceName" placeholder="请输入险种名称" required>
+      </div>
+      <div class="form-group">
+        <label>险种代码</label>
+        <input type="text" id="codeType" placeholder="险种代码">
+      </div>
+      <div class="form-group">
+        <label>主险/附加险</label>
+        <select id="mainType">
+          <option value="主险">主险</option>
+          <option value="附加险">附加险</option>
+          <option value="万能险">万能险</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>关联主险代码（附加险时填写）</label>
+        <input type="text" id="parentPolicyCode" placeholder="关联的主险保单代码">
+      </div>
+      <div class="form-group">
+        <label>保单状态</label>
+        <select id="policyStatus">
+          <option value="有效">有效</option>
+          <option value="失效">失效</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>生效日期</label>
+        <input type="date" id="effectiveDate">
+      </div>
+      <div class="form-group">
+        <label>缴费方式</label>
+        <select id="paymentMethod">
+          <option value="年缴">年缴</option>
+          <option value="月缴">月缴</option>
+          <option value="趸缴">趸缴</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>年缴保费（元）</label>
+        <input type="number" id="annualPremium" placeholder="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>保额（元）</label>
+        <input type="number" id="sumInsured" placeholder="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>缴费期限（年）</label>
+        <input type="text" id="paymentTerm" placeholder="如：20">
+      </div>
+      <div class="form-group">
+        <label>被保人姓名</label>
+        <input type="text" id="insuredName" placeholder="被保人姓名（默认同投保人）">
+      </div>
+      <div class="form-group">
+        <label>与被保人关系</label>
+        <input type="text" id="insuredRelation" placeholder="如：本人、配偶、子女">
+      </div>
+      <div class="form-group">
+        <label>被保人身份证号</label>
+        <input type="text" id="insuredId" placeholder="被保人身份证号">
+      </div>
+      <div class="form-group">
+        <label>被保人手机号</label>
+        <input type="text" id="insuredPhone" placeholder="被保人手机号">
+      </div>
+      <!-- 受益人 -->
+      <div class="form-group">
+        <label>受益人</label>
+        <div id="beneficiariesList"></div>
+        <button type="button" class="btn-sm btn-outline" onclick="addBeneficiaryField()">+ 添加受益人</button>
+      </div>
+      <div class="form-group">
+        <label>备注</label>
+        <textarea id="policyRemark" rows="3" placeholder="备注信息"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('policyModal')">取消</button>
+      <button class="btn-primary" onclick="savePolicy()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 添加提醒模态框 -->
+<div class="modal-overlay" id="reminderModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="reminderModalTitle">添加提醒</h2>
+      <button class="modal-close" onclick="closeModal('reminderModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="reminderEditId" value="">
+      <div class="form-group">
+        <label>关联客户</label>
+        <select id="reminderClient"></select>
+      </div>
+      <div class="form-group">
+        <label>关联保单</label>
+        <select id="reminderPolicy"></select>
+      </div>
+      <div class="form-group">
+        <label>提醒类型</label>
+        <select id="reminderType">
+          <option value="缴费提醒">缴费提醒</option>
+          <option value="续保提醒">续保提醒</option>
+          <option value="保单周年">保单周年</option>
+          <option value="自定义">自定义</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>提醒标题</label>
+        <input type="text" id="reminderTitle" placeholder="提醒标题" required>
+      </div>
+      <div class="form-group">
+        <label>到期日期</label>
+        <input type="date" id="reminderDueDate" required>
+      </div>
+      <div class="form-group">
+        <label>提前提醒天数</label>
+        <input type="number" id="reminderDaysBefore" value="30" min="0">
+      </div>
+      <div class="form-group">
+        <label class="checkbox-wrap">
+          <input type="checkbox" id="reminderEnabled" checked>
+          <span>启用此提醒</span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('reminderModal')">取消</button>
+      <button class="btn-primary" onclick="saveReminder()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 添加联系记录模态框 -->
+<div class="modal-overlay" id="contactModal">
+  <div class="modal" style="max-width:450px;">
+    <div class="modal-header">
+      <h2>添加联系记录</h2>
+      <button class="modal-close" onclick="closeModal('contactModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>联系状态</label>
+        <select id="contactStatus">
+          <option value="已电话联系">已电话联系</option>
+          <option value="面见客户">面见客户</option>
+          <option value="未联系上">未联系上</option>
+          <option value="已加微信">已加微信</option>
+          <option value="电话挂断">电话挂断</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>联系日期</label>
+        <input type="date" id="contactDate">
+      </div>
+      <div class="form-group">
+        <label>备注</label>
+        <textarea id="contactNote" rows="3" placeholder="联系详情"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('contactModal')">取消</button>
+      <button class="btn-primary" onclick="saveContactRecord()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 添加服务记录模态框 -->
+<div class="modal-overlay" id="serviceModal">
+  <div class="modal" style="max-width:450px;">
+    <div class="modal-header">
+      <h2>添加服务记录</h2>
+      <button class="modal-close" onclick="closeModal('serviceModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="serviceClientIdx" value="">
+      <input type="hidden" id="servicePolicyIdx" value="">
+      <div class="form-group">
+        <label>服务日期</label>
+        <input type="date" id="serviceDate">
+      </div>
+      <div class="form-group">
+        <label>服务内容</label>
+        <textarea id="serviceContent" rows="4" placeholder="请描述服务内容"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('serviceModal')">取消</button>
+      <button class="btn-primary" onclick="saveServiceRecord()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 定价规则模态框 -->
+<div class="modal-overlay" id="ruleModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="ruleModalTitle">创建定价规则</h2>
+      <button class="modal-close" onclick="closeModal('ruleModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ruleEditId" value="">
+      <div class="form-group">
+        <label>规则名称 *</label>
+        <input type="text" id="ruleName" placeholder="如：重疾险基础定价">
+      </div>
+      <div class="form-group">
+        <label>规则描述</label>
+        <textarea id="ruleDescription" rows="2" placeholder="规则描述"></textarea>
+      </div>
+      <div class="form-group">
+        <label>条件组合（满足所有条件才算匹配）</label>
+        <div id="ruleConditions"></div>
+        <button type="button" class="btn-sm btn-outline" onclick="addRuleConditionField()">+ 添加条件</button>
+      </div>
+      <div class="form-group">
+        <label>计算方式</label>
+        <select id="ruleCalcType" onchange="toggleCalcFields()">
+          <option value="fixed">固定金额</option>
+          <option value="percentage">百分比</option>
+          <option value="formula">自定义公式</option>
+        </select>
+      </div>
+      <div class="form-group" id="ruleBaseGroup">
+        <label>基础保费（元）</label>
+        <input type="number" id="ruleBase" placeholder="如：1000" step="0.01">
+      </div>
+      <div class="form-group" id="ruleRateGroup">
+        <label>费率/百分比（%）</label>
+        <input type="number" id="ruleRate" placeholder="如：5 表示5%" step="0.01">
+      </div>
+      <div class="form-group hidden" id="ruleFormulaGroup">
+        <label>自定义公式（可用变量：base, age, sumInsured, paymentTerm, gender）</label>
+        <textarea id="ruleFormula" rows="3" placeholder="如：base * (1 + age/100) * sumInsured/100000"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('ruleModal')">取消</button>
+      <button class="btn-primary" onclick="saveRule()">保存规则</button>
+    </div>
+  </div>
+</div>
+
+<!-- 保费计算器模态框 -->
+<div class="modal-overlay" id="calcModal">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header">
+      <h2>保费计算器</h2>
+      <button class="modal-close" onclick="closeModal('calcModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>选择定价规则</label>
+        <select id="calcRule"></select>
+      </div>
+      <div class="form-group">
+        <label>年龄</label>
+        <input type="number" id="calcAge" placeholder="如：30" min="0" max="120">
+      </div>
+      <div class="form-group">
+        <label>性别</label>
+        <select id="calcGender">
+          <option value="男">男</option>
+          <option value="女">女</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>保额（元）</label>
+        <input type="number" id="calcSumInsured" placeholder="如：500000" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>缴费期限（年）</label>
+        <input type="number" id="calcPayTerm" placeholder="如：20" min="1">
+      </div>
+      <div class="form-group">
+        <label>险种类型</label>
+        <input type="text" id="calcInsType" placeholder="如：重疾险">
+      </div>
+      <button type="button" class="btn-primary" onclick="calculatePremium()" style="width:100%;margin-top:10px;">计算保费</button>
+      <div id="calcResult"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 批量计算模态框 -->
+<div class="modal-overlay" id="batchCalcModal">
+  <div class="modal" style="max-width:700px;">
+    <div class="modal-header">
+      <h2>批量计算</h2>
+      <button class="modal-close" onclick="closeModal('batchCalcModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>选择定价规则</label>
+        <select id="batchCalcRule"></select>
+      </div>
+      <div class="form-group">
+        <label>选择要计算的保单（可多选）</label>
+        <div id="batchCalcPolicyList" style="max-height:300px;overflow-y:auto;"></div>
+      </div>
+      <button type="button" class="btn-primary" onclick="batchCalculate()" style="width:100%;margin-top:10px;">批量计算</button>
+      <div id="batchCalcResult" class="table-responsive"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 确认对话框 -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <h2>确认操作</h2>
+      <button class="modal-close" onclick="closeModal('confirmModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirmMessage">确定要执行此操作吗？</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('confirmModal')">取消</button>
+      <button class="btn-danger" id="confirmBtn" onclick="">确认</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========================================================================
+   保单管理系统 - 完整JavaScript逻辑
+   ======================================================================== */
+
+/* ======== 全局状态 ======== */
+let currentUser = null;         // 当前登录用户名
+let clientData = [];            // 当前用户的保单数据
+let reminderData = [];          // 当前用户的提醒数据
+let pricingRules = [];          // 当前用户的定价规则
+let currentTab = 'home';        // 当前Tab页
+let selectedClientIdx = -1;     // 当前选中客户索引（查询页）
+let reminderFilter = 'all';     // 提醒筛选条件
+let currentTrackClient = '';     // 追踪页选中的客户名
+let confirmCallback = null;     // 确认对话框回调
+
+/* ======== 工具函数 ======== */
+
+/* 简单hash（用于密码存储） */
+function simpleHash(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
+  }
+  return 'H' + Math.abs(hash).toString(36);
+}
+
+/* 生成唯一ID */
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
+}
+
+/* 日期格式化 */
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  if (dateStr.length === 8 && /^\d{8}$/.test(dateStr)) {
+    return dateStr.substr(0, 4) + '-' + dateStr.substr(4, 2) + '-' + dateStr.substr(6, 2);
+  }
+  return dateStr;
+}
+
+/* 日期转YYYYMMDD */
+function toYMD(dateStr) {
+  if (!dateStr) return '';
+  return dateStr.replace(/-/g, '');
+}
+
+/* 格式化金额 */
+function formatMoney(val) {
+  if (!val && val !== 0) return '0';
+  return parseFloat(val).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+/* Toast提示 */
+function showToast(msg, type) {
+  type = type || 'info';
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(function() { toast.remove(); }, 3000);
+}
+
+/* 打开/关闭模态框 */
+function openModal(id) {
+  document.getElementById(id).classList.add('show');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+/* 显示确认框 */
+function showConfirm(msg, callback) {
+  document.getElementById('confirmMessage').textContent = msg;
+  confirmCallback = callback;
+  document.getElementById('confirmBtn').onclick = function() {
+    closeModal('confirmModal');
+    if (confirmCallback) confirmCallback();
+  };
+  openModal('confirmModal');
+}
+
+/* ======== 用户系统 ======== */
+
+/* 获取所有用户列表 */
+function getUsers() {
+  try {
+    return JSON.parse(localStorage.getItem('pms_users') || '[]');
+  } catch(e) { return []; }
+}
+
+/* 保存用户列表 */
+function saveUsers(users) {
+  localStorage.setItem('pms_users', JSON.stringify(users));
+}
+
+/* 切换登录/注册Tab */
+function switchAuthTab(tab) {
+  const tabs = document.querySelectorAll('.auth-tab');
+  tabs.forEach(function(t) { t.classList.remove('active'); });
+  if (tab === 'login') {
+    tabs[0].classList.add('active');
+    document.getElementById('loginForm').classList.remove('hidden');
+    document.getElementById('registerForm').classList.add('hidden');
+  } else {
+    tabs[1].classList.add('active');
+    document.getElementById('loginForm').classList.add('hidden');
+    document.getElementById('registerForm').classList.remove('hidden');
+  }
+}
+
+/* 处理登录 */
+function handleLogin(e) {
+  e.preventDefault();
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+
+  if (!username || !password) {
+    errEl.textContent = '请填写用户名和密码';
+    return;
+  }
+
+  const users = getUsers();
+  const user = users.find(function(u) { return u.username === username; });
+  if (!user) {
+    errEl.textContent = '用户不存在';
+    return;
+  }
+  if (user.passwordHash !== simpleHash(password)) {
+    errEl.textContent = '密码错误';
+    return;
+  }
+
+  /* 登录成功，更新最后登录时间 */
+  user.lastLogin = new Date().toISOString();
+  saveUsers(users);
+  currentUser = username;
+  localStorage.setItem('pms_currentUser', username);
+  errEl.textContent = '';
+
+  enterMainApp();
+}
+
+/* 处理注册 */
+function handleRegister(e) {
+  e.preventDefault();
+  const username = document.getElementById('regUsername').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const confirm = document.getElementById('regPasswordConfirm').value;
+  const errEl = document.getElementById('regError');
+
+  if (!username || !password || !confirm) {
+    errEl.textContent = '请填写所有字段';
+    return;
+  }
+  if (password.length < 6) {
+    errEl.textContent = '密码长度至少6位';
+    return;
+  }
+  if (password !== confirm) {
+    errEl.textContent = '两次密码不一致';
+    return;
+  }
+
+  const users = getUsers();
+  if (users.find(function(u) { return u.username === username; })) {
+    errEl.textContent = '用户名已存在';
+    return;
+  }
+
+  users.push({
+    username: username,
+    passwordHash: simpleHash(password),
+    createdAt: new Date().toISOString(),
+    lastLogin: new Date().toISOString()
+  });
+  saveUsers(users);
+
+  errEl.textContent = '';
+  showToast('注册成功，请登录', 'success');
+  switchAuthTab('login');
+  document.getElementById('loginUsername').value = username;
+}
+
+/* 退出登录 */
+function handleLogout() {
+  currentUser = null;
+  localStorage.removeItem('pms_currentUser');
+  clientData = [];
+  reminderData = [];
+  pricingRules = [];
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('authPage').style.display = 'flex';
+  document.getElementById('loginUsername').value = '';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('loginError').textContent = '';
+}
+
+/* 进入主界面 */
+function enterMainApp() {
+  document.getElementById('authPage').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  document.getElementById('currentUserName').textContent = currentUser;
+  loadUserData();
+  loadCloudSettings();
+  switchTab('home');
+  updateBottomStats();
+}
+
+/* ======== 数据存储（带用户前缀隔离） ======== */
+
+/* 获取当前用户保单数据 */
+function getPolicyData() {
+  try {
+    return JSON.parse(localStorage.getItem('policy_data_' + currentUser) || '[]');
+  } catch(e) { return []; }
+}
+
+/* 保存保单数据 */
+function savePolicyData() {
+  localStorage.setItem('policy_data_' + currentUser, JSON.stringify(clientData));
+  autoSyncPush();
+}
+
+/* 获取提醒数据 */
+function getReminderData() {
+  try {
+    return JSON.parse(localStorage.getItem('reminders_' + currentUser) || '[]');
+  } catch(e) { return []; }
+}
+
+/* 保存提醒数据 */
+function saveReminderData() {
+  localStorage.setItem('reminders_' + currentUser, JSON.stringify(reminderData));
+  autoSyncPush();
+}
+
+/* 获取定价规则 */
+function getPricingRules() {
+  try {
+    return JSON.parse(localStorage.getItem('pricing_rules_' + currentUser) || '[]');
+  } catch(e) { return []; }
+}
+
+/* 保存定价规则 */
+function savePricingRules() {
+  localStorage.setItem('pricing_rules_' + currentUser, JSON.stringify(pricingRules));
+  autoSyncPush();
+}
+
+/* 加载当前用户所有数据 */
+function loadUserData() {
+  clientData = getPolicyData();
+  reminderData = getReminderData();
+  pricingRules = getPricingRules();
+}
+
+/* ======== 云同步（JSONBin.io） ======== */
+
+/* 获取云同步设置 */
+function getCloudConfig() {
+  try {
+    return JSON.parse(localStorage.getItem('cloud_config_' + currentUser) || '{}');
+  } catch(e) { return {}; }
+}
+
+/* 加载云设置到界面 */
+function loadCloudSettings() {
+  const cfg = getCloudConfig();
+  document.getElementById('settingApiKey').value = cfg.apiKey || '';
+  document.getElementById('settingBinId').value = cfg.binId || '';
+}
+
+/* 保存云设置 */
+function saveCloudSettings() {
+  const apiKey = document.getElementById('settingApiKey').value.trim();
+  const binId = document.getElementById('settingBinId').value.trim();
+  localStorage.setItem('cloud_config_' + currentUser, JSON.stringify({ apiKey: apiKey, binId: binId }));
+  showToast('云同步设置已保存', 'success');
+  if (apiKey && !binId) {
+    /* 自动创建新Bin */
+    createNewBin();
+  }
+}
+
+/* 创建新Bin */
+function createNewBin() {
+  const cfg = getCloudConfig();
+  if (!cfg.apiKey) { showToast('请先设置API Key', 'warning'); return; }
+  setSyncStatus('syncing');
+  fetch('https://api.jsonbin.io/v3/b', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': cfg.apiKey
+    },
+    body: JSON.stringify(getAllUserData())
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('创建Bin失败');
+    return r.json();
+  })
+  .then(function(data) {
+    cfg.binId = data.metadata.id;
+    cfg.lastSync = new Date().toISOString();
+    localStorage.setItem('cloud_config_' + currentUser, JSON.stringify(cfg));
+    document.getElementById('settingBinId').value = cfg.binId;
+    showToast('Bin创建成功，ID: ' + cfg.binId, 'success');
+    setSyncStatus('synced');
+  })
+  .catch(function(e) {
+    showToast('创建Bin失败: ' + e.message, 'error');
+    setSyncStatus('offline');
+  });
+}
+
+/* 推送到云端 */
+function pushToCloud() {
+  const cfg = getCloudConfig();
+  if (!cfg.apiKey || !cfg.binId) return Promise.resolve();
+  setSyncStatus('syncing');
+  return fetch('https://api.jsonbin.io/v3/b/' + cfg.binId, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': cfg.apiKey
+    },
+    body: JSON.stringify(getAllUserData())
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('推送失败');
+    cfg.lastSync = new Date().toISOString();
+    localStorage.setItem('cloud_config_' + currentUser, JSON.stringify(cfg));
+    setSyncStatus('synced');
+  })
+  .catch(function(e) {
+    showToast('云同步失败: ' + e.message, 'error');
+    setSyncStatus('offline');
+  });
+}
+
+/* 手动推送 */
+function manualPush() {
+  showToast('正在推送到云端...', 'info');
+  pushToCloud().then(function() {
+    showToast('推送成功', 'success');
+  });
+}
+
+/* 从云端拉取 */
+function manualPull() {
+  const cfg = getCloudConfig();
+  if (!cfg.apiKey || !cfg.binId) {
+    showToast('请先配置API Key和Bin ID', 'warning');
+    return;
+  }
+  setSyncStatus('syncing');
+  showToast('正在从云端拉取...', 'info');
+  fetch('https://api.jsonbin.io/v3/b/' + cfg.binId + '/latest', {
+    headers: { 'X-Master-Key': cfg.apiKey }
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('拉取失败');
+    return r.json();
+  })
+  .then(function(data) {
+    const cloudData = data.record;
+    /* 检查时间戳 */
+    const localLastModified = localStorage.getItem('policy_data_' + currentUser + '_timestamp') || '0';
+    if (cloudData._timestamp && cloudData._timestamp > localLastModified) {
+      /* 云端数据更新，覆盖本地 */
+      if (cloudData.policies) {
+        clientData = cloudData.policies;
+        localStorage.setItem('policy_data_' + currentUser, JSON.stringify(clientData));
+      }
+      if (cloudData.reminders) {
+        reminderData = cloudData.reminders;
+        localStorage.setItem('reminders_' + currentUser, JSON.stringify(reminderData));
+      }
+      if (cloudData.pricingRules) {
+        pricingRules = cloudData.pricingRules;
+        localStorage.setItem('pricing_rules_' + currentUser, JSON.stringify(pricingRules));
+      }
+      showToast('数据已从云端同步', 'success');
+      refreshCurrentTab();
+    } else {
+      showToast('本地数据已是最新', 'info');
+    }
+    cfg.lastSync = new Date().toISOString();
+    localStorage.setItem('cloud_config_' + currentUser, JSON.stringify(cfg));
+    setSyncStatus('synced');
+  })
+  .catch(function(e) {
+    showToast('拉取失败: ' + e.message, 'error');
+    setSyncStatus('offline');
+  });
+}
+
+/* 自动推送（数据变更时） */
+function autoSyncPush() {
+  const cfg = getCloudConfig();
+  if (cfg.apiKey && cfg.binId) {
+    localStorage.setItem('policy_data_' + currentUser + '_timestamp', Date.now().toString());
+    pushToCloud();
+  }
+}
+
+/* 获取所有用户数据（用于云端存储） */
+function getAllUserData() {
+  return {
+    policies: clientData,
+    reminders: reminderData,
+    pricingRules: pricingRules,
+    _timestamp: Date.now().toString(),
+    _user: currentUser
+  };
+}
+
+/* 设置同步状态 */
+function setSyncStatus(status) {
+  const dot = document.getElementById('syncDot');
+  const text = document.getElementById('syncStatusText');
+  dot.className = 'sync-dot';
+  if (status === 'synced') {
+    text.textContent = '已同步';
+  } else if (status === 'syncing') {
+    dot.classList.add('syncing');
+    text.textContent = '同步中...';
+  } else {
+    dot.classList.add('offline');
+    text.textContent = '未连接';
+  }
+}
+
+/* ======== Tab切换 ======== */
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.nav-item').forEach(function(n) {
+    n.classList.toggle('active', n.dataset.tab === tab);
+  });
+  document.querySelectorAll('.tab-content').forEach(function(tc) {
+    tc.classList.remove('active');
+  });
+  var el = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+  if (el) el.classList.add('active');
+
+  /* 切换到查询页时重置为列表视图 */
+  if (tab === 'query') {
+    var listView = document.getElementById('queryListView');
+    var detailView = document.getElementById('clientDetailView');
+    if (listView) listView.style.display = 'block';
+    if (detailView) detailView.style.display = 'none';
+    selectedClientIdx = -1;
+  }
+
+  refreshCurrentTab();
+}
+
+/* 刷新当前Tab内容 */
+function refreshCurrentTab() {
+  switch(currentTab) {
+    case 'home': renderDashboard(); break;
+    case 'query': handleSearch(); break;
+    case 'reminders': renderReminders(); break;
+    case 'tracking': populateTrackClientSelect(); break;
+    case 'pricing': renderPricingRules(); break;
+    case 'settings': break;
+  }
+  updateBottomStats();
+}
+
+/* 更新底部统计 */
+function updateBottomStats() {
+  var totalClients = clientData.length;
+  var totalPolicies = 0;
+  clientData.forEach(function(c) { totalPolicies += (c.policies || []).length; });
+  document.getElementById('bottomStats').textContent =
+    '客户: ' + totalClients + ' | 保单: ' + totalPolicies;
+}
+
+/* ======== 首页 - 仪表盘 ======== */
+function renderDashboard() {
+  var totalClients = clientData.length;
+  var totalPolicies = 0;
+  var validPolicies = 0;
+  var expiredPolicies = 0;
+  var totalPremium = 0;
+  var totalSum = 0;
+  var monthNew = 0;
+  var now = new Date();
+  var thisMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+
+  /* 险种统计 */
+  var typeMap = {};
+  clientData.forEach(function(c) {
+    (c.policies || []).forEach(function(p) {
+      totalPolicies++;
+      if (p.status === '有效') validPolicies++;
+      else expiredPolicies++;
+      totalPremium += parseFloat(p.annualPremium) || 0;
+      totalSum += parseFloat(p.sumInsured) || 0;
+      /* 本月新增判断 */
+      if (p.effectiveDate && p.effectiveDate.startsWith(thisMonth)) monthNew++;
+      /* 险种统计 */
+      var type = p.insuranceName || '未分类';
+      typeMap[type] = (typeMap[type] || 0) + 1;
+    });
+  });
+
+  var statsHtml = '' +
+    '<div class="stat-card"><div class="stat-value">' + totalClients + '</div><div class="stat-label">总客户数</div></div>' +
+    '<div class="stat-card"><div class="stat-value">' + totalPolicies + '</div><div class="stat-label">总保单数</div></div>' +
+    '<div class="stat-card green"><div class="stat-value">' + validPolicies + '</div><div class="stat-label">有效保单</div></div>' +
+    '<div class="stat-card red"><div class="stat-value">' + expiredPolicies + '</div><div class="stat-label">失效保单</div></div>' +
+    '<div class="stat-card"><div class="stat-value">' + formatMoney(totalPremium) + '</div><div class="stat-label">总年缴保费（元）</div></div>' +
+    '<div class="stat-card"><div class="stat-value">' + formatMoney(totalSum) + '</div><div class="stat-label">总保额（元）</div></div>' +
+    '<div class="stat-card yellow"><div class="stat-value">' + monthNew + '</div><div class="stat-label">本月新增保单</div></div>';
+  document.getElementById('dashboardStats').innerHTML = statsHtml;
+
+  /* 险种分布 - 简易柱状图 */
+  var chartHtml = '<div style="overflow-x:auto;padding-bottom:8px;"><div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;min-height:200px;padding:10px 4px 4px;">';
+  var maxCount = 1;
+  Object.values(typeMap).forEach(function(v) { if (v > maxCount) maxCount = v; });
+  Object.keys(typeMap).sort(function(a,b) { return typeMap[b] - typeMap[a]; }).forEach(function(type) {
+    var count = typeMap[type];
+    var pct = Math.round(count / maxCount * 140);
+    chartHtml += '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:64px;">' +
+      '<div style="font-size:12px;font-weight:600;color:#1e40af;">' + count + '</div>' +
+      '<div style="width:42px;height:' + pct + 'px;background:linear-gradient(to top,#3b82f6,#60a5fa);border-radius:6px 6px 0 0;transition:height 0.3s;min-height:4px;"></div>' +
+      '<div style="font-size:11px;color:#64748b;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + type + '">' + type + '</div>' +
+      '</div>';
+  });
+  chartHtml += '</div></div>';
+  document.getElementById('insuranceTypeChart').innerHTML = chartHtml || '<div class="empty-state"><p>暂无数据</p></div>';
+
+  /* 管理员面板 */
+  if (currentUser === 'admin') {
+    document.getElementById('adminPanel').classList.remove('hidden');
+    renderAdminPanel();
+  } else {
+    document.getElementById('adminPanel').classList.add('hidden');
+  }
+}
+
+/* 管理员面板 */
+function renderAdminPanel() {
+  var users = getUsers();
+  var html = '';
+  users.forEach(function(u) {
+    var uData = JSON.parse(localStorage.getItem('policy_data_' + u.username) || '[]');
+    var policyCount = 0;
+    uData.forEach(function(c) { policyCount += (c.policies || []).length; });
+    html += '<div class="user-stat-card">' +
+      '<div><strong>' + u.username + '</strong> ' +
+      '<span class="tag tag-blue">' + (u.username === 'admin' ? '管理员' : '普通用户') + '</span></div>' +
+      '<div style="font-size:13px;color:#64748b;">客户 ' + uData.length + ' | 保单 ' + policyCount +
+      ' | 最后登录: ' + (u.lastLogin ? new Date(u.lastLogin).toLocaleString('zh-CN') : '从未') + '</div>' +
+      '</div>';
+  });
+  document.getElementById('adminUserList').innerHTML = html || '<p>暂无用户数据</p>';
+}
+
+/* ======== 查询功能 ======== */
+
+/* 切换高级搜索 */
+function toggleAdvancedSearch() {
+  document.getElementById('advancedSearch').classList.toggle('show');
+}
+
+/* 清空搜索 */
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  clearAdvancedSearch();
+  handleSearch();
+}
+
+/* 清空高级搜索条件 */
+function clearAdvancedSearch() {
+  ['advPolicyCode','advInsuranceName','advStatus','advDateFrom','advDateTo',
+   'advPremMin','advPremMax','advSumMin','advSumMax','advPayTerm','advInsuredId','advPhone'
+  ].forEach(function(id) { document.getElementById(id).value = ''; });
+}
+
+/* 执行搜索 */
+function handleSearch() {
+  var keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+
+  /* 高级搜索条件 */
+  var advPolicyCode = document.getElementById('advPolicyCode').value.trim();
+  var advInsuranceName = document.getElementById('advInsuranceName').value.trim().toLowerCase();
+  var advStatus = document.getElementById('advStatus').value;
+  var advDateFrom = document.getElementById('advDateFrom').value;
+  var advDateTo = document.getElementById('advDateTo').value;
+  var advPremMin = parseFloat(document.getElementById('advPremMin').value) || 0;
+  var advPremMax = parseFloat(document.getElementById('advPremMax').value) || Infinity;
+  var advSumMin = parseFloat(document.getElementById('advSumMin').value) || 0;
+  var advSumMax = parseFloat(document.getElementById('advSumMax').value) || Infinity;
+  var advPayTerm = document.getElementById('advPayTerm').value.trim();
+  var advInsuredId = document.getElementById('advInsuredId').value.trim();
+  var advPhone = document.getElementById('advPhone').value.trim();
+
+  /* 过滤客户 */
+  var filtered = clientData.map(function(client, idx) {
+    /* 过滤保单 */
+    var matchedPolicies = (client.policies || []).filter(function(p) {
+      /* 基础关键词搜索 */
+      if (keyword) {
+        var nameMatch = (client.name || '').toLowerCase().includes(keyword) ||
+                        (p.insured || '').toLowerCase().includes(keyword);
+        if (!nameMatch) return false;
+      }
+      /* 高级搜索条件 */
+      if (advPolicyCode && (p.policyCode || '') !== advPolicyCode) return false;
+      if (advInsuranceName && !(p.insuranceName || '').toLowerCase().includes(advInsuranceName)) return false;
+      if (advStatus && (p.status || '') !== advStatus) return false;
+      if (advDateFrom && toYMD(p.effectiveDate) < toYMD(advDateFrom)) return false;
+      if (advDateTo && toYMD(p.effectiveDate) > toYMD(advDateTo)) return false;
+      var prem = parseFloat(p.annualPremium) || 0;
+      if (prem < advPremMin || prem > advPremMax) return false;
+      var sum = parseFloat(p.sumInsured) || 0;
+      if (sum < advSumMin || sum > advSumMax) return false;
+      if (advPayTerm && String(p.paymentTerm || '') !== advPayTerm) return false;
+      if (advInsuredId && (p.insuredId || '') !== advInsuredId) return false;
+      if (advPhone && (client.phone || '') !== advPhone && (p.insuredPhone || '') !== advPhone) return false;
+      return true;
+    });
+    return { clientIdx: idx, client: client, matchedPolicies: matchedPolicies };
+  }).filter(function(item) { return item.matchedPolicies.length > 0 || (!keyword && !advPolicyCode && !advInsuranceName && !advStatus && !advDateFrom && !advDateTo && advPremMin === 0 && advPremMax === Infinity && advSumMin === 0 && advSumMax === Infinity && !advPayTerm && !advInsuredId && !advPhone); });
+
+  /* 如果没有高级条件且有关键词，只返回匹配的客户 */
+  var hasAdv = advPolicyCode || advInsuranceName || advStatus || advDateFrom || advDateTo ||
+    advPremMin > 0 || advPremMax < Infinity || advSumMin > 0 || advSumMax < Infinity ||
+    advPayTerm || advInsuredId || advPhone;
+
+  if (!hasAdv && keyword) {
+    filtered = filtered.filter(function(item) { return item.matchedPolicies.length > 0; });
+  }
+  if (!hasAdv && !keyword) {
+    filtered = clientData.map(function(client, idx) {
+      return { clientIdx: idx, client: client, matchedPolicies: client.policies || [] };
+    });
+  }
+
+  /* 排序 */
+  var sortBy = document.getElementById('sortSelect').value;
+  filtered.sort(function(a, b) {
+    switch(sortBy) {
+      case 'name':
+        return (a.client.name || '').localeCompare(b.client.name || '', 'zh-CN');
+      case 'premium-desc':
+        var aPrem = 0, bPrem = 0;
+        a.matchedPolicies.forEach(function(p) { aPrem += parseFloat(p.annualPremium) || 0; });
+        b.matchedPolicies.forEach(function(p) { bPrem += parseFloat(p.annualPremium) || 0; });
+        return bPrem - aPrem;
+      case 'premium-asc':
+        var aP = 0, bP = 0;
+        a.matchedPolicies.forEach(function(p) { aP += parseFloat(p.annualPremium) || 0; });
+        b.matchedPolicies.forEach(function(p) { bP += parseFloat(p.annualPremium) || 0; });
+        return aP - bP;
+      case 'sumInsured-desc':
+        var aS = 0, bS = 0;
+        a.matchedPolicies.forEach(function(p) { aS += parseFloat(p.sumInsured) || 0; });
+        b.matchedPolicies.forEach(function(p) { bS += parseFloat(p.sumInsured) || 0; });
+        return bS - aS;
+      case 'sumInsured-asc':
+        var aS2 = 0, bS2 = 0;
+        a.matchedPolicies.forEach(function(p) { aS2 += parseFloat(p.sumInsured) || 0; });
+        b.matchedPolicies.forEach(function(p) { bS2 += parseFloat(p.sumInsured) || 0; });
+        return aS2 - bS2;
+      case 'date-desc':
+        return (b.client.policies && b.client.policies[0] && b.client.policies[0].effectiveDate || '').localeCompare(a.client.policies && a.client.policies[0] && a.client.policies[0].effectiveDate || '');
+      case 'date-asc':
+        return (a.client.policies && a.client.policies[0] && a.client.policies[0].effectiveDate || '').localeCompare(b.client.policies && b.client.policies[0] && b.client.policies[0].effectiveDate || '');
+      default: return 0;
+    }
+  });
+
+  /* 统计信息 */
+  var totalPolicies = 0;
+  filtered.forEach(function(item) { totalPolicies += item.matchedPolicies.length; });
+  document.getElementById('searchResultInfo').textContent =
+    '共找到 ' + filtered.length + ' 个客户，' + totalPolicies + ' 条保单';
+
+  renderClientList(filtered);
+}
+
+/* 渲染客户列表 */
+function renderClientList(filtered) {
+  var html = '';
+  if (filtered.length === 0) {
+    html = '<div class="empty-state"><div class="empty-icon">&#128269;</div><p>未找到匹配的客户</p>' +
+           '<button class="btn-primary" onclick="openAddClientModal()">添加新客户</button></div>';
+  } else {
+    filtered.forEach(function(item) {
+      var c = item.client;
+      var pCount = item.matchedPolicies.length;
+      var vCount = item.matchedPolicies.filter(function(p) { return p.status === '有效'; }).length;
+      var totalPrem = 0;
+      item.matchedPolicies.forEach(function(p) { totalPrem += parseFloat(p.annualPremium) || 0; });
+      var isActive = selectedClientIdx === item.clientIdx ? ' active' : '';
+      html += '<div class="client-item' + isActive + '" onclick="selectClient(' + item.clientIdx + ')">' +
+        '<div class="client-name">' + (c.name || '未命名') +
+        ' <span class="tag ' + (vCount > 0 ? 'tag-green' : 'tag-red') + '">' + vCount + '/' + pCount + ' 有效</span></div>' +
+        '<div class="client-meta">' + (c.phone || '') + ' | 保费: ' + formatMoney(totalPrem) + ' 元/年</div>' +
+        '</div>';
+    });
+  }
+  document.getElementById('clientList').innerHTML = html;
+}
+
+/* 选择客户 - 跳转到详情页 */
+function selectClient(idx) {
+  selectedClientIdx = idx;
+  document.getElementById('queryListView').style.display = 'none';
+  document.getElementById('clientDetailView').style.display = 'block';
+  renderDetailPanel(idx);
+  window.scrollTo(0, 0);
+}
+
+/* 返回查询列表 */
+function backToQueryList() {
+  document.getElementById('queryListView').style.display = 'block';
+  document.getElementById('clientDetailView').style.display = 'none';
+  selectedClientIdx = -1;
+  handleSearch();
+  window.scrollTo(0, 0);
+}
+
+/* 渲染详情面板 */
+function renderDetailPanel(idx) {
+  var panel = document.getElementById('detailPanel');
+  var c = clientData[idx];
+  if (!c) { panel.classList.remove('show'); return; }
+
+  panel.classList.add('show');
+
+  /* 返回按钮 */
+  var html = '<button class="back-btn" onclick="backToQueryList()">&#8592; 返回查询列表</button>';
+
+  /* 客户姓名单独显示 */
+  html += '<div style="margin-bottom:14px;"><h3 style="font-size:20px;font-weight:700;color:#1e293b;">' + (c.name || '未命名') + '</h3></div>';
+
+  /* 客户基本信息 */
+  html += '<div class="card">' +
+    '<div class="card-title"><span>客户详情</span>' +
+    '<div class="btn-group">' +
+    '<button class="btn-sm btn-outline" onclick="editClient(' + idx + ')">编辑</button>' +
+    '<button class="btn-sm btn-success" onclick="exportClientToWord(' + idx + ')">导出Word</button>' +
+    '<button class="btn-sm btn-danger" onclick="deleteClient(' + idx + ')">删除</button>' +
+    '</div></div>' +
+    '<div class="detail-section">' +
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;font-size:13px;">' +
+    '<p><strong>身份证：</strong>' + (c.idCard || '-') + '</p>' +
+    '<p><strong>手机号：</strong>' + (c.phone || '-') + '</p>' +
+    '<p><strong>地址：</strong>' + (c.address || '-') + '</p>' +
+    '<p><strong>工作单位：</strong>' + (c.workCompany || '-') + '</p>' +
+    '<p><strong>工作地址：</strong>' + (c.workAddress || '-') + '</p>' +
+    '</div>';
+
+  /* 家庭成员 */
+  if (c.familyMembers && c.familyMembers.length > 0) {
+    html += '<h4 style="margin-top:12px;border-bottom:1px solid #e2e8f0;padding-bottom:6px;">家庭成员</h4>';
+    c.familyMembers.forEach(function(fm) {
+      html += '<p style="font-size:13px;">' + (fm.name || '') + ' (' + (fm.relationship || '') + ')' +
+        (fm.phone ? ' | ' + fm.phone : '') + (fm.note ? ' | ' + fm.note : '') + '</p>';
+    });
+  }
+  html += '</div></div>';
+
+  /* 保单列表（概览表格） */
+  html += '<div class="card"><div class="card-title">保单列表' +
+    '<button class="btn-sm btn-primary" onclick="openAddPolicyModal(' + idx + ')">添加保单</button></div>';
+
+  if (!c.policies || c.policies.length === 0) {
+    html += '<div class="empty-state"><p>暂无保单</p></div>';
+  } else {
+    html += '<div class="table-responsive"><table class="policy-table">' +
+      '<thead><tr><th>代码</th><th>险种</th><th>类型</th><th>状态</th><th>保费</th><th>保额</th><th>被保人</th><th>操作</th></tr></thead><tbody>';
+    c.policies.forEach(function(p, pIdx) {
+      var statusClass = p.status === '有效' ? 'tag-green' : 'tag-red';
+      var typeTag = p.mainType === '附加险' ? 'tag-yellow' : p.mainType === '万能险' ? 'tag-purple' : 'tag-blue';
+      html += '<tr>' +
+        '<td>' + (p.policyCode || '') + '</td>' +
+        '<td>' + (p.insuranceName || '') + '</td>' +
+        '<td><span class="tag ' + typeTag + '">' + (p.mainType || '主险') + '</span></td>' +
+        '<td><span class="tag ' + statusClass + '">' + (p.status || '有效') + '</span></td>' +
+        '<td>' + formatMoney(p.annualPremium) + '</td>' +
+        '<td>' + formatMoney(p.sumInsured) + '</td>' +
+        '<td>' + (p.insured || c.name || '-') + '</td>' +
+        '<td><button class="btn-sm btn-outline" onclick="editPolicy(' + idx + ',' + pIdx + ')">编辑</button> ' +
+        '<button class="btn-sm btn-danger" onclick="deletePolicy(' + idx + ',' + pIdx + ')">删除</button></td>' +
+        '</tr>';
+    });
+    html += '</tbody></table></div>';
+  }
+  html += '</div>';
+
+  /* 保单详情 - 按主险/附加险/万能险分组显示 */
+  if (c.policies && c.policies.length > 0) {
+    html += '<div class="card"><div class="card-title">保单详情</div>';
+
+    /* 分离主险、附加险、万能险 */
+    var mainPolicies = [];
+    var addonPolicies = [];
+    var universalPolicies = [];
+    var usedAddons = [];
+
+    c.policies.forEach(function(p, pIdx) {
+      p._idx = pIdx;
+      var type = p.mainType || '主险';
+      if (type === '附加险') addonPolicies.push(p);
+      else if (type === '万能险') universalPolicies.push(p);
+      else mainPolicies.push(p);
+    });
+
+    /* 渲染单个保单详情卡片 */
+    function renderPolicyDetail(p) {
+      var pIdx = p._idx;
+      var detail = '<div style="padding:14px 16px;">';
+
+      /* 保单标题与操作 */
+      var typeLabel = p.mainType === '附加险' ? '附加险' : p.mainType === '万能险' ? '万能险' : '主险';
+      detail += '<div style="margin-bottom:12px;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">' +
+        '<h4 style="font-size:14px;color:#1e40af;margin:0;">' + (p.insuranceName || '') + '</h4>' +
+        '<div style="display:flex;gap:6px;align-items:center;">' +
+        '<span class="tag ' + (typeLabel === '附加险' ? 'tag-yellow' : typeLabel === '万能险' ? 'tag-purple' : 'tag-blue') + '">' + typeLabel + '</span>' +
+        '<span class="tag ' + (p.status === '有效' ? 'tag-green' : 'tag-red') + '">' + (p.status || '有效') + '</span>' +
+        '<button class="btn-sm btn-outline" onclick="editPolicy(' + idx + ',' + pIdx + ')">编辑</button>' +
+        '<button class="btn-sm btn-danger" onclick="deletePolicy(' + idx + ',' + pIdx + ')">删除</button>' +
+        '</div></div>' +
+        '<div style="font-size:12px;color:#64748b;margin-top:4px;">保单号：' + (p.policyCode || '-') + (p.codeType ? ' &nbsp;|&nbsp; 险种代码：' + p.codeType : '') + '</div>' +
+        '</div>';
+
+      /* 被保人信息 */
+      detail += '<div style="background:#f8fafc;border-radius:8px;padding:12px;margin-bottom:10px;">' +
+        '<h5 style="font-size:13px;color:#475569;margin-bottom:8px;border-bottom:1px solid #e2e8f0;padding-bottom:4px;">被保人信息</h5>' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px;font-size:13px;">' +
+        '<p><strong>姓名：</strong>' + (p.insured || c.name || '-') + '</p>' +
+        '<p><strong>关系：</strong>' + (p.insuredRelation || '-') + '</p>' +
+        '<p><strong>身份证号：</strong>' + (p.insuredId || c.idCard || '-') + '</p>' +
+        '<p><strong>联系方式：</strong>' + (p.insuredPhone || c.phone || '-') + '</p>' +
+        '</div></div>';
+
+      /* 金额与缴费信息（保额+缴费金额放一起） */
+      detail += '<div style="background:#f8fafc;border-radius:8px;padding:12px;margin-bottom:10px;">' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;font-size:13px;">' +
+        '<div style="text-align:center;padding:8px;background:#fef2f2;border-radius:6px;"><div style="font-size:11px;color:#64748b;margin-bottom:2px;">年缴保费</div><div style="font-size:16px;font-weight:700;color:#dc2626;">' + formatMoney(p.annualPremium) + '</div></div>' +
+        '<div style="text-align:center;padding:8px;background:#fffbeb;border-radius:6px;"><div style="font-size:11px;color:#64748b;margin-bottom:2px;">保额</div><div style="font-size:16px;font-weight:700;color:#92400e;">' + formatMoney(p.sumInsured) + '</div></div>' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;font-size:13px;margin-top:10px;">' +
+        '<p><strong>缴费方式：</strong>' + (p.paymentMethod || '-') + '</p>' +
+        '<p><strong>缴费期限：</strong>' + (p.paymentTerm || '-') + ' 年</p>' +
+        '<p><strong>生效日期：</strong>' + formatDate(p.effectiveDate) + '</p>' +
+        (p.parentPolicyCode ? '<p><strong>关联主险：</strong>' + p.parentPolicyCode + '</p>' : '') +
+        '</div></div>';
+
+      /* 受益人 */
+      if (p.beneficiaries && p.beneficiaries.length > 0) {
+        detail += '<div style="margin-bottom:10px;"><h5 style="font-size:13px;color:#475569;margin-bottom:6px;">受益人</h5>';
+        p.beneficiaries.forEach(function(b) {
+          detail += '<span style="display:inline-block;background:#f1f5f9;padding:4px 12px;border-radius:6px;font-size:12px;margin-right:6px;margin-bottom:4px;">' +
+            (b.name || '') + ' - ' + (b.quota || '') + '%</span>';
+        });
+        detail += '</div>';
+      }
+
+      /* 备注 */
+      if (p.remark) {
+        detail += '<div style="background:#fff7ed;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:13px;">' +
+          '<strong>备注：</strong>' + p.remark + '</div>';
+      }
+
+      /* 服务记录 */
+      detail += '<div style="margin-top:8px;">' +
+        '<h5 style="font-size:13px;color:#475569;margin-bottom:6px;">服务记录</h5>';
+      if (p.serviceRecords && p.serviceRecords.length > 0) {
+        detail += '<div class="timeline">';
+        p.serviceRecords.forEach(function(sr) {
+          detail += '<div class="timeline-item">' +
+            '<div class="timeline-date">' + formatDate(sr.date) + '</div>' +
+            '<div class="timeline-content">' + (sr.content || '') + '</div></div>';
+        });
+        detail += '</div>';
+      } else {
+        detail += '<p style="font-size:12px;color:#94a3b8;">暂无服务记录</p>';
+      }
+      detail += '<button class="btn-sm btn-outline" style="margin-top:8px;" onclick="openAddServiceModal(' + idx + ',' + pIdx + ')">添加服务记录</button>';
+      detail += '</div>';
+
+      detail += '</div>';
+      return detail;
+    }
+
+    /* 渲染主险及其附加险/万能险分组 */
+    mainPolicies.forEach(function(mp) {
+      html += '<div class="policy-group">';
+      html += '<div class="policy-group-main">主险：' + (mp.insuranceName || '') + ' (' + (mp.policyCode || '') + ')</div>';
+      html += renderPolicyDetail(mp);
+
+      /* 查找关联的附加险 */
+      var associatedAddons = addonPolicies.filter(function(ap) {
+        return ap.parentPolicyCode && ap.parentPolicyCode === mp.policyCode;
+      });
+      associatedAddons.forEach(function(ap) {
+        usedAddons.push(ap);
+        html += '<div class="policy-group-addon">附加险：' + (ap.insuranceName || '') + ' (' + (ap.policyCode || '') + ')</div>';
+        html += renderPolicyDetail(ap);
+      });
+
+      /* 查找关联的万能险 */
+      var associatedUniversal = universalPolicies.filter(function(up) {
+        return up.parentPolicyCode && up.parentPolicyCode === mp.policyCode;
+      });
+      associatedUniversal.forEach(function(up) {
+        usedAddons.push(up);
+        html += '<div class="policy-group-universal">万能险：' + (up.insuranceName || '') + ' (' + (up.policyCode || '') + ')</div>';
+        html += renderPolicyDetail(up);
+      });
+
+      html += '</div>';
+    });
+
+    /* 未关联的附加险 */
+    var unlinkedAddons = addonPolicies.filter(function(ap) { return usedAddons.indexOf(ap) === -1; });
+    unlinkedAddons.forEach(function(ap) {
+      html += '<div class="policy-group">';
+      html += '<div class="policy-group-addon">附加险（未关联主险）：' + (ap.insuranceName || '') + ' (' + (ap.policyCode || '') + ')</div>';
+      html += renderPolicyDetail(ap);
+      html += '</div>';
+    });
+
+    /* 未关联的万能险 */
+    var unlinkedUniversal = universalPolicies.filter(function(up) { return usedAddons.indexOf(up) === -1; });
+    unlinkedUniversal.forEach(function(up) {
+      html += '<div class="policy-group">';
+      html += '<div class="policy-group-universal">万能险（未关联主险）：' + (up.insuranceName || '') + ' (' + (up.policyCode || '') + ')</div>';
+      html += renderPolicyDetail(up);
+      html += '</div>';
+    });
+
+    html += '</div>';
+  }
+
+  /* 联系记录 */
+  html += '<div class="card"><div class="card-title">联系记录' +
+    '<button class="btn-sm btn-primary" onclick="openAddContactModal(' + idx + ')">添加联系记录</button></div>';
+  if (c.contactHistory && c.contactHistory.length > 0) {
+    html += '<div class="timeline">';
+    c.contactHistory.forEach(function(ch) {
+      var cls = 'success';
+      if (ch.status === '未联系上' || ch.status === '电话挂断') cls = 'danger';
+      else if (ch.status === '已加微信') cls = 'warning';
+      html += '<div class="timeline-item ' + cls + '">' +
+        '<div class="timeline-date">' + formatDate(ch.date) + ' | <span class="tag tag-' +
+        (ch.status === '已电话联系' || ch.status === '面见客户' ? 'green' : ch.status === '未联系上' || ch.status === '电话挂断' ? 'red' : 'yellow') +
+        '">' + (ch.status || '') + '</span></div>' +
+        '<div class="timeline-content">' + (ch.note || '') + '</div></div>';
+    });
+    html += '</div>';
+  } else {
+    html += '<div class="empty-state"><p>暂无联系记录</p></div>';
+  }
+  html += '</div>';
+
+  panel.innerHTML = html;
+}
+
+/* ======== 客户增删改 ======== */
+
+/* 打开添加客户模态框 */
+function openAddClientModal() {
+  document.getElementById('clientModalTitle').textContent = '添加客户';
+  document.getElementById('clientEditIndex').value = -1;
+  document.getElementById('clientName').value = '';
+  document.getElementById('clientIdCard').value = '';
+  document.getElementById('clientPhone').value = '';
+  document.getElementById('clientAddress').value = '';
+  document.getElementById('clientWorkCompany').value = '';
+  document.getElementById('clientWorkAddress').value = '';
+  document.getElementById('familyMembersList').innerHTML = '';
+  openModal('clientModal');
+}
+
+/* 编辑客户 */
+function editClient(idx) {
+  var c = clientData[idx];
+  document.getElementById('clientModalTitle').textContent = '编辑客户';
+  document.getElementById('clientEditIndex').value = idx;
+  document.getElementById('clientName').value = c.name || '';
+  document.getElementById('clientIdCard').value = c.idCard || '';
+  document.getElementById('clientPhone').value = c.phone || '';
+  document.getElementById('clientAddress').value = c.address || '';
+  document.getElementById('clientWorkCompany').value = c.workCompany || '';
+  document.getElementById('clientWorkAddress').value = c.workAddress || '';
+  /* 家庭成员 */
+  var fmHtml = '';
+  (c.familyMembers || []).forEach(function(fm) {
+    fmHtml += buildFamilyMemberField(fm);
+  });
+  document.getElementById('familyMembersList').innerHTML = fmHtml;
+  openModal('clientModal');
+}
+
+/* 构建家庭成员字段HTML */
+function buildFamilyMemberField(data) {
+  return '<div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:6px;margin-bottom:6px;align-items:end;">' +
+    '<div><label style="font-size:11px;">姓名</label><input type="text" class="fm-name" value="' + (data.name || '') + '" placeholder="姓名"></div>' +
+    '<div><label style="font-size:11px;">关系</label><input type="text" class="fm-rel" value="' + (data.relationship || '') + '" placeholder="如：配偶"></div>' +
+    '<div><label style="font-size:11px;">身份证</label><input type="text" class="fm-id" value="' + (data.idCard || '') + '" placeholder="身份证号"></div>' +
+    '<div><label style="font-size:11px;">电话</label><input type="text" class="fm-phone" value="' + (data.phone || '') + '" placeholder="手机号"></div>' +
+    '<div><label style="font-size:11px;">备注</label><input type="text" class="fm-note" value="' + (data.note || '') + '" placeholder="备注"></div>' +
+    '<div><button type="button" class="btn-sm btn-danger" onclick="this.parentElement.remove()">删除</button></div>' +
+    '</div>';
+}
+
+/* 添加家庭成员字段 */
+function addFamilyMemberField() {
+  var container = document.getElementById('familyMembersList');
+  var div = document.createElement('div');
+  div.innerHTML = buildFamilyMemberField({});
+  container.appendChild(div.firstElementChild);
+}
+
+/* 保存客户 */
+function saveClient() {
+  var name = document.getElementById('clientName').value.trim();
+  if (!name) { showToast('请输入投保人姓名', 'warning'); return; }
+
+  /* 收集家庭成员 */
+  var familyMembers = [];
+  var fmContainers = document.getElementById('familyMembersList').children;
+  for (var i = 0; i < fmContainers.length; i++) {
+    var fmName = fmContainers[i].querySelector('.fm-name').value.trim();
+    if (fmName) {
+      familyMembers.push({
+        name: fmName,
+        relationship: fmContainers[i].querySelector('.fm-rel').value.trim(),
+        idCard: fmContainers[i].querySelector('.fm-id').value.trim(),
+        phone: fmContainers[i].querySelector('.fm-phone').value.trim(),
+        note: fmContainers[i].querySelector('.fm-note').value.trim()
+      });
+    }
+  }
+
+  var clientObj = {
+    name: name,
+    idCard: document.getElementById('clientIdCard').value.trim(),
+    phone: document.getElementById('clientPhone').value.trim(),
+    address: document.getElementById('clientAddress').value.trim(),
+    workCompany: document.getElementById('clientWorkCompany').value.trim(),
+    workAddress: document.getElementById('clientWorkAddress').value.trim(),
+    policies: [],
+    familyMembers: familyMembers,
+    contactHistory: []
+  };
+
+  var editIdx = parseInt(document.getElementById('clientEditIndex').value);
+  if (editIdx >= 0) {
+    /* 编辑：保留原有保单和联系记录 */
+    clientObj.policies = clientData[editIdx].policies || [];
+    clientObj.contactHistory = clientData[editIdx].contactHistory || [];
+    clientData[editIdx] = clientObj;
+    showToast('客户信息已更新', 'success');
+  } else {
+    clientData.push(clientObj);
+    showToast('客户添加成功', 'success');
+  }
+
+  savePolicyData();
+  closeModal('clientModal');
+  refreshCurrentTab();
+  if (editIdx >= 0 && selectedClientIdx === editIdx && currentTab === 'query' && document.getElementById('clientDetailView').style.display !== 'none') {
+    renderDetailPanel(editIdx);
+  }
+}
+
+/* 删除客户 */
+function deleteClient(idx) {
+  showConfirm('确定要删除客户 "' + (clientData[idx].name || '') + '" 及其所有保单吗？此操作不可撤销。', function() {
+    clientData.splice(idx, 1);
+    savePolicyData();
+    backToQueryList();
+    showToast('客户已删除', 'success');
+  });
+}
+
+/* ======== 保单增删改 ======== */
+
+/* 打开添加保单模态框 */
+function openAddPolicyModal(clientIdx) {
+  document.getElementById('policyModalTitle').textContent = '添加保单';
+  document.getElementById('policyClientIndex').value = clientIdx;
+  document.getElementById('policyEditIndex').value = -1;
+  clearPolicyForm();
+  openModal('policyModal');
+}
+
+/* 编辑保单 */
+function editPolicy(clientIdx, policyIdx) {
+  var p = clientData[clientIdx].policies[policyIdx];
+  document.getElementById('policyModalTitle').textContent = '编辑保单';
+  document.getElementById('policyClientIndex').value = clientIdx;
+  document.getElementById('policyEditIndex').value = policyIdx;
+  document.getElementById('policyCode').value = p.policyCode || '';
+  document.getElementById('insuranceName').value = p.insuranceName || '';
+  document.getElementById('codeType').value = p.codeType || '';
+  document.getElementById('mainType').value = p.mainType || '主险';
+  document.getElementById('parentPolicyCode').value = p.parentPolicyCode || '';
+  document.getElementById('policyStatus').value = p.status || '有效';
+  document.getElementById('effectiveDate').value = formatDate(p.effectiveDate);
+  document.getElementById('paymentMethod').value = p.paymentMethod || '年缴';
+  document.getElementById('annualPremium').value = p.annualPremium || '';
+  document.getElementById('sumInsured').value = p.sumInsured || '';
+  document.getElementById('paymentTerm').value = p.paymentTerm || '';
+  document.getElementById('insuredName').value = p.insured || '';
+  document.getElementById('insuredRelation').value = p.insuredRelation || '';
+  document.getElementById('insuredId').value = p.insuredId || '';
+  document.getElementById('insuredPhone').value = p.insuredPhone || '';
+  document.getElementById('policyRemark').value = p.remark || '';
+
+  /* 受益人 */
+  var bHtml = '';
+  (p.beneficiaries || []).forEach(function(b) {
+    bHtml += buildBeneficiaryField(b);
+  });
+  document.getElementById('beneficiariesList').innerHTML = bHtml;
+  openModal('policyModal');
+}
+
+/* 清空保单表单 */
+function clearPolicyForm() {
+  ['policyCode','insuranceName','codeType','parentPolicyCode','annualPremium',
+   'sumInsured','paymentTerm','insuredName','insuredRelation','insuredId',
+   'insuredPhone','policyRemark'].forEach(function(id) { document.getElementById(id).value = ''; });
+  document.getElementById('mainType').value = '主险';
+  document.getElementById('policyStatus').value = '有效';
+  document.getElementById('paymentMethod').value = '年缴';
+  document.getElementById('effectiveDate').value = '';
+  document.getElementById('beneficiariesList').innerHTML = '';
+}
+
+/* 构建受益人字段 */
+function buildBeneficiaryField(data) {
+  return '<div style="display:flex;gap:6px;margin-bottom:6px;align-items:end;">' +
+    '<div style="flex:1;"><label style="font-size:11px;">姓名</label><input type="text" class="ben-name" value="' + (data.name || '') + '" placeholder="姓名"></div>' +
+    '<div style="flex:1;"><label style="font-size:11px;">比例</label><input type="text" class="ben-quota" value="' + (data.quota || '') + '" placeholder="如：100%"></div>' +
+    '<div><button type="button" class="btn-sm btn-danger" onclick="this.parentElement.remove()">删除</button></div></div>';
+}
+
+/* 添加受益人字段 */
+function addBeneficiaryField() {
+  var container = document.getElementById('beneficiariesList');
+  var div = document.createElement('div');
+  div.innerHTML = buildBeneficiaryField({});
+  container.appendChild(div.firstElementChild);
+}
+
+/* 保存保单 */
+function savePolicy() {
+  var policyCode = document.getElementById('policyCode').value.trim();
+  var insuranceName = document.getElementById('insuranceName').value.trim();
+  if (!policyCode || !insuranceName) {
+    showToast('请填写保单代码和险种名称', 'warning');
+    return;
+  }
+
+  /* 收集受益人 */
+  var beneficiaries = [];
+  var benContainers = document.getElementById('beneficiariesList').children;
+  for (var i = 0; i < benContainers.length; i++) {
+    var benName = benContainers[i].querySelector('.ben-name').value.trim();
+    if (benName) {
+      beneficiaries.push({
+        name: benName,
+        quota: benContainers[i].querySelector('.ben-quota').value.trim()
+      });
+    }
+  }
+
+  var policyObj = {
+    policyCode: policyCode,
+    insuranceName: insuranceName,
+    codeType: document.getElementById('codeType').value.trim(),
+    mainType: document.getElementById('mainType').value,
+    parentPolicyCode: document.getElementById('parentPolicyCode').value.trim(),
+    status: document.getElementById('policyStatus').value,
+    effectiveDate: toYMD(document.getElementById('effectiveDate').value),
+    paymentMethod: document.getElementById('paymentMethod').value,
+    annualPremium: document.getElementById('annualPremium').value,
+    sumInsured: document.getElementById('sumInsured').value,
+    paymentTerm: document.getElementById('paymentTerm').value,
+    insured: document.getElementById('insuredName').value.trim() || clientData[parseInt(document.getElementById('policyClientIndex').value)].name,
+    insuredRelation: document.getElementById('insuredRelation').value.trim(),
+    insuredId: document.getElementById('insuredId').value.trim(),
+    insuredPhone: document.getElementById('insuredPhone').value.trim(),
+    beneficiaries: beneficiaries,
+    remark: document.getElementById('policyRemark').value.trim(),
+    extraFields: {},
+    serviceRecords: []
+  };
+
+  var clientIdx = parseInt(document.getElementById('policyClientIndex').value);
+  var editIdx = parseInt(document.getElementById('policyEditIndex').value);
+
+  if (editIdx >= 0) {
+    /* 编辑保单：保留服务记录 */
+    policyObj.serviceRecords = clientData[clientIdx].policies[editIdx].serviceRecords || [];
+    clientData[clientIdx].policies[editIdx] = policyObj;
+    showToast('保单已更新', 'success');
+  } else {
+    if (!clientData[clientIdx].policies) clientData[clientIdx].policies = [];
+    clientData[clientIdx].policies.push(policyObj);
+    showToast('保单添加成功', 'success');
+  }
+
+  savePolicyData();
+  closeModal('policyModal');
+  refreshCurrentTab();
+  if (selectedClientIdx === clientIdx && currentTab === 'query' && document.getElementById('clientDetailView').style.display !== 'none') {
+    renderDetailPanel(clientIdx);
+  }
+}
+
+/* 删除保单 */
+function deletePolicy(clientIdx, policyIdx) {
+  var p = clientData[clientIdx].policies[policyIdx];
+  showConfirm('确定要删除保单 "' + (p.policyCode || '') + '" 吗？', function() {
+    clientData[clientIdx].policies.splice(policyIdx, 1);
+    savePolicyData();
+    refreshCurrentTab();
+    if (selectedClientIdx === clientIdx && currentTab === 'query' && document.getElementById('clientDetailView').style.display !== 'none') {
+      renderDetailPanel(clientIdx);
+    }
+    showToast('保单已删除', 'success');
+  });
+}
+
+/* ======== 联系记录 ======== */
+function openAddContactModal(clientIdx) {
+  document.getElementById('contactDate').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('contactNote').value = '';
+  document.getElementById('contactStatus').value = '已电话联系';
+  openModal('contactModal');
+}
+
+function saveContactRecord() {
+  if (selectedClientIdx < 0) return;
+  var record = {
+    status: document.getElementById('contactStatus').value,
+    date: toYMD(document.getElementById('contactDate').value),
+    note: document.getElementById('contactNote').value.trim()
+  };
+  if (!clientData[selectedClientIdx].contactHistory) clientData[selectedClientIdx].contactHistory = [];
+  clientData[selectedClientIdx].contactHistory.unshift(record);
+  savePolicyData();
+  closeModal('contactModal');
+  if (currentTab === 'tracking') {
+    loadTrackingData();
+  } else if (currentTab === 'query' && document.getElementById('clientDetailView').style.display !== 'none') {
+    renderDetailPanel(selectedClientIdx);
+  }
+  showToast('联系记录已保存', 'success');
+}
+
+/* ======== 服务记录 ======== */
+function openAddServiceModal(clientIdx, policyIdx) {
+  document.getElementById('serviceClientIdx').value = clientIdx;
+  document.getElementById('servicePolicyIdx').value = policyIdx;
+  document.getElementById('serviceDate').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('serviceContent').value = '';
+  openModal('serviceModal');
+}
+
+function saveServiceRecord() {
+  var clientIdx = parseInt(document.getElementById('serviceClientIdx').value);
+  var policyIdx = parseInt(document.getElementById('servicePolicyIdx').value);
+  var record = {
+    date: toYMD(document.getElementById('serviceDate').value),
+    content: document.getElementById('serviceContent').value.trim()
+  };
+  if (!clientData[clientIdx].policies[policyIdx].serviceRecords) {
+    clientData[clientIdx].policies[policyIdx].serviceRecords = [];
+  }
+  clientData[clientIdx].policies[policyIdx].serviceRecords.unshift(record);
+  savePolicyData();
+  closeModal('serviceModal');
+  if (selectedClientIdx === clientIdx && currentTab === 'query' && document.getElementById('clientDetailView').style.display !== 'none') {
+    renderDetailPanel(clientIdx);
+  }
+  showToast('服务记录已保存', 'success');
+}
+
+/* ======== 提醒功能 ======== */
+
+/* 渲染提醒统计 */
+function renderReminderStats() {
+  var total = reminderData.length;
+  var pending = reminderData.filter(function(r) { return !r.dismissed && r.enabled; }).length;
+  var processed = reminderData.filter(function(r) { return r.dismissed; }).length;
+  var today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  var todayCount = reminderData.filter(function(r) {
+    return !r.dismissed && r.enabled && r.dueDate <= today;
+  }).length;
+
+  document.getElementById('reminderStats').innerHTML = '' +
+    '<div class="stat-card"><div class="stat-value">' + total + '</div><div class="stat-label">总提醒数</div></div>' +
+    '<div class="stat-card yellow"><div class="stat-value">' + todayCount + '</div><div class="stat-label">今日待办</div></div>' +
+    '<div class="stat-card green"><div class="stat-value">' + pending + '</div><div class="stat-label">待处理</div></div>' +
+    '<div class="stat-card"><div class="stat-value">' + processed + '</div><div class="stat-label">已处理</div></div>';
+}
+
+/* 渲染提醒列表 */
+function renderReminders() {
+  renderReminderStats();
+  var today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  var sevenDaysLater = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10).replace(/-/g, '');
+
+  var filtered = reminderData.filter(function(r) {
+    if (reminderFilter === 'all') return true;
+    if (reminderFilter === 'overdue') return !r.dismissed && r.enabled && r.dueDate < today;
+    if (reminderFilter === 'urgent') return !r.dismissed && r.enabled && r.dueDate >= today && r.dueDate <= sevenDaysLater;
+    if (reminderFilter === 'dismissed') return r.dismissed;
+    return true;
+  });
+
+  filtered.sort(function(a, b) {
+    if (a.dismissed !== b.dismissed) return a.dismissed ? 1 : -1;
+    return a.dueDate.localeCompare(b.dueDate);
+  });
+
+  if (filtered.length === 0) {
+    document.getElementById('reminderList').innerHTML = '<div class="empty-state"><div class="empty-icon">&#128276;</div><p>暂无提醒</p></div>';
+    return;
+  }
+
+  var html = '<div class="reminder-list">';
+  filtered.forEach(function(r) {
+    var cls = 'normal';
+    if (r.dismissed) cls = 'dismissed';
+    else if (r.dueDate < today) cls = 'overdue';
+    else if (r.dueDate <= sevenDaysLater) cls = 'urgent';
+
+    html += '<div class="reminder-item ' + cls + '">' +
+      '<div class="reminder-info">' +
+      '<h4>' + (r.title || '') +
+      ' <span class="tag tag-' + (r.type === '缴费提醒' ? 'yellow' : r.type === '续保提醒' ? 'red' : r.type === '保单周年' ? 'blue' : 'gray') +
+      '">' + (r.type || '') + '</span>' +
+      (r.dismissed ? ' <span class="tag tag-gray">已处理</span>' : '') +
+      '</h4>' +
+      '<p>到期日期: ' + formatDate(r.dueDate) +
+      ' | 提前 ' + (r.daysBefore || 0) + ' 天' +
+      ' | 关联: ' + (r.clientName || '-') + ' - ' + (r.policyCode || '-') +
+      '</p></div>' +
+      '<div class="reminder-actions">';
+    if (!r.dismissed) {
+      html += '<button class="btn-sm btn-success" onclick="dismissReminder(\'' + r.id + '\')">已处理</button>' +
+        '<button class="btn-sm btn-outline" onclick="editReminder(\'' + r.id + '\')">编辑</button>';
+    }
+    html += '<button class="btn-sm btn-danger" onclick="deleteReminder(\'' + r.id + '\')">删除</button>' +
+      '</div></div>';
+  });
+  html += '</div>';
+  document.getElementById('reminderList').innerHTML = html;
+}
+
+/* 筛选提醒 */
+function filterReminders(filter) {
+  reminderFilter = filter;
+  renderReminders();
+}
+
+/* 打开添加提醒模态框 */
+function openAddReminderModal() {
+  document.getElementById('reminderModalTitle').textContent = '添加提醒';
+  document.getElementById('reminderEditId').value = '';
+  document.getElementById('reminderTitle').value = '';
+  document.getElementById('reminderType').value = '缴费提醒';
+  document.getElementById('reminderDueDate').value = '';
+  document.getElementById('reminderDaysBefore').value = '30';
+  document.getElementById('reminderEnabled').checked = true;
+
+  /* 填充客户和保单下拉 */
+  populateReminderSelects();
+  openModal('reminderModal');
+}
+
+/* 编辑提醒 */
+function editReminder(id) {
+  var r = reminderData.find(function(rm) { return rm.id === id; });
+  if (!r) return;
+  document.getElementById('reminderModalTitle').textContent = '编辑提醒';
+  document.getElementById('reminderEditId').value = id;
+  populateReminderSelects();
+  /* 选择关联客户 */
+  document.getElementById('reminderClient').value = r.clientName || '';
+  /* 触发保单列表更新 */
+  populateReminderPolicies(r.clientName || '');
+  document.getElementById('reminderPolicy').value = r.policyCode || '';
+  document.getElementById('reminderType').value = r.type || '缴费提醒';
+  document.getElementById('reminderTitle').value = r.title || '';
+  document.getElementById('reminderDueDate').value = formatDate(r.dueDate);
+  document.getElementById('reminderDaysBefore').value = r.daysBefore || 30;
+  document.getElementById('reminderEnabled').checked = r.enabled !== false;
+  openModal('reminderModal');
+}
+
+/* 填充提醒下拉 */
+function populateReminderSelects() {
+  var clientSel = document.getElementById('reminderClient');
+  clientSel.innerHTML = '<option value="">选择客户</option>';
+  clientData.forEach(function(c) {
+    clientSel.innerHTML += '<option value="' + c.name + '">' + c.name + '</option>';
+  });
+  clientSel.onchange = function() {
+    populateReminderPolicies(this.value);
+  };
+}
+
+function populateReminderPolicies(clientName) {
+  var policySel = document.getElementById('reminderPolicy');
+  policySel.innerHTML = '<option value="">选择保单</option>';
+  var client = clientData.find(function(c) { return c.name === clientName; });
+  if (client) {
+    (client.policies || []).forEach(function(p) {
+      policySel.innerHTML += '<option value="' + (p.policyCode || '') + '">' +
+        (p.policyCode || '') + ' - ' + (p.insuranceName || '') + '</option>';
+    });
+  }
+}
+
+/* 保存提醒 */
+function saveReminder() {
+  var title = document.getElementById('reminderTitle').value.trim();
+  var dueDate = toYMD(document.getElementById('reminderDueDate').value);
+  if (!title || !dueDate) {
+    showToast('请填写提醒标题和到期日期', 'warning');
+    return;
+  }
+
+  var editId = document.getElementById('reminderEditId').value;
+  var obj = {
+    id: editId || genId(),
+    type: document.getElementById('reminderType').value,
+    policyCode: document.getElementById('reminderPolicy').value,
+    clientName: document.getElementById('reminderClient').value,
+    title: title,
+    dueDate: dueDate,
+    daysBefore: parseInt(document.getElementById('reminderDaysBefore').value) || 30,
+    enabled: document.getElementById('reminderEnabled').checked,
+    dismissed: false,
+    createdAt: new Date().toISOString().slice(0, 10).replace(/-/g, '')
+  };
+
+  if (editId) {
+    var idx = reminderData.findIndex(function(r) { return r.id === editId; });
+    if (idx >= 0) {
+      obj.dismissed = reminderData[idx].dismissed;
+      obj.createdAt = reminderData[idx].createdAt;
+      reminderData[idx] = obj;
+    }
+  } else {
+    reminderData.push(obj);
+  }
+
+  saveReminderData();
+  closeModal('reminderModal');
+  renderReminders();
+  showToast('提醒已保存', 'success');
+}
+
+/* 标记提醒已处理 */
+function dismissReminder(id) {
+  var r = reminderData.find(function(rm) { return rm.id === id; });
+  if (r) { r.dismissed = true; }
+  saveReminderData();
+  renderReminders();
+  showToast('已标记为已处理', 'success');
+}
+
+/* 删除提醒 */
+function deleteReminder(id) {
+  showConfirm('确定要删除此提醒吗？', function() {
+    reminderData = reminderData.filter(function(r) { return r.id !== id; });
+    saveReminderData();
+    renderReminders();
+    showToast('提醒已删除', 'success');
+  });
+}
+
+/* 批量生成提醒 */
+function batchGenerateReminders() {
+  if (clientData.length === 0) {
+    showToast('暂无客户数据', 'warning');
+    return;
+  }
+
+  var count = 0;
+  clientData.forEach(function(c) {
+    (c.policies || []).forEach(function(p) {
+      if (p.status !== '有效' || !p.effectiveDate) return;
+      var effDate = p.effectiveDate;
+
+      /* 缴费提醒 */
+      if (p.paymentMethod === '年缴') {
+        /* 每年一个提醒 */
+        var nextPayDate = effDate.substr(0, 4) + String(new Date().getFullYear()).padStart(4, '0');
+        if (nextPayDate.length < 8) nextPayDate = effDate;
+        if (parseInt(nextPayDate) < parseInt(new Date().toISOString().slice(0, 10).replace(/-/g, ''))) {
+          var year = parseInt(nextPayDate.substr(0, 4)) + 1;
+          nextPayDate = String(year) + effDate.substr(4, 4);
+        }
+        /* 检查是否已存在 */
+        var exists = reminderData.some(function(r) {
+          return r.policyCode === p.policyCode && r.type === '缴费提醒' && r.dueDate === nextPayDate && r.clientName === c.name;
+        });
+        if (!exists) {
+          reminderData.push({
+            id: genId(),
+            type: '缴费提醒',
+            policyCode: p.policyCode,
+            clientName: c.name,
+            title: '缴费提醒 - ' + (p.insuranceName || '') + ' (' + (p.policyCode || '') + ')',
+            dueDate: nextPayDate,
+            daysBefore: 30,
+            enabled: true,
+            dismissed: false,
+            createdAt: new Date().toISOString().slice(0, 10).replace(/-/g, '')
+          });
+          count++;
+        }
+      } else if (p.paymentMethod === '月缴') {
+        /* 月缴：每月提醒 */
+        var thisMonth = new Date().toISOString().slice(0, 7).replace(/-/g, '');
+        var day = effDate.length >= 8 ? effDate.substr(6, 2) : '01';
+        var monthDue = thisMonth + day;
+        var exists = reminderData.some(function(r) {
+          return r.policyCode === p.policyCode && r.type === '缴费提醒' && r.dueDate === monthDue && r.clientName === c.name;
+        });
+        if (!exists) {
+          reminderData.push({
+            id: genId(),
+            type: '缴费提醒',
+            policyCode: p.policyCode,
+            clientName: c.name,
+            title: '月缴提醒 - ' + (p.insuranceName || '') + ' (' + (p.policyCode || '') + ')',
+            dueDate: monthDue,
+            daysBefore: 7,
+            enabled: true,
+            dismissed: false,
+            createdAt: new Date().toISOString().slice(0, 10).replace(/-/g, '')
+          });
+          count++;
+        }
+      }
+
+      /* 续保提醒 */
+      var renewDate = effDate;
+      if (renewDate.length === 8) {
+        var rYear = parseInt(renewDate.substr(0, 4)) + 1;
+        renewDate = String(rYear) + renewDate.substr(4, 4);
+      }
+      var existsRenew = reminderData.some(function(r) {
+        return r.policyCode === p.policyCode && r.type === '续保提醒' && r.dueDate === renewDate && r.clientName === c.name;
+      });
+      if (!existsRenew) {
+        reminderData.push({
+          id: genId(),
+          type: '续保提醒',
+          policyCode: p.policyCode,
+          clientName: c.name,
+          title: '续保提醒 - ' + (p.insuranceName || '') + ' (' + (p.policyCode || '') + ')',
+          dueDate: renewDate,
+          daysBefore: 60,
+          enabled: true,
+          dismissed: false,
+          createdAt: new Date().toISOString().slice(0, 10).replace(/-/g, '')
+        });
+        count++;
+      }
+
+      /* 保单周年提醒 */
+      var existsAnniv = reminderData.some(function(r) {
+        return r.policyCode === p.policyCode && r.type === '保单周年' && r.clientName === c.name;
+      });
+      if (!existsAnniv) {
+        reminderData.push({
+          id: genId(),
+          type: '保单周年',
+          policyCode: p.policyCode,
+          clientName: c.name,
+          title: '保单周年 - ' + (p.insuranceName || '') + ' (' + (p.policyCode || '') + ')',
+          dueDate: effDate,
+          daysBefore: 14,
+          enabled: true,
+          dismissed: false,
+          createdAt: new Date().toISOString().slice(0, 10).replace(/-/g, '')
+        });
+        count++;
+      }
+    });
+  });
+
+  saveReminderData();
+  showToast('批量生成完成，共新增 ' + count + ' 条提醒', 'success');
+  if (currentTab === 'reminders') renderReminders();
+}
+
+/* 清除已处理提醒 */
+function dismissAllProcessed() {
+  showConfirm('确定要清除所有已处理的提醒吗？', function() {
+    reminderData = reminderData.filter(function(r) { return !r.dismissed; });
+    saveReminderData();
+    renderReminders();
+    showToast('已清除所有已处理提醒', 'success');
+  });
+}
+
+/* ======== 追踪功能 ======== */
+
+/* 填充追踪客户选择 */
+function populateTrackClientSelect() {
+  var sel = document.getElementById('trackClientSelect');
+  sel.innerHTML = '<option value="">选择客户查看追踪信息</option>';
+  clientData.forEach(function(c, idx) {
+    sel.innerHTML += '<option value="' + idx + '">' + (c.name || '未命名') + '</option>';
+  });
+  renderTrackingStats();
+}
+
+/* 渲染追踪统计 */
+function renderTrackingStats() {
+  var totalPolicies = 0, validPolicies = 0, totalContacts = 0, totalPremium = 0;
+  clientData.forEach(function(c) {
+    totalPolicies += (c.policies || []).length;
+    validPolicies += (c.policies || []).filter(function(p) { return p.status === '有效'; }).length;
+    totalContacts += (c.contactHistory || []).length;
+    (c.policies || []).forEach(function(p) { totalPremium += parseFloat(p.annualPremium) || 0; });
+  });
+  document.getElementById('trackingStats').innerHTML = '' +
+    '<div class="stat-card"><div class="stat-value">' + totalPolicies + '</div><div class="stat-label">总保单数</div></div>' +
+    '<div class="stat-card green"><div class="stat-value">' + validPolicies + '</div><div class="stat-label">有效保单</div></div>' +
+    '<div class="stat-card yellow"><div class="stat-value">' + totalContacts + '</div><div class="stat-label">联系记录</div></div>' +
+    '<div class="stat-card"><div class="stat-value">' + formatMoney(totalPremium) + '</div><div class="stat-label">总年缴保费</div></div>';
+}
+
+/* 加载追踪数据 */
+function loadTrackingData() {
+  var sel = document.getElementById('trackClientSelect');
+  var idx = parseInt(sel.value);
+  var content = document.getElementById('trackingContent');
+
+  if (isNaN(idx) || !clientData[idx]) {
+    content.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128269;</div><p>请选择一个客户查看追踪详情</p></div>';
+    return;
+  }
+
+  var c = clientData[idx];
+  var html = '';
+
+  /* 联系记录时间线 */
+  html += '<div class="card"><div class="card-title">联系追踪 - ' + (c.name || '') +
+    '<button class="btn-sm btn-primary" onclick="selectedClientIdx=' + idx + ';openAddContactModal()">添加联系记录</button></div>';
+
+  /* 联系频率统计 */
+  var contacts = c.contactHistory || [];
+  var statusCount = {};
+  contacts.forEach(function(ch) {
+    statusCount[ch.status] = (statusCount[ch.status] || 0) + 1;
+  });
+  html += '<div style="margin-bottom:12px;">';
+  Object.keys(statusCount).forEach(function(s) {
+    html += '<span class="tag tag-blue" style="margin-right:8px;">' + s + ': ' + statusCount[s] + ' 次</span>';
+  });
+  html += '</div>';
+
+  if (contacts.length === 0) {
+    html += '<div class="empty-state"><p>暂无联系记录</p></div>';
+  } else {
+    html += '<div class="timeline">';
+    contacts.forEach(function(ch) {
+      var cls = 'success';
+      if (ch.status === '未联系上' || ch.status === '电话挂断') cls = 'danger';
+      else if (ch.status === '已加微信') cls = 'warning';
+      html += '<div class="timeline-item ' + cls + '">' +
+        '<div class="timeline-date">' + formatDate(ch.date) +
+        ' <span class="tag tag-' +
+        (ch.status === '已电话联系' || ch.status === '面见客户' ? 'green' : ch.status === '未联系上' || ch.status === '电话挂断' ? 'red' : 'yellow') +
+        '">' + (ch.status || '') + '</span></div>' +
+        '<div class="timeline-content">' + (ch.note || '无备注') + '</div></div>';
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+
+  /* 保单状态追踪 */
+  html += '<div class="card"><div class="card-title">保单状态追踪</div>';
+  var validPolicies = (c.policies || []).filter(function(p) { return p.status === '有效'; });
+  var expiredPolicies = (c.policies || []).filter(function(p) { return p.status === '失效'; });
+
+  html += '<div style="margin-bottom:12px;">' +
+    '<span class="tag tag-green" style="font-size:14px;">有效: ' + validPolicies.length + '</span> ' +
+    '<span class="tag tag-red" style="font-size:14px;">失效: ' + expiredPolicies.length + '</span></div>';
+
+  /* 有效保单 */
+  if (validPolicies.length > 0) {
+    html += '<h4 style="font-size:14px;margin-bottom:8px;color:#166534;">有效保单</h4>';
+    validPolicies.forEach(function(p) {
+      html += '<div style="padding:8px;border:1px solid #dcfce7;border-radius:8px;margin-bottom:6px;">' +
+        '<strong>' + (p.policyCode || '') + '</strong> - ' + (p.insuranceName || '') +
+        ' | 保费: ' + formatMoney(p.annualPremium) + ' | 保额: ' + formatMoney(p.sumInsured) +
+        ' | 生效日: ' + formatDate(p.effectiveDate) + '</div>';
+    });
+  }
+
+  /* 失效保单 */
+  if (expiredPolicies.length > 0) {
+    html += '<h4 style="font-size:14px;margin:12px 0 8px;color:#991b1b;">失效保单</h4>';
+    expiredPolicies.forEach(function(p) {
+      html += '<div style="padding:8px;border:1px solid #fee2e2;border-radius:8px;margin-bottom:6px;">' +
+        '<strong>' + (p.policyCode || '') + '</strong> - ' + (p.insuranceName || '') +
+        ' | 生效日: ' + formatDate(p.effectiveDate) + '</div>';
+    });
+  }
+
+  /* 服务记录 */
+  html += '<h4 style="font-size:14px;margin:12px 0 8px;color:#1e40af;">服务记录</h4>';
+  var hasService = false;
+  (c.policies || []).forEach(function(p) {
+    if (p.serviceRecords && p.serviceRecords.length > 0) {
+      hasService = true;
+      p.serviceRecords.forEach(function(sr) {
+        html += '<div class="timeline">' +
+          '<div class="timeline-item">' +
+          '<div class="timeline-date">' + formatDate(sr.date) + ' | ' + (p.policyCode || '') + ' - ' + (p.insuranceName || '') + '</div>' +
+          '<div class="timeline-content">' + (sr.content || '') + '</div></div></div>';
+      });
+    }
+  });
+  if (!hasService) html += '<p style="font-size:13px;color:#94a3b8;">暂无服务记录</p>';
+  html += '</div>';
+
+  content.innerHTML = html;
+}
+
+/* ======== 定价规则功能 ======== */
+
+/* 渲染定价规则列表 */
+function renderPricingRules() {
+  if (pricingRules.length === 0) {
+    document.getElementById('ruleList').innerHTML = '<div class="empty-state"><div class="empty-icon">&#128290;</div><p>暂无定价规则，点击"创建定价规则"开始</p></div>';
+    return;
+  }
+
+  var html = '';
+  pricingRules.forEach(function(rule) {
+    var condStr = '';
+    (rule.conditions || []).forEach(function(cond) {
+      var opMap = { gt: '>', lt: '<', eq: '=', gte: '>=', lte: '<=', between: '介于', 'in': '属于' };
+      condStr += cond.field + ' ' + (opMap[cond.operator] || cond.operator) + ' ' + cond.value + '; ';
+    });
+
+    var calcStr = '';
+    if (rule.calculation) {
+      if (rule.calculation.type === 'fixed') calcStr = '固定: ' + (rule.calculation.base || 0) + ' 元';
+      else if (rule.calculation.type === 'percentage') calcStr = '费率: ' + (rule.calculation.rate || 0) + '%';
+      else calcStr = '公式: ' + (rule.calculation.formula || '');
+    }
+
+    html += '<div class="rule-card">' +
+      '<h4>' + (rule.name || '') + '</h4>' +
+      '<p style="font-size:12px;color:#64748b;margin-bottom:6px;">' + (rule.description || '') + '</p>' +
+      '<div class="rule-conditions"><strong>条件：</strong>' + (condStr || '无') + '</div>' +
+      '<div class="rule-conditions"><strong>计算：</strong>' + (calcStr || '未设置') + '</div>' +
+      '<div class="btn-group" style="margin-top:8px;">' +
+      '<button class="btn-sm btn-outline" onclick="editRule(\'' + rule.id + '\')">编辑</button>' +
+      '<button class="btn-sm btn-danger" onclick="deleteRule(\'' + rule.id + '\')">删除</button>' +
+      '</div></div>';
+  });
+  document.getElementById('ruleList').innerHTML = html;
+}
+
+/* 构建条件字段HTML */
+function buildConditionField(data) {
+  return '<div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:6px;margin-bottom:6px;align-items:end;">' +
+    '<div><label style="font-size:11px;">字段</label><select class="cond-field">' +
+    '<option value="age"' + (data && data.field === 'age' ? ' selected' : '') + '>年龄</option>' +
+    '<option value="gender"' + (data && data.field === 'gender' ? ' selected' : '') + '>性别</option>' +
+    '<option value="sumInsured"' + (data && data.field === 'sumInsured' ? ' selected' : '') + '>保额</option>' +
+    '<option value="paymentTerm"' + (data && data.field === 'paymentTerm' ? ' selected' : '') + '>缴费期限</option>' +
+    '<option value="insuranceType"' + (data && data.field === 'insuranceType' ? ' selected' : '') + '>险种类型</option>' +
+    '</select></div>' +
+    '<div><label style="font-size:11px;">运算符</label><select class="cond-op">' +
+    '<option value="gt"' + (data && data.operator === 'gt' ? ' selected' : '') + '>&gt; 大于</option>' +
+    '<option value="lt"' + (data && data.operator === 'lt' ? ' selected' : '') + '>&lt; 小于</option>' +
+    '<option value="eq"' + (data && data.operator === 'eq' ? ' selected' : '') + '>= 等于</option>' +
+    '<option value="gte"' + (data && data.operator === 'gte' ? ' selected' : '') + '>&gt;= 大于等于</option>' +
+    '<option value="lte"' + (data && data.operator === 'lte' ? ' selected' : '') + '>&lt;= 小于等于</option>' +
+    '<option value="in"' + (data && data.operator === 'in' ? ' selected' : '') + '>属于</option>' +
+    '</select></div>' +
+    '<div><label style="font-size:11px;">值</label><input type="text" class="cond-val" value="' + (data && data.value || '') + '" placeholder="值"></div>' +
+    '<div><button type="button" class="btn-sm btn-danger" onclick="this.parentElement.remove()">删除</button></div>' +
+    '</div>';
+}
+
+/* 添加条件字段 */
+function addRuleConditionField() {
+  var container = document.getElementById('ruleConditions');
+  var div = document.createElement('div');
+  div.innerHTML = buildConditionField(null);
+  container.appendChild(div.firstElementChild);
+}
+
+/* 切换计算方式字段 */
+function toggleCalcFields() {
+  var type = document.getElementById('ruleCalcType').value;
+  document.getElementById('ruleBaseGroup').classList.toggle('hidden', type === 'formula');
+  document.getElementById('ruleRateGroup').classList.toggle('hidden', type === 'formula');
+  document.getElementById('ruleFormulaGroup').classList.toggle('hidden', type !== 'formula');
+}
+
+/* 打开添加规则模态框 */
+function openAddRuleModal() {
+  document.getElementById('ruleModalTitle').textContent = '创建定价规则';
+  document.getElementById('ruleEditId').value = '';
+  document.getElementById('ruleName').value = '';
+  document.getElementById('ruleDescription').value = '';
+  document.getElementById('ruleConditions').innerHTML = '';
+  document.getElementById('ruleCalcType').value = 'fixed';
+  document.getElementById('ruleBase').value = '';
+  document.getElementById('ruleRate').value = '';
+  document.getElementById('ruleFormula').value = '';
+  toggleCalcFields();
+  openModal('ruleModal');
+}
+
+/* 编辑规则 */
+function editRule(id) {
+  var rule = pricingRules.find(function(r) { return r.id === id; });
+  if (!rule) return;
+  document.getElementById('ruleModalTitle').textContent = '编辑定价规则';
+  document.getElementById('ruleEditId').value = id;
+  document.getElementById('ruleName').value = rule.name || '';
+  document.getElementById('ruleDescription').value = rule.description || '';
+
+  /* 条件 */
+  var condHtml = '';
+  (rule.conditions || []).forEach(function(c) { condHtml += buildConditionField(c); });
+  document.getElementById('ruleConditions').innerHTML = condHtml;
+
+  /* 计算 */
+  var calc = rule.calculation || {};
+  document.getElementById('ruleCalcType').value = calc.type || 'fixed';
+  document.getElementById('ruleBase').value = calc.base || '';
+  document.getElementById('ruleRate').value = calc.rate || '';
+  document.getElementById('ruleFormula').value = calc.formula || '';
+  toggleCalcFields();
+  openModal('ruleModal');
+}
+
+/* 保存规则 */
+function saveRule() {
+  var name = document.getElementById('ruleName').value.trim();
+  if (!name) { showToast('请输入规则名称', 'warning'); return; }
+
+  /* 收集条件 */
+  var conditions = [];
+  var condEls = document.getElementById('ruleConditions').children;
+  for (var i = 0; i < condEls.length; i++) {
+    conditions.push({
+      field: condEls[i].querySelector('.cond-field').value,
+      operator: condEls[i].querySelector('.cond-op').value,
+      value: condEls[i].querySelector('.cond-val').value.trim()
+    });
+  }
+
+  var calcType = document.getElementById('ruleCalcType').value;
+  var calculation = {
+    type: calcType,
+    base: document.getElementById('ruleBase').value,
+    rate: document.getElementById('ruleRate').value,
+    formula: document.getElementById('ruleFormula').value
+  };
+
+  var editId = document.getElementById('ruleEditId').value;
+  var obj = {
+    id: editId || genId(),
+    name: name,
+    description: document.getElementById('ruleDescription').value.trim(),
+    conditions: conditions,
+    calculation: calculation
+  };
+
+  if (editId) {
+    var idx = pricingRules.findIndex(function(r) { return r.id === editId; });
+    if (idx >= 0) pricingRules[idx] = obj;
+  } else {
+    pricingRules.push(obj);
+  }
+
+  savePricingRules();
+  closeModal('ruleModal');
+  renderPricingRules();
+  showToast('定价规则已保存', 'success');
+}
+
+/* 删除规则 */
+function deleteRule(id) {
+  showConfirm('确定要删除此定价规则吗？', function() {
+    pricingRules = pricingRules.filter(function(r) { return r.id !== id; });
+    savePricingRules();
+    renderPricingRules();
+    showToast('规则已删除', 'success');
+  });
+}
+
+/* 打开保费计算器 */
+function openCalcModal() {
+  var sel = document.getElementById('calcRule');
+  sel.innerHTML = '<option value="">选择定价规则</option>';
+  pricingRules.forEach(function(r) {
+    sel.innerHTML += '<option value="' + r.id + '">' + r.name + '</option>';
+  });
+  document.getElementById('calcAge').value = '';
+  document.getElementById('calcGender').value = '男';
+  document.getElementById('calcSumInsured').value = '';
+  document.getElementById('calcPayTerm').value = '';
+  document.getElementById('calcInsType').value = '';
+  document.getElementById('calcResult').innerHTML = '';
+  openModal('calcModal');
+}
+
+/* 计算保费 */
+function calculatePremium() {
+  var ruleId = document.getElementById('calcRule').value;
+  var rule = pricingRules.find(function(r) { return r.id === ruleId; });
+  if (!rule) { showToast('请选择定价规则', 'warning'); return; }
+
+  var age = parseFloat(document.getElementById('calcAge').value) || 0;
+  var gender = document.getElementById('calcGender').value;
+  var sumInsured = parseFloat(document.getElementById('calcSumInsured').value) || 0;
+  var paymentTerm = parseFloat(document.getElementById('calcPayTerm').value) || 0;
+  var insType = document.getElementById('calcInsType').value;
+
+  /* 检查条件是否匹配 */
+  var matched = true;
+  var condDetails = '';
+  (rule.conditions || []).forEach(function(cond) {
+    var actualVal;
+    switch(cond.field) {
+      case 'age': actualVal = age; break;
+      case 'gender': actualVal = gender; break;
+      case 'sumInsured': actualVal = sumInsured; break;
+      case 'paymentTerm': actualVal = paymentTerm; break;
+      case 'insuranceType': actualVal = insType; break;
+      default: actualVal = 0;
+    }
+    var condVal = parseFloat(cond.value) || cond.value;
+    var pass = false;
+    switch(cond.operator) {
+      case 'gt': pass = actualVal > condVal; break;
+      case 'lt': pass = actualVal < condVal; break;
+      case 'eq': pass = actualVal == condVal; break;
+      case 'gte': pass = actualVal >= condVal; break;
+      case 'lte': pass = actualVal <= condVal; break;
+      case 'in': pass = String(condVal).split(',').indexOf(String(actualVal)) >= 0; break;
+    }
+    if (!pass) matched = false;
+    condDetails += cond.field + ' ' + (pass ? '✓' : '✗') + ' (' + actualVal + ' ' + cond.operator + ' ' + cond.value + ')  ';
+  });
+
+  if (!matched) {
+    document.getElementById('calcResult').innerHTML = '<div class="calc-result" style="border-color:#ef4444;background:#fef2f2;">' +
+      '<div style="color:#991b1b;margin-bottom:8px;">条件不匹配</div>' +
+      '<div style="font-size:13px;color:#475569;">' + condDetails + '</div></div>';
+    return;
+  }
+
+  /* 计算保费 */
+  var premium = 0;
+  var calc = rule.calculation || {};
+  try {
+    if (calc.type === 'fixed') {
+      premium = parseFloat(calc.base) || 0;
+    } else if (calc.type === 'percentage') {
+      var base = parseFloat(calc.base) || 0;
+      var rate = parseFloat(calc.rate) || 0;
+      premium = base + sumInsured * rate / 100;
+    } else if (calc.type === 'formula') {
+      /* 替换公式变量 */
+      var expr = (calc.formula || '')
+        .replace(/base/g, parseFloat(calc.base) || 0)
+        .replace(/age/g, age)
+        .replace(/sumInsured/g, sumInsured)
+        .replace(/paymentTerm/g, paymentTerm)
+        .replace(/gender/g, gender === '男' ? 1 : 0);
+      premium = eval(expr);
+    }
+  } catch(e) {
+    document.getElementById('calcResult').innerHTML = '<div class="calc-result" style="border-color:#ef4444;background:#fef2f2;">' +
+      '<div style="color:#991b1b;">计算出错：' + e.message + '</div></div>';
+    return;
+  }
+
+  premium = Math.max(0, premium);
+  document.getElementById('calcResult').innerHTML = '<div class="calc-result">' +
+    '<div class="premium-label">计算保费</div>' +
+    '<div class="premium">' + formatMoney(premium) + ' 元</div>' +
+    '<div style="font-size:13px;color:#4ade80;margin-top:8px;">规则: ' + (rule.name || '') + '</div>' +
+    (condDetails ? '<div style="font-size:12px;color:#475569;margin-top:4px;">' + condDetails + '</div>' : '') +
+    '</div>';
+}
+
+/* 打开批量计算模态框 */
+function openBatchCalcModal() {
+  var sel = document.getElementById('batchCalcRule');
+  sel.innerHTML = '<option value="">选择定价规则</option>';
+  pricingRules.forEach(function(r) {
+    sel.innerHTML += '<option value="' + r.id + '">' + r.name + '</option>';
+  });
+
+  /* 填充保单列表 */
+  var listHtml = '';
+  clientData.forEach(function(c, cIdx) {
+    (c.policies || []).forEach(function(p, pIdx) {
+      listHtml += '<div class="checkbox-wrap" style="padding:6px 0;">' +
+        '<input type="checkbox" class="batch-policy-check" value="' + cIdx + '-' + pIdx + '">' +
+        '<span style="font-size:13px;">' + (c.name || '') + ' | ' + (p.policyCode || '') + ' - ' + (p.insuranceName || '') +
+        ' | 保额: ' + formatMoney(p.sumInsured) + ' | 被保人: ' + (p.insured || c.name || '') + '</span></div>';
+    });
+  });
+  document.getElementById('batchCalcPolicyList').innerHTML = listHtml || '<p style="color:#94a3b8;">暂无保单</p>';
+  document.getElementById('batchCalcResult').innerHTML = '';
+  openModal('batchCalcModal');
+}
+
+/* 批量计算 */
+function batchCalculate() {
+  var ruleId = document.getElementById('batchCalcRule').value;
+  var rule = pricingRules.find(function(r) { return r.id === ruleId; });
+  if (!rule) { showToast('请选择定价规则', 'warning'); return; }
+
+  var checks = document.querySelectorAll('.batch-policy-check:checked');
+  if (checks.length === 0) { showToast('请选择要计算的保单', 'warning'); return; }
+
+  var results = [];
+  checks.forEach(function(chk) {
+    var parts = chk.value.split('-');
+    var cIdx = parseInt(parts[0]);
+    var pIdx = parseInt(parts[1]);
+    var c = clientData[cIdx];
+    var p = c.policies[pIdx];
+    if (!p) return;
+
+    /* 从身份证推算年龄（简易） */
+    var age = 30;
+    if (p.insuredId && p.insuredId.length >= 14) {
+      var birthYear = p.insuredId.substr(6, 4);
+      age = new Date().getFullYear() - parseInt(birthYear);
+    }
+    var sumInsured = parseFloat(p.sumInsured) || 0;
+    var payTerm = parseFloat(p.paymentTerm) || 0;
+    var gender = '男';
+    if (p.insuredId && p.insuredId.length >= 17) {
+      var genderCode = parseInt(p.insuredId.charAt(16));
+      gender = genderCode % 2 === 0 ? '女' : '男';
+    }
+
+    /* 检查条件 */
+    var matched = true;
+    (rule.conditions || []).forEach(function(cond) {
+      var actualVal;
+      switch(cond.field) {
+        case 'age': actualVal = age; break;
+        case 'gender': actualVal = gender; break;
+        case 'sumInsured': actualVal = sumInsured; break;
+        case 'paymentTerm': actualVal = payTerm; break;
+        default: actualVal = 0;
+      }
+      var condVal = parseFloat(cond.value) || cond.value;
+      switch(cond.operator) {
+        case 'gt': if (!(actualVal > condVal)) matched = false; break;
+        case 'lt': if (!(actualVal < condVal)) matched = false; break;
+        case 'eq': if (!(actualVal == condVal)) matched = false; break;
+        case 'gte': if (!(actualVal >= condVal)) matched = false; break;
+        case 'lte': if (!(actualVal <= condVal)) matched = false; break;
+        case 'in': if (String(condVal).split(',').indexOf(String(actualVal)) < 0) matched = false; break;
+      }
+    });
+
+    var premium = 0;
+    var calc = rule.calculation || {};
+    if (matched) {
+      try {
+        if (calc.type === 'fixed') {
+          premium = parseFloat(calc.base) || 0;
+        } else if (calc.type === 'percentage') {
+          premium = (parseFloat(calc.base) || 0) + sumInsured * (parseFloat(calc.rate) || 0) / 100;
+        } else if (calc.type === 'formula') {
+          var expr = (calc.formula || '')
+            .replace(/base/g, parseFloat(calc.base) || 0)
+            .replace(/age/g, age)
+            .replace(/sumInsured/g, sumInsured)
+            .replace(/paymentTerm/g, payTerm)
+            .replace(/gender/g, gender === '男' ? 1 : 0);
+          premium = eval(expr);
+        }
+        premium = Math.max(0, premium);
+      } catch(e) { premium = -1; }
+    }
+
+    results.push({
+      client: c.name, policy: p.policyCode, insurance: p.insuranceName,
+      matched: matched, premium: premium, currentPremium: parseFloat(p.annualPremium) || 0
+    });
+  });
+
+  /* 渲染结果表 */
+  var html = '<table class="policy-table" style="margin-top:16px;"><thead><tr>' +
+    '<th>客户</th><th>保单</th><th>险种</th><th>匹配</th><th>计算保费</th><th>当前保费</th><th>差额</th></tr></thead><tbody>';
+  results.forEach(function(r) {
+    var diff = r.premium >= 0 ? r.premium - r.currentPremium : NaN;
+    html += '<tr>' +
+      '<td>' + r.client + '</td>' +
+      '<td>' + r.policy + '</td>' +
+      '<td>' + r.insurance + '</td>' +
+      '<td>' + (r.matched ? '<span class="tag tag-green">匹配</span>' : '<span class="tag tag-red">不匹配</span>') + '</td>' +
+      '<td>' + (r.premium >= 0 ? formatMoney(r.premium) : '计算失败') + '</td>' +
+      '<td>' + formatMoney(r.currentPremium) + '</td>' +
+      '<td style="color:' + (diff > 0 ? '#ef4444' : diff < 0 ? '#22c55e' : '#64748b') + ';">' +
+        (r.premium >= 0 ? (diff > 0 ? '+' : '') + formatMoney(diff) : '-') + '</td></tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('batchCalcResult').innerHTML = html;
+}
+
+/* ======== 数据导入导出 ======== */
+
+/* 导出数据 */
+function exportData() {
+  var data = {
+    policies: clientData,
+    reminders: reminderData,
+    pricingRules: pricingRules,
+    exportDate: new Date().toISOString(),
+    user: currentUser
+  };
+  var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = '保单数据_' + currentUser + '_' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('数据导出成功', 'success');
+}
+
+/* ======== 增强导入导出功能 ======== */
+
+/* 兼容性JSON导入 - 支持直接数组和包装格式两种 */
+function importData(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      var raw = JSON.parse(ev.target.result);
+      /* 判断数据格式 */
+      var arrData = null;
+      if (Array.isArray(raw)) {
+        /* 格式一：直接是数组 [{name, idCard, ...}, ...] */
+        arrData = raw;
+      } else if (raw && raw.policies && Array.isArray(raw.policies)) {
+        /* 格式二：包装格式 {policies: [...], reminders: [...], ...} */
+        arrData = raw.policies;
+      }
+      if (!arrData || !Array.isArray(arrData) || arrData.length === 0) {
+        showToast('未找到有效的客户数据', 'warning');
+        return;
+      }
+      /* 标准化每条记录，确保字段完整 */
+      var normalized = arrData.map(function(item) {
+        return {
+          name: item.name || '',
+          idCard: item.idCard || '',
+          phone: item.phone || '',
+          address: item.address || '',
+          workCompany: item.workCompany || '',
+          workAddress: item.workAddress || '',
+          policies: (item.policies || []).map(function(p) {
+            return {
+              policyCode: p.policyCode || '',
+              insuranceName: p.insuranceName || '',
+              codeType: p.codeType || '',
+              mainType: p.mainType || '主险',
+              parentPolicyCode: p.parentPolicyCode || '',
+              status: p.status || '',
+              effectiveDate: p.effectiveDate || '',
+              paymentMethod: p.paymentMethod || '年缴',
+              annualPremium: p.annualPremium || '',
+              sumInsured: p.sumInsured || '',
+              paymentTerm: p.paymentTerm || '',
+              insured: p.insured || '',
+              insuredRelation: p.insuredRelation || '',
+              insuredId: p.insuredId || '',
+              insuredPhone: p.insuredPhone || '',
+              beneficiaries: p.beneficiaries || [],
+              remark: p.remark || '',
+              extraFields: p.extraFields || {},
+              serviceRecords: p.serviceRecords || []
+            };
+          }),
+          familyMembers: item.familyMembers || [],
+          contactHistory: item.contactHistory || []
+        };
+      });
+      showConfirm('检测到 ' + normalized.length + ' 位客户数据。确定导入将覆盖当前数据。', function() {
+        clientData = normalized;
+        savePolicyData();
+        /* 如果包装格式还有提醒和定价规则，也导入 */
+        if (raw && raw.reminders && Array.isArray(raw.reminders)) {
+          reminderData = raw.reminders;
+          saveReminderData();
+        }
+        if (raw && raw.pricingRules && Array.isArray(raw.pricingRules)) {
+          pricingRules = raw.pricingRules;
+          savePricingRules();
+        }
+        refreshCurrentTab();
+        updateBottomStats();
+        autoSyncPush();
+        showToast('成功导入 ' + normalized.length + ' 位客户数据', 'success');
+      });
+    } catch(err) {
+      showToast('JSON文件解析失败：' + err.message, 'error');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+/* 提示导入数据 */
+function importDataPrompt() {
+  document.getElementById('importFileInput').click();
+}
+
+/* 触发Excel文件选择 */
+function importExcelPrompt() {
+  document.getElementById('importExcelInput').click();
+}
+
+/* Excel批量导入 */
+function importExcelData(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      var data = new Uint8Array(ev.target.result);
+      var workbook = XLSX.read(data, { type: 'array' });
+      var sheetName = workbook.SheetNames[0];
+      var sheet = workbook.Sheets[sheetName];
+      var rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+      if (rows.length === 0) {
+        showToast('Excel文件中没有数据行', 'warning');
+        return;
+      }
+      /* 按投保人姓名分组 */
+      var clientMap = {};
+      rows.forEach(function(row) {
+        var name = (row['投保人姓名'] || '').toString().trim();
+        if (!name) return;
+        if (!clientMap[name]) {
+          clientMap[name] = {
+            name: name,
+            idCard: (row['投保人身份证号'] || '').toString().trim(),
+            phone: (row['联系电话'] || '').toString().trim(),
+            address: (row['通信地址'] || '').toString().trim(),
+            workCompany: (row['工作单位'] || '').toString().trim(),
+            workAddress: (row['工作地址'] || '').toString().trim(),
+            policies: [],
+            familyMembers: [],
+            contactHistory: []
+          };
+        }
+        /* 解析受益人 */
+        var beneficiaries = [];
+        var beneStr = (row['受益人'] || '').toString().trim();
+        if (beneStr) {
+          var parts = beneStr.split(/[\/、,，]/);
+          var quotaEach = Math.round(100 / parts.length);
+          parts.forEach(function(part, i) {
+            part = part.trim();
+            if (part) {
+              beneficiaries.push({
+                name: part,
+                quota: i === parts.length - 1 ? 100 - quotaEach * (parts.length - 1) : quotaEach
+              });
+            }
+          });
+        }
+        var policy = {
+          policyCode: (row['保单代码'] || '').toString().trim(),
+          insuranceName: (row['险种名称'] || '').toString().trim(),
+          codeType: (row['险种代码'] || '').toString().trim(),
+          mainType: (row['主险/附加险'] || '主险').toString().trim(),
+          parentPolicyCode: (row['关联主险代码'] || '').toString().trim(),
+          status: (row['保单状态'] || '有效').toString().trim(),
+          effectiveDate: (row['生效日'] || '').toString().trim().replace(/-/g, ''),
+          paymentMethod: (row['缴费方式'] || '年缴').toString().trim(),
+          annualPremium: (row['年缴保费（元）'] || '').toString().trim(),
+          sumInsured: (row['保额（元）'] || '').toString().trim(),
+          paymentTerm: (row['缴费期限（年）'] || '').toString().trim(),
+          insured: (row['被保险人'] || '').toString().trim(),
+          insuredRelation: (row['与被保人关系'] || '').toString().trim(),
+          insuredId: (row['被保人身份证'] || '').toString().trim(),
+          insuredPhone: (row['被保人手机号码'] || '').toString().trim(),
+          beneficiaries: beneficiaries,
+          remark: (row['备注'] || '').toString().trim(),
+          extraFields: {},
+          serviceRecords: []
+        };
+        clientMap[name].policies.push(policy);
+      });
+      var clientList = Object.values(clientMap);
+      showConfirm('从Excel解析到 ' + clientList.length + ' 位客户数据。确定导入将覆盖当前数据。', function() {
+        clientData = clientList;
+        savePolicyData();
+        refreshCurrentTab();
+        updateBottomStats();
+        autoSyncPush();
+        showToast('Excel导入成功，共 ' + clientList.length + ' 位客户', 'success');
+      });
+    } catch(err) {
+      showToast('Excel解析失败：' + err.message, 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  e.target.value = '';
+}
+
+/* 导出Excel导入模板 */
+function exportExcelTemplate() {
+  var headers = [
+    '投保人姓名', '投保人身份证号', '联系电话', '通信地址', '工作单位', '工作地址',
+    '险种名称', '保单代码', '险种代码', '主险/附加险', '关联主险代码', '保单状态',
+    '生效日', '缴费方式', '年缴保费（元）', '保额（元）', '缴费期限（年）',
+    '被保险人', '与被保人关系', '被保人身份证', '被保人手机号码', '受益人', '备注'
+  ];
+  var exampleData = [
+    {
+      '投保人姓名': '张三', '投保人身份证号': '110101199001011234', '联系电话': '13800138000',
+      '通信地址': '北京市朝阳区某某路1号', '工作单位': '某某公司', '工作地址': '',
+      '险种名称': '国寿防癌疾病保险', '保单代码': '2017442001522015000001', '险种代码': '522',
+      '主险/附加险': '主险', '关联主险代码': '', '保单状态': '有效',
+      '生效日': '20170112', '缴费方式': '年缴', '年缴保费（元）': '780',
+      '保额（元）': '100000', '缴费期限（年）': '20', '被保险人': '李四', '与被保人关系': '配偶',
+      '被保人身份证': '', '被保人手机号码': '', '受益人': '张三', '备注': ''
+    },
+    {
+      '投保人姓名': '张三', '投保人身份证号': '', '联系电话': '',
+      '通信地址': '', '工作单位': '', '工作地址': '',
+      '险种名称': '国寿附加意外伤害保险', '保单代码': '2017442001778300000001', '险种代码': '778',
+      '主险/附加险': '附加险', '关联主险代码': '2017442001522015000001', '保单状态': '有效',
+      '生效日': '20170112', '缴费方式': '年缴', '年缴保费（元）': '82',
+      '保额（元）': '50000', '缴费期限（年）': '20', '被保险人': '李四', '与被保人关系': '配偶',
+      '被保人身份证': '', '被保人手机号码': '', '受益人': '张三', '备注': '附加险示例'
+    }
+  ];
+  var ws = XLSX.utils.json_to_sheet(exampleData, { header: headers });
+  ws['!cols'] = headers.map(function(h) {
+    return { wch: Math.max(h.length * 2, 12) };
+  });
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '保单数据');
+  XLSX.writeFile(wb, '保单导入模板.xlsx');
+  showToast('Excel模板已下载', 'success');
+}
+
+/* 导出客户为Word文档 */
+function exportClientToWord(idx) {
+  var c = clientData[idx];
+  if (!c) { showToast('客户数据不存在', 'error'); return; }
+
+  /* 构建Word文档的HTML内容 */
+  var htmlContent = '<html xmlns:o="urn:schemas-microsoft-com:office:office" ' +
+    'xmlns:w="urn:schemas-microsoft-com:office:word" ' +
+    'xmlns="http://www.w3.org/TR/REC-html40">' +
+    '<head><meta charset="utf-8">' +
+    '<style>' +
+    'body { font-family: "微软雅黑", "SimSun", Arial, sans-serif; font-size: 12pt; margin: 40px; }' +
+    'h1 { font-size: 18pt; color: #1e40af; border-bottom: 2px solid #1e40af; padding-bottom: 8px; }' +
+    'h2 { font-size: 14pt; color: #1e40af; margin-top: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }' +
+    'h3 { font-size: 12pt; color: #334155; margin-top: 12px; }' +
+    'table { border-collapse: collapse; width: 100%; margin: 8px 0; }' +
+    'th, td { border: 1px solid #94a3b8; padding: 6px 10px; font-size: 11pt; text-align: left; }' +
+    'th { background: #f1f5f9; font-weight: bold; }' +
+    '.tag-valid { color: #166534; }' +
+    '.tag-invalid { color: #991b1b; }' +
+    '.total-box { background: #f0f7ff; padding: 10px; margin: 12px 0; border-radius: 4px; border-left: 4px solid #3b82f6; }' +
+    '.footer { margin-top: 30px; font-size: 10pt; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 8px; }' +
+    '</style></head><body>';
+
+  /* 标题 */
+  htmlContent += '<h1>保单信息汇总</h1>';
+
+  /* 投保人基本信息 */
+  htmlContent += '<h2>一、投保人信息</h2>';
+  htmlContent += '<table>';
+  htmlContent += '<tr><th style="width:120px;">投保人姓名</th><td>' + (c.name || '-') + '</td></tr>';
+  htmlContent += '<tr><th>身份证号</th><td>' + (c.idCard || '-') + '</td></tr>';
+  htmlContent += '<tr><th>联系电话</th><td>' + (c.phone || '-') + '</td></tr>';
+  htmlContent += '<tr><th>通信地址</th><td>' + (c.address || '-') + '</td></tr>';
+  if (c.workCompany) htmlContent += '<tr><th>工作单位</th><td>' + c.workCompany + '</td></tr>';
+  if (c.workAddress) htmlContent += '<tr><th>工作地址</th><td>' + c.workAddress + '</td></tr>';
+  htmlContent += '</table>';
+
+  /* 家庭成员 */
+  var sectionIdx = 1;
+  if (c.familyMembers && c.familyMembers.length > 0) {
+    sectionIdx++;
+    htmlContent += '<h2>二、家庭成员</h2>';
+    htmlContent += '<table><tr><th>姓名</th><th>关系</th><th>身份证号</th><th>电话</th><th>备注</th></tr>';
+    c.familyMembers.forEach(function(fm) {
+      htmlContent += '<tr><td>' + (fm.name || '') + '</td><td>' + (fm.relationship || '') + '</td><td>' + (fm.idCard || '') + '</td><td>' + (fm.phone || '') + '</td><td>' + (fm.note || '') + '</td></tr>';
+    });
+    htmlContent += '</table>';
+  }
+
+  /* 保单信息 */
+  var policies = c.policies || [];
+  if (policies.length > 0) {
+    sectionIdx++;
+    var cnNum = ['一','二','三','四','五'];
+    htmlContent += '<h2>' + (cnNum[sectionIdx - 1] || sectionIdx) + '、保单明细</h2>';
+
+    /* 汇总统计 */
+    var totalPremium = 0;
+    var validCount = 0;
+    policies.forEach(function(p) {
+      totalPremium += parseFloat(p.annualPremium) || 0;
+      if (p.status === '有效') validCount++;
+    });
+    htmlContent += '<div class="total-box">';
+    htmlContent += '<b>保单统计：</b>共 ' + policies.length + ' 份保单，其中有效 ' + validCount + ' 份，失效 ' + (policies.length - validCount) + ' 份；年缴保费合计 ' + totalPremium.toFixed(2) + ' 元';
+    htmlContent += '</div>';
+
+    /* 逐份保单详情 */
+    policies.forEach(function(p, i) {
+      htmlContent += '<h3>保单 ' + (i + 1) + (p.mainType === '附加险' ? '（附加险）' : '') + '</h3>';
+      htmlContent += '<table>';
+      htmlContent += '<tr><th style="width:120px;">保单代码</th><td>' + (p.policyCode || '-') + '</td><th style="width:120px;">险种代码</th><td>' + (p.codeType || '-') + '</td></tr>';
+      htmlContent += '<tr><th>险种名称</th><td colspan="3">' + (p.insuranceName || '-') + '</td></tr>';
+      htmlContent += '<tr><th>保单状态</th><td class="' + (p.status === '有效' ? 'tag-valid' : 'tag-invalid') + '"><b>' + (p.status || '-') + '</b></td><th>险种类型</th><td>' + (p.mainType || '主险') + '</td></tr>';
+      if (p.parentPolicyCode) {
+        htmlContent += '<tr><th>关联主险</th><td colspan="3">' + p.parentPolicyCode + '</td></tr>';
+      }
+      htmlContent += '<tr><th>生效日期</th><td>' + formatDate(p.effectiveDate) + '</td><th>缴费方式</th><td>' + (p.paymentMethod || '-') + '</td></tr>';
+      htmlContent += '<tr><th>年缴保费</th><td><b>' + formatMoney(p.annualPremium) + ' 元</b></td><th>缴费期限</th><td>' + (p.paymentTerm ? p.paymentTerm + ' 年' : '-') + '</td></tr>';
+      if (p.sumInsured) {
+        htmlContent += '<tr><th>保额</th><td colspan="3"><b>' + formatMoney(p.sumInsured) + ' 元</b></td></tr>';
+      }
+      htmlContent += '<tr><th>被保险人</th><td>' + (p.insured || '-') + '</td><th>与被保人关系</th><td>' + (p.insuredRelation || '-') + '</td></tr>';
+      htmlContent += '<tr><th>被保人身份证</th><td>' + (p.insuredId || '-') + '</td><th>被保人手机</th><td>' + (p.insuredPhone || '-') + '</td></tr>';
+      /* 受益人 */
+      if (p.beneficiaries && p.beneficiaries.length > 0) {
+        var beneNames = p.beneficiaries.map(function(b) { return b.name + '(' + b.quota + '%)'; }).join('、');
+        htmlContent += '<tr><th>受益人</th><td colspan="3">' + beneNames + '</td></tr>';
+      }
+      if (p.remark) {
+        htmlContent += '<tr><th>备注</th><td colspan="3">' + p.remark + '</td></tr>';
+      }
+      htmlContent += '</table>';
+    });
+  }
+
+  /* 联系记录 */
+  if (c.contactHistory && c.contactHistory.length > 0) {
+    sectionIdx++;
+    var cnNum = ['一','二','三','四','五'];
+    htmlContent += '<h2>' + (cnNum[sectionIdx - 1] || sectionIdx) + '、联系记录</h2>';
+    htmlContent += '<table><tr><th>日期</th><th>状态</th><th>备注</th></tr>';
+    c.contactHistory.forEach(function(ch) {
+      htmlContent += '<tr><td>' + formatDate(ch.date) + '</td><td>' + (ch.status || '') + '</td><td>' + (ch.note || '') + '</td></tr>';
+    });
+    htmlContent += '</table>';
+  }
+
+  /* 页脚 */
+  htmlContent += '<div class="footer">';
+  htmlContent += '此文档由保单管理系统自动生成 | 导出时间：' + new Date().toLocaleString('zh-CN');
+  htmlContent += '</div>';
+  htmlContent += '</body></html>';
+
+  /* 生成并下载docx文件 */
+  var blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
+  var fileName = (c.name || '客户') + '_保单信息.doc';
+  saveAs(blob, fileName);
+  showToast('Word文档已导出：' + fileName, 'success');
+}
+
+
+
+/* 清空数据 */
+function confirmClearData() {
+  showConfirm('确定要清空当前用户的所有数据吗？此操作不可撤销！', function() {
+    clientData = [];
+    reminderData = [];
+    pricingRules = [];
+    savePolicyData();
+    saveReminderData();
+    savePricingRules();
+    refreshCurrentTab();
+    showToast('数据已清空', 'success');
+  });
+}
+
+/* 修改密码 */
+function changePassword() {
+  var oldPwd = document.getElementById('oldPwd').value;
+  var newPwd = document.getElementById('newPwd').value;
+  if (!oldPwd || !newPwd) {
+    showToast('请填写当前密码和新密码', 'warning');
+    return;
+  }
+  if (newPwd.length < 6) {
+    showToast('新密码长度至少6位', 'warning');
+    return;
+  }
+  var users = getUsers();
+  var user = users.find(function(u) { return u.username === currentUser; });
+  if (!user) { showToast('用户不存在', 'error'); return; }
+  if (user.passwordHash !== simpleHash(oldPwd)) {
+    showToast('当前密码错误', 'error');
+    return;
+  }
+  user.passwordHash = simpleHash(newPwd);
+  saveUsers(users);
+  document.getElementById('oldPwd').value = '';
+  document.getElementById('newPwd').value = '';
+  showToast('密码修改成功', 'success');
+}
+
+/* ======== 初始化 ======== */
+
+/* 初始化管理员账号 */
+function initAdmin() {
+  var users = getUsers();
+  var admin = users.find(function(u) { return u.username === 'admin'; });
+  if (!admin) {
+    users.push({
+      username: 'admin',
+      passwordHash: simpleHash('admin888'),
+      createdAt: new Date().toISOString(),
+      lastLogin: null
+    });
+    saveUsers(users);
+  }
+}
+
+/* 检查登录状态 */
+function checkLogin() {
+  var saved = localStorage.getItem('pms_currentUser');
+  if (saved) {
+    var users = getUsers();
+    if (users.find(function(u) { return u.username === saved; })) {
+      currentUser = saved;
+      enterMainApp();
+      return;
+    }
+  }
+  document.getElementById('authPage').style.display = 'flex';
+}
+
+/* 关闭模态框（点击遮罩层） */
+document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) {
+      overlay.classList.remove('show');
+    }
+  });
+});
+
+/* 启动应用 */
+initAdmin();
+checkLogin();
+</script>
+</body>
+</html>
