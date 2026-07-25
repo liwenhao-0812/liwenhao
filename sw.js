@@ -1,10 +1,11 @@
-/* Service Worker - 保单管理系统离线缓存 v2 */
-var CACHE_NAME = 'policy-manager-v2';
+/* Service Worker - 保单管理系统离线缓存 v3 */
+var CACHE_NAME = 'policy-manager-v3';
 var urlsToCache = [
-  'baodanguanli.html',
-  'manifest.json',
-  'icon-192.png',
-  'icon-512.png'
+  '/liwenhao/baodanguanli.html',
+  '/liwenhao/index.html',
+  '/liwenhao/manifest.json',
+  '/liwenhao/icon-192.png',
+  '/liwenhao/icon-512.png'
 ];
 
 /* 安装 - 立即激活，不等待旧 SW 释放 */

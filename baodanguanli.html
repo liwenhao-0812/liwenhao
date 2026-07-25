@@ -1126,8 +1126,8 @@ button {
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="保单管理">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="/liwenhao/icon-192.png">
+<link rel="manifest" href="/liwenhao/manifest.json">
 </head>
 <body>
 
@@ -4634,7 +4634,7 @@ checkLogin();
 if ('serviceWorker' in navigator) {
   var swReg = null;
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('sw.js').then(function(reg) {
+    navigator.serviceWorker.register('/liwenhao/sw.js', { scope: '/liwenhao/' }).then(function(reg) {
       swReg = reg;
       console.log('SW registered:', reg.scope);
 
