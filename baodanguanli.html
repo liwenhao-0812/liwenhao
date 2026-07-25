@@ -1355,40 +1355,7 @@ button {
   </div>
 </div>
 
-<!-- PWA 安装提示条（默认隐藏，JS检测到支持时才显示） -->
-<div class="pwa-install-bar" id="pwaInstallBar" style="display:none;">
-  <div style="position:relative;display:flex;justify-content:space-between;align-items:center;width:100%;">
-    <div>
-      <div class="install-text" id="installText">下载安装 APP</div>
-      <div class="install-sub" id="installSub">点击右侧按钮下载APK安装包</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <a href="https://raw.githubusercontent.com/liwenhao-0812/liwenhao/master/baodan-app.apk?v=3" class="btn-download-apk" id="btnDownloadApk">下载APK</a>
-      <button class="btn-install" id="pwaInstallBtn" onclick="pwaInstallClick()" style="display:none;">安装</button>
-    </div>
-    <button class="btn-install-close" onclick="document.getElementById('pwaInstallBar').style.display='none'">&times;</button>
-  </div>
-</div>
-
-<!-- PWA 安装指引弹窗 -->
-<div class="pwa-guide-modal" id="pwaGuideModal">
-  <div class="pwa-guide-content">
-    <h3 id="guideTitle">安装到手机桌面</h3>
-    <div id="guideSteps"></div>
-    <button class="btn-close-guide" onclick="document.getElementById('pwaGuideModal').classList.remove('show')">我知道了</button>
-  </div>
-</div>
-
-<!-- APK 下载引导弹窗（OEM浏览器自动弹出） -->
-<div class="apk-guide-popup" id="apkGuidePopup">
-  <div class="apk-guide-card">
-    <div class="apk-icon">&#128241;</div>
-    <h3>安装保单管理 APP</h3>
-    <p style="color:#64748b;margin:6px 0 16px;font-size:13px;">真正的 Android 应用，不是网页快捷方式</p>
-    <a href="https://raw.githubusercontent.com/liwenhao-0812/liwenhao/master/baodan-app.apk?v=3" class="apk-download-btn" onclick="closeApkGuide()">&#128229; 下载安装包 (98KB)</a>
-    <button class="apk-close-btn" onclick="closeApkGuide()">稍后再说</button>
-  </div>
-</div>
+<!-- PWA 安装条与弹窗由 JS 动态注入，静态 HTML 中不留任何痕迹 -->
 
 <!-- Toast消息容器 -->
 <div class="toast-container" id="toastContainer"></div>
@@ -4880,205 +4847,62 @@ document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
 initAdmin();
 checkLogin();
 
-/* ========== PWA 安装逻辑（独立于 Service Worker，确保始终可用） ========== */
+/* ========== PWA 安装条 — 全部由 JS 动态注入，HTML 中不存在 ========== */
+/* 核心原则：安装条及其弹窗完全由 JS 在运行时创建， */
+/* 确保 APK WebView 中永远不会出现这些元素。 */
+
 var _deferredPrompt = null;
 var _swReg = null;
+var _pwaBarInjected = false;
 
-/* 检测是否在 APK WebView 中运行 */
-var _isInApp = (function() {
-  var ua = navigator.userAgent;
-  var urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('from') === 'apk') return true;
-  if (ua.indexOf('BaodanApp') !== -1) return true;
-  if (ua.indexOf('wv') !== -1 && ua.indexOf('Version/') !== -1) return true;
-  return false;
-})();
-
-/* 已作为 PWA 安装 */
-var _isStandalone = window.matchMedia('(display-mode: standalone)').matches || (typeof navigator.standalone !== 'undefined' && navigator.standalone);
-
-/* 核心逻辑：只在浏览器支持 PWA 且未安装且不在 APK 中时，才显示安装条 */
-function _showInstallBar() {
-  if (_isInApp || _isStandalone) return;
-  var bar = document.getElementById('pwaInstallBar');
-  if (bar) bar.style.display = 'flex';
-  console.log('PWA: 显示安装条');
-}
-
-/* 捕获 beforeinstallprompt 事件 */
+/* 仅在 beforeinstallprompt 触发时动态注入安装条 */
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   _deferredPrompt = e;
-  /* 转换为 PWA 安装模式 */
-  var btnInstall = document.getElementById('pwaInstallBtn');
-  var btnApk = document.getElementById('btnDownloadApk');
-  var installText = document.getElementById('installText');
-  var installSub = document.getElementById('installSub');
-  if (btnInstall) btnInstall.style.display = 'inline-block';
-  if (btnApk) btnApk.style.display = 'none';
-  if (installText) installText.textContent = '安装到手机';
-  if (installSub) installSub.textContent = '像原生APP一样快速打开';
-  _showInstallBar();
-  console.log('PWA: beforeinstallprompt 已触发');
+  if (!_pwaBarInjected) injectPwaBar();
+  console.log('PWA: beforeinstallprompt');
 });
 
-/* 已安装后隐藏安装条 */
+/* 已安装后移除 */
 window.addEventListener('appinstalled', function() {
   _deferredPrompt = null;
-  var bar = document.getElementById('pwaInstallBar');
-  if (bar) bar.style.display = 'none';
+  removePwaBar();
 });
+
+/* 动态注入安装条到 body 底部 */
+function injectPwaBar() {
+  if (_pwaBarInjected) return;
+  _pwaBarInjected = true;
+
+  var bar = document.createElement('div');
+  bar.className = 'pwa-install-bar';
+  bar.id = 'pwaInstallBar';
+  bar.style.cssText = 'display:flex;';
+  bar.innerHTML =
+    '<div style="position:relative;display:flex;justify-content:space-between;align-items:center;width:100%;">' +
+    '<div><div class="install-text">安装到手机</div><div class="install-sub">像原生APP一样快速打开</div></div>' +
+    '<button class="btn-install" id="pwaInstallBtn" onclick="pwaInstallClick()">安装</button>' +
+    '<button class="btn-install-close" onclick="removePwaBar()">&times;</button>' +
+    '</div>';
+  document.body.appendChild(bar);
+}
+
+function removePwaBar() {
+  var bar = document.getElementById('pwaInstallBar');
+  if (bar) bar.remove();
+  _pwaBarInjected = false;
+}
 
 /* 安装按钮点击 */
 function pwaInstallClick() {
-  console.log('PWA: 安装按钮被点击');
   if (_deferredPrompt) {
-    /* 浏览器支持原生安装 */
     _deferredPrompt.prompt();
-    _deferredPrompt.userChoice.then(function(result) {
-      console.log('PWA install:', result.outcome);
+    _deferredPrompt.userChoice.then(function(r) {
       _deferredPrompt = null;
-      var bar = document.getElementById('pwaInstallBar');
-      if (bar) bar.style.display = 'none';
-    }).catch(function(err) {
-      console.log('PWA install error:', err);
-      showInstallGuide();
-    });
-  } else {
-    /* 不支持原生安装，弹出指引 */
-    showInstallGuide();
+      if (r.outcome === 'accepted') removePwaBar();
+    }).catch(function() {});
   }
 }
-
-/* 显示安装指引弹窗 */
-function showInstallGuide() {
-  console.log('PWA: showInstallGuide 被调用');
-  var ua = navigator.userAgent;
-  var isIOS = /iPad|iPhone|iPod/.test(ua) || (ua.indexOf('Macintosh') !== -1 && 'ontouchend' in document);
-  var isAndroid = /Android/.test(ua);
-  var isEdge = /Edg/.test(ua);
-  var isSamsung = /SamsungBrowser/.test(ua);
-  var isQQ = /QQBrowser/.test(ua);
-  var isUC = /UCBrowser/.test(ua);
-  var isOEMBrowser = /HeyTapBrowser|OppoBrowser|RealmeBrowser|MiuiBrowser|XiaoMi|HuaweiBrowser|HMBrowser|VivoBrowser|MZBrowser|MeiZu/.test(ua);
-  var isRealChrome = /Chrome\/(\d+)/.test(ua) && !/Edg|OPR|Samsung|HeyTapBrowser|OppoBrowser|RealmeBrowser|MiuiBrowser|XiaoMi|HuaweiBrowser|HMBrowser|VivoBrowser|MZBrowser|MeiZu|QQBrowser|UCBrowser|MicroMessenger|WeChat/.test(ua);
-
-  var title = '';
-  var steps = '';
-  var extraBtn = '';
-
-  if (isIOS) {
-    title = 'iPhone 安装步骤';
-    steps =
-      '<div class="guide-step"><span class="step-num">1</span>点击 Safari 底部的<strong>分享按钮</strong>（方框+向上箭头图标）</div>' +
-      '<div class="guide-step"><span class="step-num">2</span>在弹出的菜单中向下滑动，找到<strong>「添加到主屏幕」</strong></div>' +
-      '<div class="guide-step"><span class="step-num">3</span>点击<strong>「添加」</strong>，桌面即可出现保单管理APP图标</div>' +
-      '<div class="guide-step" style="background:#fef3c7;color:#92400e;"><strong>注意：</strong>iPhone 必须用 <strong>Safari 浏览器</strong>打开才能安装</div>';
-  } else if (isAndroid && isOEMBrowser) {
-    title = '推荐：下载 APK 安装包';
-    steps =
-      '<div class="guide-step" style="background:#fef3c7;color:#92400e;"><strong>您当前使用的是手机自带浏览器</strong>，该浏览器不支持直接安装应用到桌面</div>' +
-      '<div class="guide-step" style="background:#ecfdf5;color:#065f46;"><strong>方案一（推荐）：</strong>点击下方按钮<strong>下载 APK 安装包</strong>，直接安装真正的 APP</div>' +
-      '<div class="guide-step"><span class="step-num">2</span>方案二：安装 <strong>Chrome 浏览器</strong>，用 Chrome 打开本页面即可安装</div>';
-    extraBtn = '<a href="https://raw.githubusercontent.com/liwenhao-0812/liwenhao/master/baodan-app.apk?v=3" style="display:block;background:#059669;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;text-align:center;margin-top:8px;width:100%;">下载 APK 安装包</a>' +
-               '<button class="btn-copy-url" onclick="copyPWAUrl()">复制链接（用Chrome打开）</button>';
-  } else if (isAndroid && (isRealChrome || isEdge || isSamsung)) {
-    title = '安卓安装步骤';
-    steps =
-      '<div class="guide-step"><span class="step-num">1</span>点击浏览器右上角的<strong>三个点菜单</strong>（⋮）</div>' +
-      '<div class="guide-step"><span class="step-num">2</span>在菜单中找到<strong>「添加到主屏幕」</strong>或<strong>「安装应用」</strong></div>' +
-      '<div class="guide-step"><span class="step-num">3</span>点击确认，桌面即可出现保单管理APP图标</div>' +
-      '<div class="guide-step" style="background:#ecfdf5;color:#065f46;"><strong>提示：</strong>如果菜单中没有安装选项，请先<strong>关闭所有标签页后重新打开</strong>本页面再试</div>';
-  } else if (isAndroid && (isQQ || isUC)) {
-    title = '推荐：下载 APK 安装包';
-    steps =
-      '<div class="guide-step" style="background:#fef3c7;color:#92400e;">当前浏览器（QQ/UC）<strong>不支持</strong>安装 PWA 应用</div>' +
-      '<div class="guide-step" style="background:#ecfdf5;color:#065f46;"><strong>方案一（推荐）：</strong>点击下方按钮<strong>下载 APK 安装包</strong>，直接安装真正的 APP</div>' +
-      '<div class="guide-step"><span class="step-num">2</span>方案二：安装 <strong>Chrome 浏览器</strong>，用 Chrome 打开本页面即可安装</div>';
-    extraBtn = '<a href="https://raw.githubusercontent.com/liwenhao-0812/liwenhao/master/baodan-app.apk?v=3" style="display:block;background:#059669;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;text-align:center;margin-top:8px;width:100%;">下载 APK 安装包</a>' +
-               '<button class="btn-copy-url" onclick="copyPWAUrl()">复制链接（用Chrome打开）</button>';
-  } else if (isAndroid) {
-    title = '推荐：下载 APK 安装包';
-    steps =
-      '<div class="guide-step" style="background:#fef3c7;color:#92400e;">当前浏览器可能<strong>不支持</strong>安装应用到桌面</div>' +
-      '<div class="guide-step" style="background:#ecfdf5;color:#065f46;"><strong>方案一（推荐）：</strong>点击下方按钮<strong>下载 APK 安装包</strong>，直接安装真正的 APP</div>' +
-      '<div class="guide-step"><span class="step-num">2</span>方案二：安装 <strong>Chrome 浏览器</strong>，用 Chrome 打开本页面即可安装</div>';
-    extraBtn = '<a href="https://raw.githubusercontent.com/liwenhao-0812/liwenhao/master/baodan-app.apk?v=3" style="display:block;background:#059669;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;text-align:center;margin-top:8px;width:100%;">下载 APK 安装包</a>' +
-               '<button class="btn-copy-url" onclick="copyPWAUrl()">复制链接（用Chrome打开）</button>';
-  } else {
-    title = '安装步骤';
-    steps =
-      '<div class="guide-step"><span class="step-num">1</span>点击浏览器菜单（通常在右上角<strong>三个点 ⋮</strong>）</div>' +
-      '<div class="guide-step"><span class="step-num">2</span>找到<strong>「添加到主屏幕」</strong>或<strong>「安装应用」</strong>选项</div>' +
-      '<div class="guide-step"><span class="step-num">3</span>点击确认即可安装到桌面</div>' +
-      '<div class="guide-step" style="background:#ecfdf5;color:#065f46;"><strong>推荐：</strong>使用 <strong>Chrome</strong> 浏览器打开效果最佳</div>';
-  }
-
-  var guideTitle = document.getElementById('guideTitle');
-  var guideSteps = document.getElementById('guideSteps');
-  var guideModal = document.getElementById('pwaGuideModal');
-  if (guideTitle) guideTitle.textContent = title;
-  if (guideSteps) guideSteps.innerHTML = steps + extraBtn;
-  if (guideModal) guideModal.classList.add('show');
-}
-
-/* 复制链接 */
-window.copyPWAUrl = function() {
-  var url = 'https://liwenhao-0812.github.io/liwenhao/baodanguanli.html';
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url).then(function() {
-      alert('链接已复制！\n\n请打开 Chrome 浏览器，粘贴到地址栏访问。');
-    }).catch(function() {
-      prompt('请手动复制以下链接，然后粘贴到 Chrome 浏览器中打开：', url);
-    });
-  } else {
-    prompt('请手动复制以下链接，然后粘贴到 Chrome 浏览器中打开：', url);
-  }
-};
-
-/* 检测浏览器并调整按钮显示（仅在非APK模式下运行） */
-if (!_isInApp) {
-  (function() {
-    if (_deferredPrompt) {
-      var btnInstall = document.getElementById('pwaInstallBtn');
-      var btnApk = document.getElementById('btnDownloadApk');
-      var installText = document.getElementById('installText');
-      var installSub = document.getElementById('installSub');
-      if (btnInstall) btnInstall.style.display = 'inline-block';
-      if (btnApk) btnApk.style.display = 'none';
-      if (installText) installText.textContent = '安装到手机';
-      if (installSub) installSub.textContent = '像原生APP一样快速打开';
-    }
-    setTimeout(function() {
-      if (_deferredPrompt) {
-        var btnInstall = document.getElementById('pwaInstallBtn');
-        var btnApk = document.getElementById('btnDownloadApk');
-        var installText = document.getElementById('installText');
-        var installSub = document.getElementById('installSub');
-        if (btnInstall) btnInstall.style.display = 'inline-block';
-        if (btnApk) btnApk.style.display = 'none';
-        if (installText) installText.textContent = '安装到手机';
-        if (installSub) installSub.textContent = '点击安装，像原生APP一样快速打开';
-      } else {
-        showApkGuidePopup();
-      }
-    }, 3000);
-  })();
-}
-
-/* 弹出 APK 下载引导弹窗 */
-function showApkGuidePopup() {
-  var modal = document.getElementById('apkGuidePopup');
-  if (modal) {
-    modal.style.display = 'flex';
-  }
-}
-
-/* 关闭 APK 引导弹窗 */
-window.closeApkGuide = function() {
-  var modal = document.getElementById('apkGuidePopup');
-  if (modal) modal.style.display = 'none';
-};
 
 /* ========== Service Worker 注册（仅用于更新检测） ========== */
 if ('serviceWorker' in navigator) {
