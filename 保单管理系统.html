@@ -5,30 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>保单管理系统</title>
 <style>
-/* ======== CSS Variables - Soft Luxury Editorial ======== */
+/* ======== CSS Variables - Clean Professional ======== */
 :root {
-  --color-bg: #faf7f2;
+  --color-bg: #f9fafb;
   --color-surface: #ffffff;
-  --color-primary: #3c2415;
-  --color-primary-light: #5a3a28;
-  --color-accent: #b8860b;
-  --color-accent-light: #c9952e;
-  --color-accent-pale: #f5ecd7;
-  --color-success: #4a7c59;
-  --color-success-light: #5d936c;
-  --color-danger: #c1786e;
-  --color-danger-light: #d48f86;
-  --color-text-primary: #2c1810;
-  --color-text-secondary: #8c7b6a;
-  --color-text-muted: #a89880;
-  --color-border: #e8e0d5;
-  --color-border-light: #f0ebe0;
-  --color-subtle: #f5f0e8;
-  --color-subtle-warm: #f8f4ec;
-  --color-shadow-sm: rgba(60,36,21,0.04);
-  --color-shadow-md: rgba(60,36,21,0.07);
-  --color-shadow-lg: rgba(60,36,21,0.12);
-  --color-overlay: rgba(30,18,10,0.55);
+  --color-primary: #1d4ed8;
+  --color-primary-light: #3b82f6;
+  --color-accent: #1d4ed8;
+  --color-accent-light: #3b82f6;
+  --color-accent-pale: #eff6ff;
+  --color-success: #059669;
+  --color-success-light: #10b981;
+  --color-danger: #dc2626;
+  --color-danger-light: #ef4444;
+  --color-text-primary: #111827;
+  --color-text-secondary: #374151;
+  --color-text-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --color-border-light: #f3f4f6;
+  --color-subtle: #f3f4f6;
+  --color-subtle-warm: #f9fafb;
+  --color-shadow-sm: rgba(0,0,0,0.04);
+  --color-shadow-md: rgba(0,0,0,0.07);
+  --color-shadow-lg: rgba(0,0,0,0.12);
+  --color-overlay: rgba(0,0,0,0.55);
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -36,23 +36,18 @@
   --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --font-heading: 'Cormorant Garamond', 'Noto Sans SC', 'Georgia', serif;
+  --font-heading: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   --font-body: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
 
 /* ======== 全局样式重置 ======== */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Noto+Sans+SC:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;800&display=swap');
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { font-size: 16px; }
 body {
   font-family: var(--font-body);
   background: var(--color-bg);
-  background-image:
-    radial-gradient(ellipse at 0% 0%, rgba(184,134,11,0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 100% 100%, rgba(74,124,89,0.03) 0%, transparent 50%),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
-  background-size: 256px 256px;
   color: var(--color-text-primary);
   min-height: 100vh;
   line-height: 1.6;
@@ -73,14 +68,14 @@ input, select, textarea {
   border-radius: var(--radius-md);
   font-size: 14px;
   transition: all 0.25s var(--ease-out);
-  background: var(--color-bg);
+  background: var(--color-surface);
   color: var(--color-text-primary);
 }
 input:hover, select:hover, textarea:hover { border-color: var(--color-text-muted); }
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(184,134,11,0.1), 0 1px 4px rgba(60,36,21,0.04);
+  box-shadow: 0 0 0 3px rgba(29,78,216,0.1), 0 1px 4px rgba(0,0,0,0.04);
   background: var(--color-surface);
 }
 button {
@@ -94,20 +89,20 @@ button {
   min-width: 44px;
   letter-spacing: 0.02em;
 }
-.btn-primary { background: var(--color-primary); color: #fff; box-shadow: 0 2px 8px rgba(60,36,21,0.2); }
-.btn-primary:hover { background: var(--color-primary-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(60,36,21,0.3); }
+.btn-primary { background: var(--color-primary); color: #fff; box-shadow: 0 2px 8px rgba(29,78,216,0.2); }
+.btn-primary:hover { background: var(--color-primary-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(29,78,216,0.3); }
 .btn-primary:active { transform: translateY(0); }
-.btn-success { background: var(--color-success); color: #fff; box-shadow: 0 2px 8px rgba(74,124,89,0.2); }
-.btn-success:hover { background: var(--color-success-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(74,124,89,0.3); }
+.btn-success { background: var(--color-success); color: #fff; box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
+.btn-success:hover { background: var(--color-success-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(5,150,105,0.3); }
 .btn-success:active { transform: translateY(0); }
-.btn-danger { background: var(--color-danger); color: #fff; box-shadow: 0 2px 8px rgba(193,120,110,0.2); }
-.btn-danger:hover { background: var(--color-danger-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(193,120,110,0.3); }
+.btn-danger { background: var(--color-danger); color: #fff; box-shadow: 0 2px 8px rgba(220,38,38,0.2); }
+.btn-danger:hover { background: var(--color-danger-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(220,38,38,0.3); }
 .btn-danger:active { transform: translateY(0); }
-.btn-warning { background: var(--color-accent); color: #fff; box-shadow: 0 2px 8px rgba(184,134,11,0.2); }
-.btn-warning:hover { background: var(--color-accent-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(184,134,11,0.3); }
+.btn-warning { background: #d97706; color: #fff; box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
+.btn-warning:hover { background: #f59e0b; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(217,119,6,0.3); }
 .btn-warning:active { transform: translateY(0); }
-.btn-secondary { background: var(--color-text-secondary); color: #fff; box-shadow: 0 2px 8px rgba(140,123,106,0.2); }
-.btn-secondary:hover { background: #7a6b5a; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(140,123,106,0.3); }
+.btn-secondary { background: var(--color-text-secondary); color: #fff; box-shadow: 0 2px 8px rgba(55,65,81,0.2); }
+.btn-secondary:hover { background: #4b5563; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(55,65,81,0.3); }
 .btn-secondary:active { transform: translateY(0); }
 .btn-outline {
   background: transparent;
@@ -115,7 +110,7 @@ button {
   color: var(--color-primary);
   box-shadow: none;
 }
-.btn-outline:hover { background: var(--color-primary); color: #fff; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(60,36,21,0.25); }
+.btn-outline:hover { background: var(--color-primary); color: #fff; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(29,78,216,0.25); }
 .btn-outline:active { transform: translateY(0); }
 .btn-sm { padding: 6px 14px; font-size: 12px; min-height: 36px; border-radius: var(--radius-sm); }
 .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -154,11 +149,11 @@ button {
   letter-spacing: 0.03em;
   line-height: 1.4;
 }
-.tag-green { background: #eaf4ea; color: #2d5a32; }
-.tag-red { background: #fbeded; color: #8b2c25; }
-.tag-yellow { background: #fdf5e6; color: #7a5a18; }
-.tag-blue { background: #eaf0f2; color: #2d4a3e; }
-.tag-purple { background: #f3ecf8; color: #5c2d7a; }
+.tag-green { background: #ecfdf5; color: #065f46; }
+.tag-red { background: #fef2f2; color: #991b1b; }
+.tag-yellow { background: #fffbeb; color: #92400e; }
+.tag-blue { background: #eff6ff; color: #1e40af; }
+.tag-purple { background: #f5f3ff; color: #5b21b6; }
 .tag-gray { background: var(--color-subtle); color: var(--color-text-secondary); }
 
 /* ======== 登录/注册页 ======== */
@@ -167,11 +162,7 @@ button {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(160deg, #2c1810 0%, #3c2415 30%, #5a3a28 50%, #3c2415 70%, #2c1810 100%);
-  background-image:
-    linear-gradient(160deg, #2c1810 0%, #3c2415 30%, #5a3a28 50%, #3c2415 70%, #2c1810 100%),
-    radial-gradient(ellipse at 20% 80%, rgba(184,134,11,0.12) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(184,134,11,0.08) 0%, transparent 40%);
+  background: linear-gradient(160deg, #1e3a5f 0%, #1d4ed8 30%, #2563eb 50%, #1d4ed8 70%, #1e3a5f 100%);
   padding: 20px;
   position: relative;
   overflow: hidden;
@@ -180,14 +171,14 @@ button {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c9952e' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   opacity: 0.5;
   pointer-events: none;
 }
 .auth-container {
   background: var(--color-surface);
   border-radius: var(--radius-xl);
-  box-shadow: 0 24px 64px rgba(30,18,10,0.25), 0 0 0 1px rgba(255,255,255,0.08);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.08);
   width: 100%;
   max-width: 420px;
   padding: 44px 34px;
@@ -205,8 +196,8 @@ button {
 }
 .auth-header h1 {
   font-family: var(--font-heading);
-  font-size: 30px;
-  font-weight: 600;
+  font-size: 28px;
+  font-weight: 700;
   color: var(--color-text-primary);
   margin-bottom: 6px;
   letter-spacing: 0.04em;
@@ -215,7 +206,6 @@ button {
   font-size: 52px;
   display: block;
   margin-bottom: 10px;
-  filter: drop-shadow(0 4px 8px rgba(60,36,21,0.15));
 }
 .auth-tabs {
   display: flex;
@@ -276,7 +266,7 @@ button {
 /* ======== 主界面布局 ======== */
 #mainApp { display: none; min-height: 100vh; background: var(--color-bg); }
 .top-bar {
-  background: linear-gradient(135deg, #2c1810 0%, #3c2415 50%, #2c1810 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 50%, #1e3a5f 100%);
   padding: 14px 24px;
   display: flex;
   align-items: center;
@@ -284,14 +274,13 @@ button {
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 16px rgba(30,18,10,0.2);
-  border-bottom: 1px solid rgba(184,134,11,0.2);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
 }
 .top-bar h1 {
   font-family: var(--font-heading);
   font-size: 20px;
   font-weight: 600;
-  color: #f5f0e6;
+  color: #fff;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -302,14 +291,14 @@ button {
   align-items: center;
   gap: 12px;
   font-size: 13px;
-  color: var(--color-text-muted);
+  color: #d1d5db;
   font-weight: 500;
 }
-.top-bar .user-info span { color: #e8e0d0; font-weight: 600; }
+.top-bar .user-info span { color: #fff; font-weight: 600; }
 .top-bar .btn-secondary {
   background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.12);
-  color: #e8e0d0;
+  color: #fff;
   padding: 6px 14px;
   font-size: 12px;
   box-shadow: none;
@@ -351,7 +340,7 @@ button {
   transform: translateX(-50%) scaleX(0);
   width: 60%;
   height: 3px;
-  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-light));
+  background: var(--color-accent);
   border-radius: 3px 3px 0 0;
   transition: transform 0.35s var(--ease-spring);
 }
@@ -386,10 +375,10 @@ button {
   height: 8px;
   border-radius: 50%;
   background: var(--color-success);
-  box-shadow: 0 0 6px rgba(74,124,89,0.4);
+  box-shadow: 0 0 6px rgba(5,150,105,0.4);
 }
-.sync-dot.offline { background: var(--color-danger); box-shadow: 0 0 6px rgba(193,120,110,0.4); }
-.sync-dot.syncing { background: var(--color-accent); animation: pulse 1s infinite; }
+.sync-dot.offline { background: var(--color-danger); box-shadow: 0 0 6px rgba(220,38,38,0.4); }
+.sync-dot.syncing { background: #d97706; animation: pulse 1s infinite; }
 @keyframes pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.4; transform: scale(0.7); }
@@ -418,7 +407,7 @@ button {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+  background: var(--color-primary);
   border-radius: 3px 3px 0 0;
 }
 .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px var(--color-shadow-sm), 0 12px 28px var(--color-shadow-md); }
@@ -437,12 +426,12 @@ button {
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
-.stat-card.green::before { background: linear-gradient(90deg, var(--color-success), var(--color-success-light)); }
-.stat-card.green .stat-value { color: #3d5a3a; }
-.stat-card.red::before { background: linear-gradient(90deg, var(--color-danger), var(--color-danger-light)); }
-.stat-card.red .stat-value { color: #a83830; }
-.stat-card.yellow::before { background: linear-gradient(90deg, var(--color-accent), var(--color-accent-light)); }
-.stat-card.yellow .stat-value { color: #9a6e1a; }
+.stat-card.green::before { background: var(--color-success); }
+.stat-card.green .stat-value { color: #059669; }
+.stat-card.red::before { background: var(--color-danger); }
+.stat-card.red .stat-value { color: #dc2626; }
+.stat-card.yellow::before { background: #d97706; }
+.stat-card.yellow .stat-value { color: #d97706; }
 
 /* ======== 双栏布局（电脑端） ======== */
 @media (min-width: 768px) {
@@ -488,15 +477,15 @@ button {
   border-radius: 3px 0 0 3px;
   transition: background 0.25s var(--ease-out);
 }
-.client-item:hover { border-color: var(--color-accent); background: var(--color-subtle-warm); transform: translateX(2px); box-shadow: 0 2px 10px var(--color-shadow-sm); }
+.client-item:hover { border-color: var(--color-accent); background: var(--color-accent-pale); transform: translateX(2px); box-shadow: 0 2px 10px var(--color-shadow-sm); }
 .client-item:hover::before { background: var(--color-accent); }
-.client-item.active { border-color: var(--color-primary); background: var(--color-subtle-warm); box-shadow: 0 0 0 2px rgba(60,36,21,0.08); }
+.client-item.active { border-color: var(--color-primary); background: var(--color-accent-pale); box-shadow: 0 0 0 2px rgba(29,78,216,0.1); }
 .client-item.active::before { background: var(--color-primary); }
 .client-item .client-name {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 800;
   margin-bottom: 4px;
-  color: var(--color-text-primary);
+  color: #111827;
 }
 .client-item .client-meta {
   font-size: 12px;
@@ -543,6 +532,116 @@ button {
   letter-spacing: 0.04em;
 }
 
+/* 客户姓名高亮卡片 */
+.client-name-hero {
+  background: linear-gradient(135deg, #1e3a5f, #1d4ed8);
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 20px rgba(29,78,216,0.2);
+}
+.client-name-hero h3 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+.client-name-hero .client-meta-info {
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* 保单详情卡 */
+.policy-detail-card {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.policy-detail-header {
+  background: #f8fafc;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 10px 10px 0 0;
+}
+.policy-detail-header h5 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+.policy-detail-header .policy-meta {
+  font-size: 13px;
+  color: #374151;
+  margin-top: 4px;
+  font-weight: 500;
+}
+.policy-detail-body {
+  padding: 14px 16px;
+}
+.policy-detail-body .info-block {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+.policy-detail-body .info-block h6 {
+  font-size: 13px;
+  color: #1e293b;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #e2e8f0;
+  font-weight: 700;
+}
+.policy-detail-body .info-block.insured-block {
+  background: #f0f4ff;
+  border-color: #dbeafe;
+}
+.policy-detail-body .info-block.insured-block h6 {
+  color: #1e40af;
+  border-bottom-color: #bfdbfe;
+}
+.policy-detail-body .info-block.amount-block {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+.policy-detail-body .info-block.amount-block h6 {
+  color: #991b1b;
+  border-bottom-color: #fca5a5;
+}
+.policy-detail-body .amount-item {
+  text-align: center;
+  padding: 10px;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+}
+.policy-detail-body .amount-item .amount-label {
+  font-size: 12px;
+  color: #991b1b;
+  margin-bottom: 2px;
+  font-weight: 600;
+}
+.policy-detail-body .amount-item .amount-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #dc2626;
+}
+.policy-detail-body .amount-item.sum-insured-item {
+  border-color: #fcd34d;
+}
+.policy-detail-body .amount-item.sum-insured-item .amount-label {
+  color: #92400e;
+}
+.policy-detail-body .amount-item.sum-insured-item .amount-value {
+  color: #b45309;
+}
+
 /* ======== 返回按钮 ======== */
 .back-btn {
   display: flex;
@@ -563,7 +662,7 @@ button {
   box-shadow: 0 2px 8px var(--color-shadow-sm);
   transition: all 0.25s var(--ease-out);
 }
-.back-btn:hover { background: var(--color-subtle-warm); border-color: var(--color-primary); transform: translateX(-3px); }
+.back-btn:hover { background: var(--color-accent-pale); border-color: var(--color-primary); transform: translateX(-3px); }
 
 /* ======== 保单分组样式 ======== */
 .policy-group {
@@ -575,7 +674,7 @@ button {
   box-shadow: 0 1px 3px var(--color-shadow-sm);
 }
 .policy-group-main {
-  background: linear-gradient(135deg, var(--color-subtle-warm), #f0ebe0);
+  background: var(--color-accent-pale);
   padding: 12px 18px;
   font-weight: 700;
   font-size: 13px;
@@ -585,24 +684,24 @@ button {
   border-left: 3px solid var(--color-primary);
 }
 .policy-group-addon {
-  background: #fdf5e6;
+  background: #fffbeb;
   padding: 10px 18px;
   font-weight: 700;
   font-size: 12px;
-  color: #7a5a18;
-  border-top: 1px dashed #e8d5a8;
+  color: #92400e;
+  border-top: 1px dashed #fcd34d;
   letter-spacing: 0.02em;
-  border-left: 3px solid var(--color-accent);
+  border-left: 3px solid #d97706;
 }
 .policy-group-universal {
-  background: #f8f0f8;
+  background: #f5f3ff;
   padding: 10px 18px;
   font-weight: 700;
   font-size: 12px;
-  color: #5c2d7a;
-  border-top: 1px dashed #d8c0e8;
+  color: #5b21b6;
+  border-top: 1px dashed #c4b5fd;
   letter-spacing: 0.02em;
-  border-left: 3px solid #7b4fa0;
+  border-left: 3px solid #7c3aed;
 }
 
 /* ======== 保单表格 ======== */
@@ -626,7 +725,9 @@ button {
   text-transform: uppercase;
   border-bottom: 2px solid var(--color-border);
 }
-.policy-table tr:hover { background: var(--color-subtle-warm); }
+.policy-table tr:hover { background: var(--color-accent-pale); }
+.policy-table .col-premium { font-size: 16px; font-weight: 800; color: #dc2626; }
+.policy-table .col-sum-insured { font-size: 16px; font-weight: 800; color: #b45309; }
 
 /* ======== 模态框 ======== */
 .modal-overlay {
@@ -654,7 +755,7 @@ button {
   max-height: 90vh;
   overflow-y: auto;
   padding: 28px;
-  box-shadow: 0 24px 64px rgba(30,18,10,0.25);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.25);
   animation: modalSlideUp 0.35s var(--ease-spring);
   border: 1px solid var(--color-border);
 }
@@ -678,7 +779,7 @@ button {
   left: 0;
   width: 48px;
   height: 2px;
-  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-light));
+  background: var(--color-accent);
   border-radius: 1px;
 }
 .modal-header h2 {
@@ -736,8 +837,8 @@ button {
   background: var(--color-surface);
 }
 .reminder-item:hover { box-shadow: 0 4px 16px var(--color-shadow-md); transform: translateY(-1px); }
-.reminder-item.overdue { border-left: 4px solid var(--color-danger); background: #fef8f7; }
-.reminder-item.urgent { border-left: 4px solid var(--color-accent); background: #fefdf5; }
+.reminder-item.overdue { border-left: 4px solid var(--color-danger); background: #fef2f2; }
+.reminder-item.urgent { border-left: 4px solid #d97706; background: #fffbeb; }
 .reminder-item.normal { border-left: 4px solid var(--color-primary); }
 .reminder-item.dismissed { opacity: 0.45; }
 .reminder-info h4 { font-size: 14px; margin-bottom: 4px; font-weight: 700; color: var(--color-text-primary); }
@@ -773,7 +874,7 @@ button {
   box-shadow: 0 0 0 2px var(--color-primary);
 }
 .timeline-item.success::before { background: var(--color-success); box-shadow: 0 0 0 2px var(--color-success); }
-.timeline-item.warning::before { background: var(--color-accent); box-shadow: 0 0 0 2px var(--color-accent); }
+.timeline-item.warning::before { background: #d97706; box-shadow: 0 0 0 2px #d97706; }
 .timeline-item.danger::before { background: var(--color-danger); box-shadow: 0 0 0 2px var(--color-danger); }
 .timeline-date { font-size: 11px; color: var(--color-text-muted); margin-bottom: 4px; font-weight: 600; letter-spacing: 0.03em; }
 .timeline-content { font-size: 14px; color: var(--color-text-primary); }
@@ -796,7 +897,7 @@ button {
   font-weight: 500;
 }
 .calc-result {
-  background: linear-gradient(135deg, #eaf4ea, #f0f7f0);
+  background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
   border: 2px solid var(--color-success);
   border-radius: var(--radius-lg);
   padding: 24px;
@@ -807,7 +908,7 @@ button {
   font-family: var(--font-heading);
   font-size: 42px;
   font-weight: 700;
-  color: #2d4a26;
+  color: #059669;
   letter-spacing: -0.01em;
 }
 .calc-result .premium-label {
@@ -865,7 +966,7 @@ button {
   border-radius: var(--radius-md);
   color: #fff;
   font-size: 14px;
-  box-shadow: 0 8px 28px rgba(30,18,10,0.2);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.2);
   animation: slideIn 0.35s var(--ease-spring);
   max-width: 360px;
   font-weight: 600;
@@ -873,7 +974,7 @@ button {
 }
 .toast.success { background: var(--color-success); }
 .toast.error { background: var(--color-danger); }
-.toast.warning { background: var(--color-accent); }
+.toast.warning { background: #d97706; }
 .toast.info { background: var(--color-primary); }
 @keyframes slideIn {
   from { transform: translateX(120%); opacity: 0; }
@@ -1239,6 +1340,15 @@ button {
         </div>
         <button class="btn-primary" onclick="changePassword()">修改密码</button>
       </div>
+      <div class="card">
+        <div class="card-title">险种库管理</div>
+        <div style="margin-bottom:12px;display:flex;gap:8px;">
+          <input type="text" id="newInsLibName" placeholder="险种名称" style="flex:1;">
+          <input type="text" id="newInsLibCode" placeholder="险种代码" style="flex:1;">
+          <button class="btn-primary btn-sm" onclick="addInsuranceTypeManually()">添加</button>
+        </div>
+        <div id="insuranceTypeLibTable" class="table-responsive"></div>
+      </div>
     </div>
   </div>
 
@@ -1317,7 +1427,8 @@ button {
       </div>
       <div class="form-group">
         <label>险种名称 *</label>
-        <input type="text" id="insuranceName" placeholder="请输入险种名称" required>
+        <input type="text" id="insuranceName" placeholder="请输入险种名称" required list="insuranceTypeList" onchange="syncInsuranceTypeToForm(this.value)">
+        <datalist id="insuranceTypeList"></datalist>
       </div>
       <div class="form-group">
         <label>险种代码</label>
@@ -1381,6 +1492,32 @@ button {
       <div class="form-group">
         <label>被保人手机号</label>
         <input type="text" id="insuredPhone" placeholder="被保人手机号">
+      </div>
+      <!-- 生存金信息 -->
+      <div class="form-group">
+        <label>生存金类型</label>
+        <select id="survivalBenefitType">
+          <option value="">无生存金</option>
+          <option value="annual">每年领取</option>
+          <option value="triennial">每3年领取</option>
+          <option value="maturity">到期领取</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>生存金金额（元）</label>
+        <input type="number" id="survivalBenefitAmount" placeholder="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>最近一次领取日期</label>
+        <input type="date" id="survivalLastDate">
+      </div>
+      <div class="form-group">
+        <label>下次领取日期</label>
+        <input type="date" id="survivalNextDate">
+      </div>
+      <div class="form-group">
+        <label>生存金备注</label>
+        <input type="text" id="survivalBenefitNote" placeholder="如：60岁起每年领取">
       </div>
       <!-- 受益人 -->
       <div class="form-group">
@@ -1851,6 +1988,7 @@ function enterMainApp() {
   document.getElementById('currentUserName').textContent = currentUser;
   loadUserData();
   loadCloudSettings();
+  updateInsuranceTypeDatalist();
   switchTab('home');
   updateBottomStats();
 }
@@ -2112,7 +2250,7 @@ function refreshCurrentTab() {
     case 'reminders': renderReminders(); break;
     case 'tracking': populateTrackClientSelect(); break;
     case 'pricing': renderPricingRules(); break;
-    case 'settings': break;
+    case 'settings': renderInsuranceTypeLib(); break;
   }
   updateBottomStats();
 }
@@ -2385,8 +2523,11 @@ function renderDetailPanel(idx) {
   /* 返回按钮 */
   var html = '<button class="back-btn" onclick="backToQueryList()">&#8592; 返回查询列表</button>';
 
-  /* 客户姓名单独显示 */
-  html += '<div style="margin-bottom:14px;"><h3 style="font-size:20px;font-weight:700;color:#1e293b;">' + (c.name || '未命名') + '</h3></div>';
+  /* 客户姓名单独显示 - 高亮卡片 */
+  html += '<div class="client-name-hero">' +
+    '<h3>' + (c.name || '未命名') + '</h3>' +
+    '<div class="client-meta-info">' + (c.phone || '') + (c.idCard ? ' | ' + c.idCard : '') + '</div>' +
+    '</div>';
 
   /* 客户基本信息 */
   html += '<div class="card">' +
@@ -2432,8 +2573,8 @@ function renderDetailPanel(idx) {
         '<td>' + (p.insuranceName || '') + '</td>' +
         '<td><span class="tag ' + typeTag + '">' + (p.mainType || '主险') + '</span></td>' +
         '<td><span class="tag ' + statusClass + '">' + (p.status || '有效') + '</span></td>' +
-        '<td>' + formatMoney(p.annualPremium) + '</td>' +
-        '<td>' + formatMoney(p.sumInsured) + '</td>' +
+        '<td class="col-premium">' + formatMoney(p.annualPremium) + '</td>' +
+        '<td class="col-sum-insured">' + formatMoney(p.sumInsured) + '</td>' +
         '<td>' + (p.insured || c.name || '-') + '</td>' +
         '<td><button class="btn-sm btn-outline" onclick="editPolicy(' + idx + ',' + pIdx + ')">编辑</button> ' +
         '<button class="btn-sm btn-danger" onclick="deletePolicy(' + idx + ',' + pIdx + ')">删除</button></td>' +
@@ -2464,50 +2605,70 @@ function renderDetailPanel(idx) {
     /* 渲染单个保单详情卡片 */
     function renderPolicyDetail(p) {
       var pIdx = p._idx;
-      var detail = '<div style="padding:14px 16px;">';
+      var detail = '';
 
       /* 保单标题与操作 */
       var typeLabel = p.mainType === '附加险' ? '附加险' : p.mainType === '万能险' ? '万能险' : '主险';
-      detail += '<div style="margin-bottom:12px;">' +
+      detail += '<div class="policy-detail-header">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">' +
-        '<h4 style="font-size:14px;color:#1e40af;margin:0;">' + (p.insuranceName || '') + '</h4>' +
+        '<h5>' + (p.insuranceName || '') + '</h5>' +
         '<div style="display:flex;gap:6px;align-items:center;">' +
         '<span class="tag ' + (typeLabel === '附加险' ? 'tag-yellow' : typeLabel === '万能险' ? 'tag-purple' : 'tag-blue') + '">' + typeLabel + '</span>' +
         '<span class="tag ' + (p.status === '有效' ? 'tag-green' : 'tag-red') + '">' + (p.status || '有效') + '</span>' +
         '<button class="btn-sm btn-outline" onclick="editPolicy(' + idx + ',' + pIdx + ')">编辑</button>' +
         '<button class="btn-sm btn-danger" onclick="deletePolicy(' + idx + ',' + pIdx + ')">删除</button>' +
         '</div></div>' +
-        '<div style="font-size:12px;color:#64748b;margin-top:4px;">保单号：' + (p.policyCode || '-') + (p.codeType ? ' &nbsp;|&nbsp; 险种代码：' + p.codeType : '') + '</div>' +
+        '<div class="policy-meta">保单号：' + (p.policyCode || '-') + (p.codeType ? ' &nbsp;|&nbsp; 险种代码：' + p.codeType : '') + '</div>' +
         '</div>';
 
+      detail += '<div class="policy-detail-body">';
+
       /* 被保人信息 */
-      detail += '<div style="background:#f8fafc;border-radius:8px;padding:12px;margin-bottom:10px;">' +
-        '<h5 style="font-size:13px;color:#475569;margin-bottom:8px;border-bottom:1px solid #e2e8f0;padding-bottom:4px;">被保人信息</h5>' +
-        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px;font-size:13px;">' +
+      detail += '<div class="info-block insured-block">' +
+        '<h6>被保人信息</h6>' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px;font-size:13px;color:#1e293b;">' +
         '<p><strong>姓名：</strong>' + (p.insured || c.name || '-') + '</p>' +
         '<p><strong>关系：</strong>' + (p.insuredRelation || '-') + '</p>' +
         '<p><strong>身份证号：</strong>' + (p.insuredId || c.idCard || '-') + '</p>' +
         '<p><strong>联系方式：</strong>' + (p.insuredPhone || c.phone || '-') + '</p>' +
         '</div></div>';
 
-      /* 金额与缴费信息（保额+缴费金额放一起） */
-      detail += '<div style="background:#f8fafc;border-radius:8px;padding:12px;margin-bottom:10px;">' +
+      /* 金额与缴费信息 */
+      detail += '<div class="info-block amount-block">' +
+        '<h6>金额信息</h6>' +
         '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;font-size:13px;">' +
-        '<div style="text-align:center;padding:8px;background:#fef2f2;border-radius:6px;"><div style="font-size:11px;color:#64748b;margin-bottom:2px;">年缴保费</div><div style="font-size:16px;font-weight:700;color:#dc2626;">' + formatMoney(p.annualPremium) + '</div></div>' +
-        '<div style="text-align:center;padding:8px;background:#fffbeb;border-radius:6px;"><div style="font-size:11px;color:#64748b;margin-bottom:2px;">保额</div><div style="font-size:16px;font-weight:700;color:#92400e;">' + formatMoney(p.sumInsured) + '</div></div>' +
+        '<div class="amount-item"><div class="amount-label">年缴保费</div><div class="amount-value">' + formatMoney(p.annualPremium) + '</div></div>' +
+        '<div class="amount-item sum-insured-item"><div class="amount-label">保额</div><div class="amount-value">' + formatMoney(p.sumInsured) + '</div></div>' +
         '</div>' +
-        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;font-size:13px;margin-top:10px;">' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;font-size:13px;margin-top:10px;color:#1e293b;">' +
         '<p><strong>缴费方式：</strong>' + (p.paymentMethod || '-') + '</p>' +
         '<p><strong>缴费期限：</strong>' + (p.paymentTerm || '-') + ' 年</p>' +
         '<p><strong>生效日期：</strong>' + formatDate(p.effectiveDate) + '</p>' +
         (p.parentPolicyCode ? '<p><strong>关联主险：</strong>' + p.parentPolicyCode + '</p>' : '') +
         '</div></div>';
 
+      /* 生存金信息 */
+      if (p.survivalBenefit && p.survivalBenefit.type) {
+        var sb = p.survivalBenefit;
+        var typeLabel = sb.type === 'annual' ? '每年领取' : sb.type === 'triennial' ? '每3年领取' : '到期领取';
+        detail += '<div style="background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;padding:14px;margin-bottom:10px;">' +
+          '<h6 style="font-size:13px;color:#065f46;margin-bottom:10px;border-bottom:2px solid #a7f3d0;padding-bottom:6px;font-weight:700;">生存金信息</h6>' +
+          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;font-size:13px;">' +
+          '<div style="text-align:center;padding:8px;background:#d1fae5;border-radius:6px;"><div style="font-size:12px;color:#065f46;margin-bottom:2px;font-weight:600;">领取方式</div><div style="font-size:16px;font-weight:700;color:#047857;">' + typeLabel + '</div></div>' +
+          '<div style="text-align:center;padding:8px;background:#fef3c7;border-radius:6px;"><div style="font-size:12px;color:#92400e;margin-bottom:2px;font-weight:600;">生存金金额</div><div style="font-size:20px;font-weight:800;color:#b45309;">' + formatMoney(sb.amount) + ' 元</div></div>' +
+          '</div>' +
+          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;font-size:13px;margin-top:10px;color:#1e293b;">' +
+          '<p><strong>最近领取：</strong>' + formatDate(sb.lastDate) + '</p>' +
+          '<p><strong>下次领取：</strong>' + formatDate(sb.nextDate) + '</p>' +
+          (sb.note ? '<p><strong>备注：</strong>' + sb.note + '</p>' : '') +
+          '</div></div>';
+      }
+
       /* 受益人 */
       if (p.beneficiaries && p.beneficiaries.length > 0) {
-        detail += '<div style="margin-bottom:10px;"><h5 style="font-size:13px;color:#475569;margin-bottom:6px;">受益人</h5>';
+        detail += '<div style="margin-bottom:10px;"><h6 style="font-size:13px;color:#1e293b;margin-bottom:6px;font-weight:700;">受益人</h6>';
         p.beneficiaries.forEach(function(b) {
-          detail += '<span style="display:inline-block;background:#f1f5f9;padding:4px 12px;border-radius:6px;font-size:12px;margin-right:6px;margin-bottom:4px;">' +
+          detail += '<span style="display:inline-block;background:#f1f5f9;padding:4px 12px;border-radius:6px;font-size:12px;margin-right:6px;margin-bottom:4px;color:#1e293b;">' +
             (b.name || '') + ' - ' + (b.quota || '') + '%</span>';
         });
         detail += '</div>';
@@ -2515,13 +2676,13 @@ function renderDetailPanel(idx) {
 
       /* 备注 */
       if (p.remark) {
-        detail += '<div style="background:#fff7ed;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:13px;">' +
+        detail += '<div style="background:#fff7ed;border:1px solid #fdba74;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:13px;color:#1e293b;">' +
           '<strong>备注：</strong>' + p.remark + '</div>';
       }
 
       /* 服务记录 */
       detail += '<div style="margin-top:8px;">' +
-        '<h5 style="font-size:13px;color:#475569;margin-bottom:6px;">服务记录</h5>';
+        '<h6 style="font-size:13px;color:#1e293b;margin-bottom:6px;font-weight:700;">服务记录</h6>';
       if (p.serviceRecords && p.serviceRecords.length > 0) {
         detail += '<div class="timeline">';
         p.serviceRecords.forEach(function(sr) {
@@ -2531,12 +2692,12 @@ function renderDetailPanel(idx) {
         });
         detail += '</div>';
       } else {
-        detail += '<p style="font-size:12px;color:#94a3b8;">暂无服务记录</p>';
+        detail += '<p style="font-size:12px;color:#6b7280;">暂无服务记录</p>';
       }
       detail += '<button class="btn-sm btn-outline" style="margin-top:8px;" onclick="openAddServiceModal(' + idx + ',' + pIdx + ')">添加服务记录</button>';
       detail += '</div>';
 
-      detail += '</div>';
+      detail += '</div>'; /* policy-detail-body */
       return detail;
     }
 
@@ -2767,6 +2928,21 @@ function editPolicy(clientIdx, policyIdx) {
   document.getElementById('insuredPhone').value = p.insuredPhone || '';
   document.getElementById('policyRemark').value = p.remark || '';
 
+  /* 生存金 */
+  if (p.survivalBenefit) {
+    document.getElementById('survivalBenefitType').value = p.survivalBenefit.type || '';
+    document.getElementById('survivalBenefitAmount').value = p.survivalBenefit.amount || '';
+    document.getElementById('survivalLastDate').value = formatDate(p.survivalBenefit.lastDate);
+    document.getElementById('survivalNextDate').value = formatDate(p.survivalBenefit.nextDate);
+    document.getElementById('survivalBenefitNote').value = p.survivalBenefit.note || '';
+  } else {
+    document.getElementById('survivalBenefitType').value = '';
+    document.getElementById('survivalBenefitAmount').value = '';
+    document.getElementById('survivalLastDate').value = '';
+    document.getElementById('survivalNextDate').value = '';
+    document.getElementById('survivalBenefitNote').value = '';
+  }
+
   /* 受益人 */
   var bHtml = '';
   (p.beneficiaries || []).forEach(function(b) {
@@ -2780,11 +2956,13 @@ function editPolicy(clientIdx, policyIdx) {
 function clearPolicyForm() {
   ['policyCode','insuranceName','codeType','parentPolicyCode','annualPremium',
    'sumInsured','paymentTerm','insuredName','insuredRelation','insuredId',
-   'insuredPhone','policyRemark'].forEach(function(id) { document.getElementById(id).value = ''; });
+   'insuredPhone','policyRemark','survivalBenefitAmount','survivalLastDate',
+   'survivalNextDate','survivalBenefitNote'].forEach(function(id) { document.getElementById(id).value = ''; });
   document.getElementById('mainType').value = '主险';
   document.getElementById('policyStatus').value = '有效';
   document.getElementById('paymentMethod').value = '年缴';
   document.getElementById('effectiveDate').value = '';
+  document.getElementById('survivalBenefitType').value = '';
   document.getElementById('beneficiariesList').innerHTML = '';
 }
 
@@ -2813,6 +2991,12 @@ function savePolicy() {
     return;
   }
 
+  /* 自动收录险种到险种库 */
+  var codeType = document.getElementById('codeType').value.trim();
+  if (insuranceName && codeType) {
+    addToInsuranceTypeLib(insuranceName, codeType);
+  }
+
   /* 收集受益人 */
   var beneficiaries = [];
   var benContainers = document.getElementById('beneficiariesList').children;
@@ -2829,7 +3013,7 @@ function savePolicy() {
   var policyObj = {
     policyCode: policyCode,
     insuranceName: insuranceName,
-    codeType: document.getElementById('codeType').value.trim(),
+    codeType: codeType,
     mainType: document.getElementById('mainType').value,
     parentPolicyCode: document.getElementById('parentPolicyCode').value.trim(),
     status: document.getElementById('policyStatus').value,
@@ -2844,6 +3028,13 @@ function savePolicy() {
     insuredPhone: document.getElementById('insuredPhone').value.trim(),
     beneficiaries: beneficiaries,
     remark: document.getElementById('policyRemark').value.trim(),
+    survivalBenefit: {
+      type: document.getElementById('survivalBenefitType').value,
+      amount: document.getElementById('survivalBenefitAmount').value,
+      lastDate: toYMD(document.getElementById('survivalLastDate').value),
+      nextDate: toYMD(document.getElementById('survivalNextDate').value),
+      note: document.getElementById('survivalBenefitNote').value.trim()
+    },
     extraFields: {},
     serviceRecords: []
   };
@@ -2882,6 +3073,106 @@ function deletePolicy(clientIdx, policyIdx) {
     }
     showToast('保单已删除', 'success');
   });
+}
+
+/* ======== 险种库管理 ======== */
+
+/* 获取险种库 */
+function getInsuranceTypeLib() {
+  try {
+    return JSON.parse(localStorage.getItem('insurance_type_lib_' + currentUser) || '[]');
+  } catch(e) { return []; }
+}
+
+/* 保存险种库 */
+function saveInsuranceTypeLib(lib) {
+  localStorage.setItem('insurance_type_lib_' + currentUser, JSON.stringify(lib));
+}
+
+/* 添加到险种库（去重） */
+function addToInsuranceTypeLib(name, code) {
+  if (!name || !code) return false;
+  var lib = getInsuranceTypeLib();
+  var exists = lib.some(function(item) {
+    return item.insuranceName === name && item.codeType === code;
+  });
+  if (exists) return false;
+  lib.push({ insuranceName: name, codeType: code });
+  saveInsuranceTypeLib(lib);
+  return true;
+}
+
+/* 渲染险种库表格 */
+function renderInsuranceTypeLib() {
+  var lib = getInsuranceTypeLib();
+  var table = document.getElementById('insuranceTypeLibTable');
+  if (!table) return;
+  if (lib.length === 0) {
+    table.innerHTML = '<div class="empty-state" style="padding:20px;"><p style="font-size:13px;">暂无险种数据，添加保单时将自动收录</p></div>';
+    return;
+  }
+  var html = '<table class="policy-table"><thead><tr><th>险种名称</th><th>险种代码</th><th>操作</th></tr></thead><tbody>';
+  lib.forEach(function(item) {
+    html += '<tr>' +
+      '<td>' + (item.insuranceName || '') + '</td>' +
+      '<td>' + (item.codeType || '') + '</td>' +
+      '<td><button class="btn-sm btn-danger" onclick="deleteInsuranceType(\'' + item.insuranceName.replace(/'/g, "\\'") + '\')">删除</button></td>' +
+      '</tr>';
+  });
+  html += '</tbody></table>';
+  table.innerHTML = html;
+  /* 同时更新 datalist */
+  updateInsuranceTypeDatalist();
+}
+
+/* 删除险种库条目 */
+function deleteInsuranceType(insuranceName) {
+  var lib = getInsuranceTypeLib();
+  lib = lib.filter(function(item) { return item.insuranceName !== insuranceName; });
+  saveInsuranceTypeLib(lib);
+  renderInsuranceTypeLib();
+  showToast('险种已删除', 'success');
+}
+
+/* 自动填充险种代码 */
+function syncInsuranceTypeToForm(name) {
+  if (!name) return;
+  var lib = getInsuranceTypeLib();
+  var match = lib.find(function(item) { return item.insuranceName === name; });
+  if (match) {
+    document.getElementById('codeType').value = match.codeType || '';
+  }
+}
+
+/* 更新datalist */
+function updateInsuranceTypeDatalist() {
+  var datalist = document.getElementById('insuranceTypeList');
+  if (!datalist) return;
+  var lib = getInsuranceTypeLib();
+  datalist.innerHTML = '';
+  lib.forEach(function(item) {
+    var opt = document.createElement('option');
+    opt.value = item.insuranceName;
+    datalist.appendChild(opt);
+  });
+}
+
+/* 手动添加险种 */
+function addInsuranceTypeManually() {
+  var name = document.getElementById('newInsLibName').value.trim();
+  var code = document.getElementById('newInsLibCode').value.trim();
+  if (!name || !code) {
+    showToast('请填写险种名称和险种代码', 'warning');
+    return;
+  }
+  if (addToInsuranceTypeLib(name, code)) {
+    document.getElementById('newInsLibName').value = '';
+    document.getElementById('newInsLibCode').value = '';
+    renderInsuranceTypeLib();
+    showToast('险种添加成功', 'success');
+  } else {
+    showToast('该险种已存在', 'warning');
+  }
 }
 
 /* ======== 联系记录 ======== */
