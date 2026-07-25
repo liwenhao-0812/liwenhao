@@ -2,7 +2,7 @@
   "name": "保单管理系统",
   "short_name": "保单管理",
   "description": "个人保险保单管理系统 - 管理客户、保单、险种、提醒",
-  "start_url": "保单管理系统.html",
+  "start_url": "baodanguanli.html",
   "display": "standalone",
   "background_color": "#f5f3ef",
   "theme_color": "#1a2744",

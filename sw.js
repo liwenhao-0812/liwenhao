@@ -1,7 +1,7 @@
 /* Service Worker - 保单管理系统离线缓存 v2 */
 var CACHE_NAME = 'policy-manager-v2';
 var urlsToCache = [
-  '保单管理系统.html',
+  'baodanguanli.html',
   'manifest.json',
   'icon-192.png',
   'icon-512.png'
