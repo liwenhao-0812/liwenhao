@@ -1,5 +1,5 @@
-/* Service Worker - 保单管理系统离线缓存 */
-var CACHE_NAME = 'policy-manager-v1';
+/* Service Worker - 保单管理系统离线缓存 v2 */
+var CACHE_NAME = 'policy-manager-v2';
 var urlsToCache = [
   '保单管理系统.html',
   'manifest.json',
@@ -7,8 +7,9 @@ var urlsToCache = [
   'icon-512.png'
 ];
 
-/* 安装 */
+/* 安装 - 立即激活，不等待旧 SW 释放 */
 self.addEventListener('install', function(event) {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
       console.log('SW: 缓存资源');
@@ -17,7 +18,7 @@ self.addEventListener('install', function(event) {
   );
 });
 
-/* 激活 - 清理旧缓存 */
+/* 激活 - 清理旧缓存，接管所有页面 */
 self.addEventListener('activate', function(event) {
   event.waitUntil(
     caches.keys().then(function(cacheNames) {
@@ -25,19 +26,27 @@ self.addEventListener('activate', function(event) {
         cacheNames.filter(function(name) {
           return name !== CACHE_NAME;
         }).map(function(name) {
+          console.log('SW: 删除旧缓存', name);
           return caches.delete(name);
         })
       );
+    }).then(function() {
+      /* 接管所有打开的页面，广播更新消息 */
+      return self.clients.claim().then(function() {
+        return self.clients.matchAll().then(function(clients) {
+          clients.forEach(function(client) {
+            client.postMessage({ type: 'SW_UPDATED', version: CACHE_NAME });
+          });
+        });
+      });
     })
   );
 });
 
 /* 拦截请求 - 网络优先，失败回退缓存 */
 self.addEventListener('fetch', function(event) {
-  /* 跳过非 GET 请求和 CDN 资源 */
   if (event.request.method !== 'GET') return;
   if (event.request.url.indexOf('cdn.jsdelivr.net') !== -1) {
-    /* CDN 资源：缓存优先 */
     event.respondWith(
       caches.match(event.request).then(function(response) {
         return response || fetch(event.request).then(function(fetchResponse) {
@@ -56,4 +65,11 @@ self.addEventListener('fetch', function(event) {
       return caches.match(event.request);
     })
   );
+});
+
+/* 监听来自页面的消息 */
+self.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
