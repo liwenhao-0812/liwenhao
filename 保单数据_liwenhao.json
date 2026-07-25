@@ -1,0 +1,3130 @@
+{
+  "policies": [
+    {
+      "name": "蔡伟霞",
+      "idCard": "441802198603143242",
+      "phone": "13542468210",
+      "address": "横河镇佛祖居委会山星村 136 号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2017442001522015014957",
+          "insuranceName": "",
+          "codeType": "522",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20170127",
+          "paymentMethod": "年缴",
+          "annualPremium": "1195",
+          "sumInsured": "",
+          "paymentTerm": "10",
+          "insured": "罗浩强",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "蔡伟霞",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2017442001778300013107",
+          "insuranceName": "",
+          "codeType": "778",
+          "mainType": "附加险",
+          "parentPolicyCode": "2017442001522015014957",
+          "status": "有效",
+          "effectiveDate": "20170127",
+          "paymentMethod": "年缴",
+          "annualPremium": "82",
+          "sumInsured": "",
+          "paymentTerm": "10",
+          "insured": "罗浩强",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "蔡伟霞",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2017442001522015014931",
+          "insuranceName": "",
+          "codeType": "522",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "失效",
+          "effectiveDate": "20170127",
+          "paymentMethod": "年缴",
+          "annualPremium": "1175",
+          "sumInsured": "",
+          "paymentTerm": "10",
+          "insured": "蔡伟霞",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "罗浩强",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2017442001778300013084",
+          "insuranceName": "",
+          "codeType": "778",
+          "mainType": "附加险",
+          "parentPolicyCode": "2017442001522015014931",
+          "status": "失效",
+          "effectiveDate": "20170127",
+          "paymentMethod": "年缴",
+          "annualPremium": "82.5",
+          "sumInsured": "",
+          "paymentTerm": "10",
+          "insured": "蔡伟霞",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "罗浩强",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [
+        {
+          "name": "罗浩强",
+          "relationship": "丈夫",
+          "idCard": "",
+          "phone": "",
+          "note": ""
+        }
+      ],
+      "contactHistory": [
+        {
+          "status": "已电话联系",
+          "date": "2026-07-16"
+        },
+        {
+          "status": "已加微信",
+          "date": "2026-07-16"
+        }
+      ]
+    },
+    {
+      "name": "陈其辉",
+      "idCard": "440127621229831",
+      "phone": "15975860225",
+      "address": "东城建设 22 巷 19 号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2006442001S42015024451",
+          "insuranceName": "",
+          "codeType": "S42",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20060511",
+          "paymentMethod": "年缴",
+          "annualPremium": "1800",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "陈其辉",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "禤水姐",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": [
+            {
+              "date": "2026-07-17",
+              "content": "电话号码不正确"
+            }
+          ]
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": [
+        {
+          "status": "未联系上",
+          "date": "2026-07-17"
+        }
+      ]
+    },
+    {
+      "name": "陈婉琼",
+      "idCard": "441881198812032827",
+      "phone": "15019342936",
+      "address": "北江一路金海湾桃花圆 7 座 1201",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2021442000SK5500002768",
+          "insuranceName": "国寿福终身寿险（庆典版）",
+          "codeType": "SK5",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20210101",
+          "paymentMethod": "年缴",
+          "annualPremium": "4060",
+          "sumInsured": "200000",
+          "paymentTerm": "19",
+          "insured": "江有辉",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "陈婉琼",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2021442000R41500002782",
+          "insuranceName": "国寿附加国寿福提前给付重大疾病保险（庆典版）",
+          "codeType": "R41",
+          "mainType": "附加险",
+          "parentPolicyCode": "2021442000SK5500002768",
+          "status": "有效",
+          "effectiveDate": "20210101",
+          "paymentMethod": "年缴",
+          "annualPremium": "1960",
+          "sumInsured": "200000",
+          "paymentTerm": "19",
+          "insured": "江有辉",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "陈婉琼",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2021442000R42500002798",
+          "insuranceName": "国寿附加国寿福豁免保险费疾病保险（庆典版）",
+          "codeType": "R42",
+          "mainType": "附加险",
+          "parentPolicyCode": "2021442000SK5500002768",
+          "status": "有效",
+          "effectiveDate": "20210101",
+          "paymentMethod": "年缴",
+          "annualPremium": "137.86",
+          "sumInsured": "6020",
+          "paymentTerm": "19",
+          "insured": "江有辉",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "陈婉琼",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2021442000R44500002778",
+          "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险（庆典版，B款）",
+          "codeType": "R44",
+          "mainType": "附加险",
+          "parentPolicyCode": "2021442000SK5500002768",
+          "status": "有效",
+          "effectiveDate": "20210101",
+          "paymentMethod": "年缴",
+          "annualPremium": "241.4",
+          "sumInsured": "6020",
+          "paymentTerm": "19",
+          "insured": "江有辉",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "陈婉琼",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [
+        {
+          "name": "江有辉",
+          "relationship": "丈夫",
+          "idCard": "",
+          "phone": "",
+          "note": ""
+        }
+      ],
+      "contactHistory": []
+    },
+    {
+      "name": "邓杏群",
+      "idCard": "441802196008071126",
+      "phone": "13729621003",
+      "address": "东城街道澜水村委会中心村增强西街南一巷 15 号 201",
+      "workCompany": "顺发制衣厂",
+      "workAddress": "清远市清城区桥北路10号牛皇庙市场蔡蔡杂货铺",
+      "policies": [
+        {
+          "policyCode": "2006442011S50015002057",
+          "insuranceName": "国寿千禧理财分红型",
+          "codeType": "S50",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20060912",
+          "paymentMethod": "年缴",
+          "annualPremium": "1310",
+          "sumInsured": "",
+          "paymentTerm": "10",
+          "insured": "欧烨振",
+          "insuredRelation": "",
+          "insuredId": "441802200201041155",
+          "insuredPhone": "13376679173",
+          "beneficiaries": [
+            {
+              "name": "邓杏群",
+              "quota": 100
+            }
+          ],
+          "remark": "2026.07.19操作投保人变成为 欧烨振",
+          "extraFields": {
+            "返还开始年": "2006",
+            "返还金额": "每三年 500元"
+          },
+          "serviceRecords": [
+            {
+              "date": "2026-07-17",
+              "content": "2026年7月18日下午预约面见客户"
+            },
+            {
+              "date": "2026-07-18",
+              "content": "面见客户预约下一次更改投保人信息，和补全被保人信息"
+            },
+            {
+              "date": "2026-07-19",
+              "content": "协助投保人变成被保人（欧烨振）成为新的投保人，补全被保人资料，告知领取生存金银行账户"
+            }
+          ]
+        }
+      ],
+      "familyMembers": [
+        {
+          "name": "欧烨振",
+          "relationship": "儿子",
+          "idCard": "441802200201041155",
+          "phone": "",
+          "note": ""
+        }
+      ],
+      "contactHistory": [
+        {
+          "status": "已电话联系",
+          "date": "2026-07-17"
+        },
+        {
+          "status": "已加微信",
+          "date": "2026-07-19"
+        },
+        {
+          "status": "面见客户",
+          "date": "2026-07-19",
+          "note": "协助变更投保人、被保人手机号码"
+        }
+      ]
+    },
+    {
+      "name": "冯丽红",
+      "idCard": "441823198804174522",
+      "phone": "13425242914",
+      "address": "清城区石角镇马头村委会大屋村 6 号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2016442007512015021649",
+          "insuranceName": "国寿防癌疾病保险",
+          "codeType": "512",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20160422",
+          "paymentMethod": "年缴",
+          "annualPremium": "1330",
+          "sumInsured": "100000",
+          "paymentTerm": "20",
+          "insured": "冯丽红",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "钟卓佳",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2016442007769300010464",
+          "insuranceName": "国寿附加防癌两全保险",
+          "codeType": "769",
+          "mainType": "附加险",
+          "parentPolicyCode": "2016442007512015021649",
+          "status": "有效",
+          "effectiveDate": "20160422",
+          "paymentMethod": "年缴",
+          "annualPremium": "320",
+          "sumInsured": "100000",
+          "paymentTerm": "20",
+          "insured": "冯丽红",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "钟卓佳",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2016442007522015021633",
+          "insuranceName": "国寿如意随行两全保险",
+          "codeType": "522",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20160422",
+          "paymentMethod": "年缴",
+          "annualPremium": "1170",
+          "sumInsured": "50000",
+          "paymentTerm": "20",
+          "insured": "冯丽红",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "钟卓佳",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2016442007778300010455",
+          "insuranceName": "国寿附加如意随行意外伤害住院定额给付医疗保险",
+          "codeType": "778",
+          "mainType": "附加险",
+          "parentPolicyCode": "2016442007522015021633",
+          "status": "有效",
+          "effectiveDate": "20160422",
+          "paymentMethod": "年缴",
+          "annualPremium": "82.5",
+          "sumInsured": "50000",
+          "paymentTerm": "20",
+          "insured": "冯丽红",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "钟卓佳",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2016442007522015022043",
+          "insuranceName": "国寿如意随行两全保险",
+          "codeType": "522",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20160422",
+          "paymentMethod": "年缴",
+          "annualPremium": "1205",
+          "sumInsured": "50000",
+          "paymentTerm": "10",
+          "insured": "钟卓佳",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "冯丽红",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2016442007778300010853",
+          "insuranceName": "国寿附加如意随行意外伤害住院定额给付医疗保险",
+          "codeType": "778",
+          "mainType": "附加险",
+          "parentPolicyCode": "2016442007522015022043",
+          "status": "有效",
+          "effectiveDate": "20160422",
+          "paymentMethod": "年缴",
+          "annualPremium": "81.5",
+          "sumInsured": "50000",
+          "paymentTerm": "10",
+          "insured": "钟卓佳",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "冯丽红",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2016442007512015022059",
+          "insuranceName": "国寿防癌疾病保险",
+          "codeType": "512",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20160422",
+          "paymentMethod": "年缴",
+          "annualPremium": "1680",
+          "sumInsured": "100000",
+          "paymentTerm": "20",
+          "insured": "钟卓佳",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "冯丽红",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2016442007769300010862",
+          "insuranceName": "国寿附加防癌两全保险",
+          "codeType": "769",
+          "mainType": "附加险",
+          "parentPolicyCode": "2016442007512015022059",
+          "status": "有效",
+          "effectiveDate": "20160422",
+          "paymentMethod": "年缴",
+          "annualPremium": "430",
+          "sumInsured": "100000",
+          "paymentTerm": "20",
+          "insured": "钟卓佳",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "冯丽红",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "黄娟",
+      "idCard": "44022519780914794X",
+      "phone": "18922553199",
+      "address": "清城区新城四号区康怡居 B 栋 403 房",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2015442001512015049637",
+          "insuranceName": "",
+          "codeType": "512",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "-",
+          "paymentMethod": "年缴",
+          "annualPremium": "850",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "曾令辉",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "黄娟",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2015442001769300033033",
+          "insuranceName": "",
+          "codeType": "769",
+          "mainType": "附加险",
+          "parentPolicyCode": "2015442001512015049637",
+          "status": "有效",
+          "effectiveDate": "-",
+          "paymentMethod": "年缴",
+          "annualPremium": "90",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "曾令辉",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "黄娟",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [
+        {
+          "name": "曾令辉",
+          "relationship": "儿子",
+          "idCard": "",
+          "phone": "",
+          "note": ""
+        }
+      ],
+      "contactHistory": []
+    },
+    {
+      "name": "赖新爱",
+      "idCard": "441802197010063824",
+      "phone": "13620585213",
+      "address": "清城区濠景天域石狮社区 4 栋 801",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2006442011S42015005147",
+          "insuranceName": "",
+          "codeType": "S42",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "-",
+          "paymentMethod": "年缴",
+          "annualPremium": "1320",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "雷杰锋",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "赖新爱",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": [
+        {
+          "status": "已电话联系",
+          "date": "2026-07-25",
+          "note": "邀请添加微信未通过"
+        }
+      ]
+    },
+    {
+      "name": "雷焕洪",
+      "idCard": "440127197007113817",
+      "phone": "15119938707",
+      "address": "清城区先锋西路 21 号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2004442011S42000006821",
+          "insuranceName": "",
+          "codeType": "S42",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "-",
+          "paymentMethod": "年缴",
+          "annualPremium": "1580",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "雷焕洪",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "赖新爱",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": [
+        {
+          "status": "已电话联系",
+          "date": "2026-07-25",
+          "note": "已联系客户妻子"
+        }
+      ]
+    },
+    {
+      "name": "曾惠玲",
+      "idCard": "441802199004271423",
+      "phone": "13824917646",
+      "address": "广东省清远市清城区东城大道1号天湖郦都15座2606号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2017442001287000327387",
+          "insuranceName": "国寿鑫账户年金保险（万能型）（卓越版）",
+          "codeType": "287",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20170627",
+          "paymentMethod": "年缴",
+          "annualPremium": "0",
+          "sumInsured": "0",
+          "paymentTerm": "10",
+          "insured": "曾惠玲",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "未指定",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2017442001553015097024",
+          "insuranceName": "国寿鸿福至尊年金保险（分红型）",
+          "codeType": "553",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20170627",
+          "paymentMethod": "年缴",
+          "annualPremium": "10000",
+          "sumInsured": "2592",
+          "paymentTerm": "10",
+          "insured": "曾惠玲",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "未指定",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2017442001286000327397",
+          "insuranceName": "国寿鑫账户年金保险（万能型）（惠享版）",
+          "codeType": "286",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20170628",
+          "paymentMethod": "年缴",
+          "annualPremium": "0",
+          "sumInsured": "0",
+          "paymentTerm": "10",
+          "insured": "曾惠玲",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "未指定",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "陈文泓",
+      "idCard": "522101196903153263",
+      "phone": "15975893999",
+      "address": "广东省清远市清城区人民三路34号卧龙五州世纪城7栋2单元1403房",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2008442001S42015030832",
+          "insuranceName": "康宁终身保险",
+          "codeType": "S42",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20080629",
+          "paymentMethod": "年缴",
+          "annualPremium": "710",
+          "sumInsured": "10000",
+          "paymentTerm": "10",
+          "insured": "邓雨甜",
+          "insuredRelation": "",
+          "insuredId": "441802200701290529",
+          "insuredPhone": "3800325",
+          "beneficiaries": [
+            {
+              "name": "陈文泓",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "黄早娣",
+      "idCard": "44022819630904042X",
+      "phone": "13501463717",
+      "address": "广东省清远市清城区凤城街道下廓街丽景轩A栋604号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2015442001268000011029",
+          "insuranceName": "国寿金账户两全保险(万能型)",
+          "codeType": "268",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20150614",
+          "paymentMethod": "年缴",
+          "annualPremium": "0",
+          "sumInsured": "",
+          "paymentTerm": "10",
+          "insured": "黄早娣",
+          "insuredRelation": "本人",
+          "insuredId": "44022819630904042X",
+          "insuredPhone": "",
+          "beneficiaries": [
+            {
+              "name": "林祖敬",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2015442001518015047268",
+          "insuranceName": "国寿鑫如意年金保险（白金版）",
+          "codeType": "",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20150616",
+          "paymentMethod": "年缴",
+          "annualPremium": "30000",
+          "sumInsured": "",
+          "paymentTerm": "10",
+          "insured": "黄早娣",
+          "insuredRelation": "",
+          "insuredId": "44022819630904042X",
+          "insuredPhone": "13501463717",
+          "beneficiaries": [],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": [
+        {
+          "status": "已电话联系",
+          "date": "2026-07-24",
+          "note": ""
+        },
+        {
+          "status": "电话挂断",
+          "date": "2026-07-25",
+          "note": "拒接见面，要求不再需要跟进服务"
+        }
+      ]
+    },
+    {
+      "name": "陈桂添",
+      "idCard": "440127196412100011",
+      "phone": "13729618786",
+      "address": "广东省清远市清城区东城街道东城大道6号天湖郦都13座603号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2018442001SD2015061220",
+          "insuranceName": "国寿康宁嘉保疾病保险",
+          "codeType": "SD2",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20180607",
+          "paymentMethod": "年缴",
+          "annualPremium": "258",
+          "sumInsured": "",
+          "paymentTerm": "10",
+          "insured": "陈桂添",
+          "insuredRelation": "本人",
+          "insuredId": "440127196412100011",
+          "insuredPhone": "13729618786",
+          "beneficiaries": [
+            {
+              "name": "未指定",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "雷美兴",
+      "idCard": "441802197803123903",
+      "phone": "13413535205",
+      "address": "\"广东省清远市清城区广东省清远市清城区新城凤翔大道23号东方天城花园",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2016442001512015003623",
+          "insuranceName": "国寿防癌疾病保险",
+          "codeType": "512",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20160112",
+          "paymentMethod": "年缴",
+          "annualPremium": "780",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "叶明陶",
+          "insuredRelation": "儿子",
+          "insuredId": "441802200403063811",
+          "insuredPhone": "15915801057",
+          "beneficiaries": [
+            {
+              "name": "本人",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2016442001769300001220",
+          "insuranceName": "国寿附加防癌两全保险",
+          "codeType": "769",
+          "mainType": "附加险",
+          "parentPolicyCode": "2016442001512015003623",
+          "status": "有效",
+          "effectiveDate": "20160112",
+          "paymentMethod": "年缴",
+          "annualPremium": "80",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "叶明陶",
+          "insuredRelation": "儿子",
+          "insuredId": "441802200403063811",
+          "insuredPhone": "15915801057",
+          "beneficiaries": [
+            {
+              "name": "雷美兴",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "雷秋玲",
+      "idCard": "441882198507141564",
+      "phone": "15219079862",
+      "address": "广东省清远市清城区源潭大连村委会东门闸门围4号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2017442001512015116744",
+          "insuranceName": "国寿防癌疾病保险",
+          "codeType": "512",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20170910",
+          "paymentMethod": "年缴",
+          "annualPremium": "1500",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "雷秋玲",
+          "insuredRelation": "本人",
+          "insuredId": "441882198507141564",
+          "insuredPhone": "15219079862",
+          "beneficiaries": [
+            {
+              "name": "赖浩宇",
+              "quota": 50
+            },
+            {
+              "name": "赖水松",
+              "quota": 50
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2017442001321300104973",
+          "insuranceName": "国寿附加防癌两全保险(优享版)",
+          "codeType": "321",
+          "mainType": "附加险",
+          "parentPolicyCode": "2017442001512015116744",
+          "status": "有效",
+          "effectiveDate": "20170910",
+          "paymentMethod": "年缴",
+          "annualPremium": "440",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "雷秋玲",
+          "insuredRelation": "",
+          "insuredId": "441882198507141564",
+          "insuredPhone": "15219079862",
+          "beneficiaries": [
+            {
+              "name": "赖浩宇",
+              "quota": 50
+            },
+            {
+              "name": "赖水松",
+              "quota": 50
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2017442001512015116760",
+          "insuranceName": "国寿防癌疾病保险",
+          "codeType": "512",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20170910",
+          "paymentMethod": "年缴",
+          "annualPremium": "660",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "赖浩宇",
+          "insuredRelation": "儿子",
+          "insuredId": "441802201107150499",
+          "insuredPhone": "15219079862",
+          "beneficiaries": [
+            {
+              "name": "雷秋玲",
+              "quota": 50
+            },
+            {
+              "name": "赖水松",
+              "quota": 50
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2017442001321300104999",
+          "insuranceName": "国寿附加防癌两全保险(优享版)",
+          "codeType": "321",
+          "mainType": "附加险",
+          "parentPolicyCode": "2017442001512015116760",
+          "status": "有效",
+          "effectiveDate": "20170910",
+          "paymentMethod": "年缴",
+          "annualPremium": "60",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "赖浩宇",
+          "insuredRelation": "儿子",
+          "insuredId": "441802201107150499",
+          "insuredPhone": "15219079862",
+          "beneficiaries": [
+            {
+              "name": "雷秋玲",
+              "quota": 50
+            },
+            {
+              "name": "赖水松",
+              "quota": 50
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [
+        {
+          "name": "赖浩宇",
+          "relationship": "儿子",
+          "idCard": "441802201107150499",
+          "phone": "15219079862",
+          "note": ""
+        }
+      ],
+      "contactHistory": []
+    },
+    {
+      "name": "雷斯敏",
+      "idCard": "441802199206053264",
+      "phone": "13413572335",
+      "address": "广东省清远市清城区横荷百加居委会官都85号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2017442001559015118411",
+          "insuranceName": "国寿福终身寿险(至尊版)",
+          "codeType": "559",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20170916",
+          "paymentMethod": "年缴",
+          "annualPremium": "2145",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "雷斯敏",
+          "insuredRelation": "本人",
+          "insuredId": "441802199206053264",
+          "insuredPhone": "13413572335",
+          "beneficiaries": [
+            {
+              "name": "雷金洪",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2017442001315300106866",
+          "insuranceName": "国寿附加国寿福提前给付重大疾病保险(至尊版)",
+          "codeType": "315",
+          "mainType": "附加险",
+          "parentPolicyCode": "2017442001559015118411",
+          "status": "有效",
+          "effectiveDate": "20170916",
+          "paymentMethod": "年缴",
+          "annualPremium": "1080",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "雷斯敏",
+          "insuredRelation": "本人",
+          "insuredId": "441802199206053264",
+          "insuredPhone": "13413572335",
+          "beneficiaries": [
+            {
+              "name": "雷金洪",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2017442001316300106872",
+          "insuranceName": "国寿附加国寿福豁免保险费疾病保险(至尊版)",
+          "codeType": "316",
+          "mainType": "附加险",
+          "parentPolicyCode": "2017442001559015118411",
+          "status": "有效",
+          "effectiveDate": "20170916",
+          "paymentMethod": "年缴",
+          "annualPremium": "53.86",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "雷斯敏",
+          "insuredRelation": "本人",
+          "insuredId": "441802199206053264",
+          "insuredPhone": "13413572335",
+          "beneficiaries": [
+            {
+              "name": "雷金洪",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "梁建智",
+      "idCard": "441802197911180913",
+      "phone": "13553928865",
+      "address": "广东省清远市清城区梁围一街十一号201",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2017442001512015109782",
+          "insuranceName": "国寿防癌疾病保险",
+          "codeType": "512",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20170809",
+          "paymentMethod": "年缴",
+          "annualPremium": "1180",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "梁家嘉",
+          "insuredRelation": "女儿",
+          "insuredId": "441802200601060929",
+          "insuredPhone": "13553928865",
+          "beneficiaries": [
+            {
+              "name": "未指定",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2017442001321300097141",
+          "insuranceName": "国寿附加防癌两全保险(优享版)",
+          "codeType": "321",
+          "mainType": "附加险",
+          "parentPolicyCode": "2017442001512015109782",
+          "status": "有效",
+          "effectiveDate": "20170809",
+          "paymentMethod": "年缴",
+          "annualPremium": "260",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "梁家嘉",
+          "insuredRelation": "女儿",
+          "insuredId": "441802200601060929",
+          "insuredPhone": "13553928865",
+          "beneficiaries": [
+            {
+              "name": "未指定",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2017442001512015109724",
+          "insuranceName": "国寿防癌疾病保险",
+          "codeType": "512",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20170809",
+          "paymentMethod": "年缴",
+          "annualPremium": "920",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "梁家豪",
+          "insuredRelation": "儿子",
+          "insuredId": "441802201305280032",
+          "insuredPhone": "13553928865",
+          "beneficiaries": [
+            {
+              "name": "未指定",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2017442001321300097099",
+          "insuranceName": "国寿附加防癌两全保险(优享版)",
+          "codeType": "321",
+          "mainType": "附加险",
+          "parentPolicyCode": "2017442001512015109724",
+          "status": "有效",
+          "effectiveDate": "20170809",
+          "paymentMethod": "年缴",
+          "annualPremium": "140",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "梁家豪",
+          "insuredRelation": "儿子",
+          "insuredId": "441802201305280032",
+          "insuredPhone": "13553928865",
+          "beneficiaries": [
+            {
+              "name": "未指定",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [
+        {
+          "name": "梁家嘉",
+          "relationship": "女儿",
+          "idCard": "441802200601060929",
+          "phone": "13553928865",
+          "note": ""
+        },
+        {
+          "name": "梁家豪",
+          "relationship": "儿子",
+          "idCard": "441802201305280032",
+          "phone": "13553928865",
+          "note": ""
+        }
+      ],
+      "contactHistory": []
+    },
+    {
+      "name": "梁荣劲",
+      "idCard": "440127197009206013",
+      "phone": "15816259888",
+      "address": "广东省清远市清城区东城街道大学西路222号时代倾城25座1304号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2005442001S42015008128",
+          "insuranceName": "康宁终身保险",
+          "codeType": "S42",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20051110",
+          "paymentMethod": "年缴",
+          "annualPremium": "1680",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "梁荣劲",
+          "insuredRelation": "本人",
+          "insuredId": "440127197009206013",
+          "insuredPhone": "15816259888",
+          "beneficiaries": [
+            {
+              "name": "骆丽英",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "梁雪梅",
+      "idCard": "440127196912010020",
+      "phone": "13927665501",
+      "address": "广东省清远市清城区东城街道东城社区名德幸福里3栋1梯5层05号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2001442001S49100002577",
+          "insuranceName": "国寿99鸿福两全保险",
+          "codeType": "S49",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20010210",
+          "paymentMethod": "年缴",
+          "annualPremium": "290",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "刘琛",
+          "insuredRelation": "儿子",
+          "insuredId": "/",
+          "insuredPhone": "/",
+          "beneficiaries": [
+            {
+              "name": "梁雪梅",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [
+        {
+          "name": "刘琛",
+          "relationship": "儿子",
+          "idCard": "/",
+          "phone": "/",
+          "note": ""
+        }
+      ],
+      "contactHistory": []
+    },
+    {
+      "name": "凌通",
+      "idCard": "441802197010102037",
+      "phone": "13802894730",
+      "address": "广东省清远市清城区龙塘镇沿江街后座501号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2007442001S42015029589",
+          "insuranceName": "康宁终身保险",
+          "codeType": "S42",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20070630",
+          "paymentMethod": "年缴",
+          "annualPremium": "3440",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "凌通",
+          "insuredRelation": "本人",
+          "insuredId": "441802197010102037",
+          "insuredPhone": "13802894730",
+          "beneficiaries": [
+            {
+              "name": "罗利珍",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "李佩娟",
+      "idCard": "44182619630108172X",
+      "phone": "13642548798",
+      "address": "广东省清远市清城区东城街道锦兴路168号东城水岸10幢1001号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2005442005S42015003677",
+          "insuranceName": "康宁终身保险",
+          "codeType": "S42",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20051221",
+          "paymentMethod": "年缴",
+          "annualPremium": "920",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "李佩娟",
+          "insuredRelation": "本人",
+          "insuredId": "44182619630108172X",
+          "insuredPhone": "13642548798",
+          "beneficiaries": [
+            {
+              "name": "曾健",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "李素霞",
+      "idCard": "441802197705093843",
+      "phone": "13346548376",
+      "address": "广东省清远市清城区石角镇石角居委会金康大街水塔楼504号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2010442001S93015015645",
+          "insuranceName": "国寿美满一生年金保险(分红型)",
+          "codeType": "S93",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20100428",
+          "paymentMethod": "年缴",
+          "annualPremium": "2000",
+          "sumInsured": "",
+          "paymentTerm": "5",
+          "insured": "叶可仪",
+          "insuredRelation": "女儿",
+          "insuredId": "441802200904290166",
+          "insuredPhone": "13346548376",
+          "beneficiaries": [
+            {
+              "name": "李素霞",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "李焯明",
+      "idCard": "441826197510311717",
+      "phone": "13376672805",
+      "address": "广东省清远市清城区横荷街道融创清城首府",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2004442005S42000006440",
+          "insuranceName": "康宁终身保险",
+          "codeType": "S42",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20040820",
+          "paymentMethod": "年缴",
+          "annualPremium": "3500",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "李焯明",
+          "insuredRelation": "本人",
+          "insuredId": "441826197510311717",
+          "insuredPhone": "13376672805",
+          "beneficiaries": [
+            {
+              "name": "陈水英",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "潘素华",
+      "idCard": "440127196211190268",
+      "phone": "13376651157",
+      "address": "广东省清远市清城区东城金碧路金碧湾花园10号楼A栋1101",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "1999442001S32000003596",
+          "insuranceName": "重大疾病终身保险(98版利差返还型)",
+          "codeType": "S32",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "19990611",
+          "paymentMethod": "年缴",
+          "annualPremium": "1455",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "潘素华",
+          "insuredRelation": "本人",
+          "insuredId": "440127196211190268",
+          "insuredPhone": "13376651157",
+          "beneficiaries": [
+            {
+              "name": "王俊杰",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2001442001S42000012233",
+          "insuranceName": "康宁终身保险",
+          "codeType": "S42",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20010602",
+          "paymentMethod": "年缴",
+          "annualPremium": "752",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "王俊杰",
+          "insuredRelation": "儿子",
+          "insuredId": "441802198907150214",
+          "insuredPhone": "13926681017",
+          "beneficiaries": [
+            {
+              "name": "王诩",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [
+        {
+          "name": "王俊杰",
+          "relationship": "儿子",
+          "idCard": "441802198907150214",
+          "phone": "13926681017",
+          "note": ""
+        }
+      ],
+      "contactHistory": []
+    },
+    {
+      "name": "潘学谦",
+      "idCard": "441802197411020235",
+      "phone": "13926640033",
+      "address": "广东省清远市清城区天湖塘32号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2007442001S42015059524",
+          "insuranceName": "康宁终身保险",
+          "codeType": "S42",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20071212",
+          "paymentMethod": "年缴",
+          "annualPremium": "4740",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "潘学谦",
+          "insuredRelation": "本人",
+          "insuredId": "441802197411020235",
+          "insuredPhone": "13926640033",
+          "beneficiaries": [
+            {
+              "name": "潘睿智",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "吴春梅",
+      "idCard": "441802198206140021",
+      "phone": "13727161474",
+      "address": "广东省清远市清城区松岗市场西侧松景楼501",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2018442007SD6015048795",
+          "insuranceName": "国寿鑫享鸿福年金保险",
+          "codeType": "SD6",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20181026",
+          "paymentMethod": "年缴",
+          "annualPremium": "4000",
+          "sumInsured": "",
+          "paymentTerm": "10",
+          "insured": "吴春梅",
+          "insuredRelation": "本人",
+          "insuredId": "441802198206140021",
+          "insuredPhone": "13727161474",
+          "beneficiaries": [
+            {
+              "name": "梁域",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2018442007291000006512",
+          "insuranceName": "国寿鑫尊宝终身寿险(万能型)(A款)",
+          "codeType": "291",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20181026",
+          "paymentMethod": "年缴",
+          "annualPremium": "50",
+          "sumInsured": "",
+          "paymentTerm": "10",
+          "insured": "吴春梅",
+          "insuredRelation": "本人",
+          "insuredId": "441802198206140021",
+          "insuredPhone": "13727161474",
+          "beneficiaries": [
+            {
+              "name": "梁域",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2018442007290000006506",
+          "insuranceName": "国寿鑫尊宝年金保险(万能型)(B款)",
+          "codeType": "290",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20181026",
+          "paymentMethod": "年缴",
+          "annualPremium": "50",
+          "sumInsured": "",
+          "paymentTerm": "10",
+          "insured": "吴春梅",
+          "insuredRelation": "本人",
+          "insuredId": "441802198206140021",
+          "insuredPhone": "13727161474",
+          "beneficiaries": [
+            {
+              "name": "梁域",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "吴翠芬",
+      "idCard": "441802197909230942",
+      "phone": "13431958147",
+      "address": "广东省清远市清城区凤城街道梁围二街左七巷3号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2012442001432015014662",
+          "insuranceName": "国寿康宁终身重大疾病保险",
+          "codeType": "432",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20120414",
+          "paymentMethod": "年缴",
+          "annualPremium": "4160",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "梁其栋",
+          "insuredRelation": "丈夫",
+          "insuredId": "441802197501200934",
+          "insuredPhone": "13431958147",
+          "beneficiaries": [
+            {
+              "name": "吴翠芬",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2004442001S42000007937",
+          "insuranceName": "康宁终身保险",
+          "codeType": "S42",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20040312",
+          "paymentMethod": "年缴",
+          "annualPremium": "1420",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "梁其栋",
+          "insuredRelation": "丈夫",
+          "insuredId": "441802197501200934",
+          "insuredPhone": "13431958147",
+          "beneficiaries": [
+            {
+              "name": "吴翠芬",
+              "quota": 50
+            },
+            {
+              "name": "梁靖尚",
+              "quota": 50
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "吴帆",
+      "idCard": "441827199110254333",
+      "phone": "18666691877",
+      "address": "广东省清远市清城区朝阳花苑19座首层#",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2020442001SK6015046434",
+          "insuranceName": "国寿少儿国寿福终身寿险(庆典版)",
+          "codeType": "SK6",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20200401",
+          "paymentMethod": "年缴",
+          "annualPremium": "1620",
+          "sumInsured": "",
+          "paymentTerm": "19",
+          "insured": "吴佩瑜",
+          "insuredRelation": "女儿",
+          "insuredId": "44180220150329016X",
+          "insuredPhone": "18666691877",
+          "beneficiaries": [
+            {
+              "name": "吴帆",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2020442001R45300063875",
+          "insuranceName": "国寿附加少儿国寿福提前给付重大疾病保险(庆典版)",
+          "codeType": "R45",
+          "mainType": "附加险",
+          "parentPolicyCode": "2020442001SK6015046434",
+          "status": "有效",
+          "effectiveDate": "20200401",
+          "paymentMethod": "年缴",
+          "annualPremium": "1120",
+          "sumInsured": "",
+          "paymentTerm": "19",
+          "insured": "吴佩瑜",
+          "insuredRelation": "女儿",
+          "insuredId": "44180220150329016X",
+          "insuredPhone": "18666691877",
+          "beneficiaries": [
+            {
+              "name": "吴帆",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2020442001R46300063894",
+          "insuranceName": "国寿附加少儿国寿福豁免保险费疾病保险(庆典版)",
+          "codeType": "R46",
+          "mainType": "附加险",
+          "parentPolicyCode": "2020442001SK6015046434",
+          "status": "有效",
+          "effectiveDate": "20200401",
+          "paymentMethod": "年缴",
+          "annualPremium": "18.36",
+          "sumInsured": "",
+          "paymentTerm": "19",
+          "insured": "吴佩瑜",
+          "insuredRelation": "女儿",
+          "insuredId": "44180220150329016X",
+          "insuredPhone": "18666691877",
+          "beneficiaries": [
+            {
+              "name": "吴帆",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2020442001R44300063885",
+          "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险(庆典版，B款)",
+          "codeType": "R44",
+          "mainType": "附加险",
+          "parentPolicyCode": "2020442001SK6015046434",
+          "status": "有效",
+          "effectiveDate": "20200401",
+          "paymentMethod": "年缴",
+          "annualPremium": "86.86",
+          "sumInsured": "",
+          "paymentTerm": "19",
+          "insured": "吴佩瑜",
+          "insuredRelation": "女儿",
+          "insuredId": "44180220150329016X",
+          "insuredPhone": "18666691877",
+          "beneficiaries": [
+            {
+              "name": "吴帆",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "吴华",
+      "idCard": "440204195805114728",
+      "phone": "13620565954",
+      "address": "广东省清远市清城区广清大道88号云山诗意云山居5栋A梯701房",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2003442011S43000004492",
+          "insuranceName": "康宁定期保险",
+          "codeType": "S43",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20030429",
+          "paymentMethod": "年缴",
+          "annualPremium": "1700",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "陈准",
+          "insuredRelation": "儿子",
+          "insuredId": "440204198511115016",
+          "insuredPhone": "18603045930",
+          "beneficiaries": [
+            {
+              "name": "吴华",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [
+        {
+          "name": "陈准",
+          "relationship": "儿子",
+          "idCard": "440204198511115016",
+          "phone": "18603045930",
+          "note": ""
+        }
+      ],
+      "contactHistory": []
+    },
+    {
+      "name": "王春梅",
+      "idCard": "441802196412280587",
+      "phone": "13828558217",
+      "address": "广东省清远市清城区东城街道金湖社区红旗路阳光嘉园14座903号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2025442001D8N400235536",
+          "insuranceName": "国寿通泰无忧意外伤害保险(节假日版)",
+          "codeType": "D8N",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20250715",
+          "paymentMethod": "年缴",
+          "annualPremium": "4.05",
+          "sumInsured": "",
+          "paymentTerm": "1",
+          "insured": "王春梅",
+          "insuredRelation": "本人",
+          "insuredId": "441802196412280587",
+          "insuredPhone": "13828558217",
+          "beneficiaries": [
+            {
+              "name": "王春梅",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "王丽玲",
+      "idCard": "440127196606220521",
+      "phone": "13926677301",
+      "address": "广东省清远市清城区凤城街道和富东城一栋3001",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2003442001S50000033420",
+          "insuranceName": "国寿千禧理财两全保险(分红型)",
+          "codeType": "S50",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20031125",
+          "paymentMethod": "年缴",
+          "annualPremium": "2660",
+          "sumInsured": "",
+          "paymentTerm": "10",
+          "insured": "欧梓娟",
+          "insuredRelation": "女儿",
+          "insuredId": "441802198906150220",
+          "insuredPhone": "18027234024",
+          "beneficiaries": [
+            {
+              "name": "王丽玲",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "王永霞",
+      "idCard": "441802197412312029",
+      "phone": "13542489691",
+      "address": "广东省清远市清城区广东省清远市清城区龙塘镇大丰豪庭海琴湾七",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2010442011432015000567",
+          "insuranceName": "国寿康宁终身重大疾病保险",
+          "codeType": "432",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20100129",
+          "paymentMethod": "年缴",
+          "annualPremium": "2500",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "向伟亮",
+          "insuredRelation": "儿子",
+          "insuredId": "441802200304072018",
+          "insuredPhone": "？",
+          "beneficiaries": [
+            {
+              "name": "王永霞",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "王焯南",
+      "idCard": "441811196111257718",
+      "phone": "13542493038",
+      "address": "广东省清远市清城区清远市清城区向群新村七座504号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2004442001S50000021376",
+          "insuranceName": "国寿千禧理财两全保险(分红型)",
+          "codeType": "S50",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20040603",
+          "paymentMethod": "年缴",
+          "annualPremium": "1600",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "王镇江",
+          "insuredRelation": "儿子",
+          "insuredId": "441802199707030239",
+          "insuredPhone": "13160559810",
+          "beneficiaries": [
+            {
+              "name": "罗丽容",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2004442001S50000021334",
+          "insuranceName": "国寿千禧理财两全保险(分红型)",
+          "codeType": "S50",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20040603",
+          "paymentMethod": "年缴",
+          "annualPremium": "1620",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "王洁怡",
+          "insuredRelation": "女儿",
+          "insuredId": "441802199201120229",
+          "insuredPhone": "18666693605",
+          "beneficiaries": [
+            {
+              "name": "王焯南",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "温福智",
+      "idCard": "441827198002236838",
+      "phone": "18576449458",
+      "address": "广东省清远市清城区三号区学前路明珠佳B1栋601",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2018442001564015015575",
+          "insuranceName": "国寿百万如意行两全保险",
+          "codeType": "564",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20180222",
+          "paymentMethod": "年缴",
+          "annualPremium": "1540",
+          "sumInsured": "",
+          "paymentTerm": "10",
+          "insured": "温福智",
+          "insuredRelation": "本人",
+          "insuredId": "441827198002236838",
+          "insuredPhone": "18576449458",
+          "beneficiaries": [
+            {
+              "name": "温皓天",
+              "quota": 33
+            },
+            {
+              "name": "温俊宇",
+              "quota": 33
+            },
+            {
+              "name": "孟霞",
+              "quota": 34
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2018442001322300020277",
+          "insuranceName": "国寿附加百万如意行意外伤害住院定额给付医疗保险",
+          "codeType": "322",
+          "mainType": "附加险",
+          "parentPolicyCode": "2018442001564015015575",
+          "status": "有效",
+          "effectiveDate": "20180222",
+          "paymentMethod": "年缴",
+          "annualPremium": "192",
+          "sumInsured": "",
+          "paymentTerm": "10",
+          "insured": "温福智",
+          "insuredRelation": "本人",
+          "insuredId": "441827198002236838",
+          "insuredPhone": "18576449458",
+          "beneficiaries": [
+            {
+              "name": "温皓天",
+              "quota": 33
+            },
+            {
+              "name": "温俊宇",
+              "quota": 33
+            },
+            {
+              "name": "孟霞",
+              "quota": 34
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "谢倚梅",
+      "idCard": "440783199103042425",
+      "phone": "13726963050",
+      "address": "广东省清远市清城区凤翔大道23号东方天城1号楼1205",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2019442000SI6015045052",
+          "insuranceName": "国寿康宁终身重大疾病保险（2019版）",
+          "codeType": "SI6",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20191019",
+          "paymentMethod": "年缴",
+          "annualPremium": "1845",
+          "sumInsured": "",
+          "paymentTerm": "30",
+          "insured": "冯俊熙",
+          "insuredRelation": "儿子",
+          "insuredId": "44182720120804019X",
+          "insuredPhone": "13726963050",
+          "beneficiaries": [
+            {
+              "name": "谢依梅",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2019442000R36300050779",
+          "insuranceName": "国寿附加康宁两全保险（2019版）",
+          "codeType": "R36",
+          "mainType": "附加险",
+          "parentPolicyCode": "2019442000SI6015045052",
+          "status": "有效",
+          "effectiveDate": "20191019",
+          "paymentMethod": "年缴",
+          "annualPremium": "570",
+          "sumInsured": "",
+          "paymentTerm": "30",
+          "insured": "冯俊熙",
+          "insuredRelation": "儿子",
+          "insuredId": "44182720120804019X",
+          "insuredPhone": "13726963050",
+          "beneficiaries": [
+            {
+              "name": "谢依梅",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2019442000317300050766",
+          "insuranceName": "国寿附加国寿福提前给付重大疾病保险(至尊版)",
+          "codeType": "R37",
+          "mainType": "附加险",
+          "parentPolicyCode": "2019442000SI6015045052",
+          "status": "有效",
+          "effectiveDate": "20191019",
+          "paymentMethod": "年缴",
+          "annualPremium": "142",
+          "sumInsured": "",
+          "paymentTerm": "30",
+          "insured": "谢倚梅",
+          "insuredRelation": "本人",
+          "insuredId": "440783199103042425",
+          "insuredPhone": "13726963050",
+          "beneficiaries": [
+            {
+              "name": "未指定",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2017442000553015026357",
+          "insuranceName": "国寿鸿福至尊年金保险（分红型）",
+          "codeType": "R38",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20170530",
+          "paymentMethod": "年缴",
+          "annualPremium": "12000",
+          "sumInsured": "",
+          "paymentTerm": "10",
+          "insured": "谢倚梅",
+          "insuredRelation": "本人",
+          "insuredId": "440783199103042425",
+          "insuredPhone": "13726963050",
+          "beneficiaries": [
+            {
+              "name": "未指定",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2017442000287000007071",
+          "insuranceName": "国寿鑫账户年金保险（万能型）（卓越版）",
+          "codeType": "R39",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20170529",
+          "paymentMethod": "年缴",
+          "annualPremium": "0",
+          "sumInsured": "",
+          "paymentTerm": "10",
+          "insured": "谢倚梅",
+          "insuredRelation": "本人",
+          "insuredId": "440783199103042425",
+          "insuredPhone": "13726963050",
+          "beneficiaries": [
+            {
+              "name": "未指定",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2017442000286000007081",
+          "insuranceName": "国寿鑫账户年金保险（万能型）（惠享版）",
+          "codeType": "R40",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20170529",
+          "paymentMethod": "年缴",
+          "annualPremium": "0",
+          "sumInsured": "",
+          "paymentTerm": "10",
+          "insured": "谢倚梅",
+          "insuredRelation": "本人",
+          "insuredId": "440783199103042425",
+          "insuredPhone": "13726963050",
+          "beneficiaries": [
+            {
+              "name": "未指定",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [
+        {
+          "name": "冯俊熙",
+          "relationship": "儿子",
+          "idCard": "44182720120804019X",
+          "phone": "13726963050",
+          "note": ""
+        }
+      ],
+      "contactHistory": [
+        {
+          "status": "电话挂断",
+          "date": "2026-07-16"
+        }
+      ]
+    },
+    {
+      "name": "许田生",
+      "idCard": "441230197509126612",
+      "phone": "13679533784",
+      "address": "广东省清远市远清城区小市丽清花园翠苑E梯302房",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2008442001S42015021762",
+          "insuranceName": "康宁终身保险",
+          "codeType": "R41",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20080613",
+          "paymentMethod": "年缴",
+          "annualPremium": "7700",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "许田生",
+          "insuredRelation": "本人",
+          "insuredId": "441230197509126612",
+          "insuredPhone": "13679533784",
+          "beneficiaries": [
+            {
+              "name": "谢金凤",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "杨桂兰",
+      "idCard": "440127196010102823",
+      "phone": "13416576620",
+      "address": "广东省清远市清城区凤翔大道东方天城9栋B梯2707",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "1998442011S09000003903",
+          "insuranceName": "99鸿福终身保险(97版)",
+          "codeType": "R42",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "19981001",
+          "paymentMethod": "年缴",
+          "annualPremium": "610",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "严伟聪",
+          "insuredRelation": "儿子",
+          "insuredId": "441802198309182814",
+          "insuredPhone": "18933647215",
+          "beneficiaries": [
+            {
+              "name": "未指定",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "叶海燕",
+      "idCard": "441802197307010029",
+      "phone": "13926672077",
+      "address": "广东省清远市清城区东城街道金湖社区清碧路1号锦江豪庭2座2801房",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2004442001S50000048630",
+          "insuranceName": "国寿千禧理财两全保险(分红型)",
+          "codeType": "R43",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20041106",
+          "paymentMethod": "年缴",
+          "annualPremium": "800",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "宋晓宇",
+          "insuredRelation": "儿子",
+          "insuredId": "441802200111026912",
+          "insuredPhone": "18318702332",
+          "beneficiaries": [
+            {
+              "name": "叶海燕",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [
+        {
+          "name": "宋晓宇",
+          "relationship": "儿子",
+          "idCard": "441802200111026912",
+          "phone": "18318702332",
+          "note": ""
+        }
+      ],
+      "contactHistory": []
+    },
+    {
+      "name": "叶连好",
+      "idCard": "440127196410171449",
+      "phone": "13926614238",
+      "address": "广东省清远市清城区凤城街道朝阳花苑24号楼B座604号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "1998442011Y05100000378",
+          "insuranceName": "鸿寿养老金保险(97版)",
+          "codeType": "R44",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "19980603",
+          "paymentMethod": "年缴",
+          "annualPremium": "660",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "叶连好",
+          "insuredRelation": "本人",
+          "insuredId": "440127196410171449",
+          "insuredPhone": "13926614238",
+          "beneficiaries": [
+            {
+              "name": "未指定",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "1998442011Y05100000365",
+          "insuranceName": "鸿寿养老金保险(97版)",
+          "codeType": "R45",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "19980603",
+          "paymentMethod": "年缴",
+          "annualPremium": "640",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "何甫光",
+          "insuredRelation": "丈夫",
+          "insuredId": "440127196107110213",
+          "insuredPhone": "13926614238",
+          "beneficiaries": [
+            {
+              "name": "未指定",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "1998442011S11000000585",
+          "insuranceName": "66鸿运保险(B型)(97版)",
+          "codeType": "R46",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "19980603",
+          "paymentMethod": "年缴",
+          "annualPremium": "3210",
+          "sumInsured": "",
+          "paymentTerm": "9",
+          "insured": "何志远",
+          "insuredRelation": "儿子",
+          "insuredId": "441802198812280235",
+          "insuredPhone": "13927621591",
+          "beneficiaries": [
+            {
+              "name": "未指定",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [
+        {
+          "name": "何志远",
+          "relationship": "儿子",
+          "idCard": "441802198812280235",
+          "phone": "13927621591",
+          "note": ""
+        }
+      ],
+      "contactHistory": []
+    },
+    {
+      "name": "袁建明",
+      "idCard": "440127196512014719",
+      "phone": "13232808866",
+      "address": "广东省清远市清城区清远市清城区下濠基176号五环体育",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2004442001S50000054020",
+          "insuranceName": "国寿千禧理财两全保险(分红型)",
+          "codeType": "R47",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20041212",
+          "paymentMethod": "年缴",
+          "annualPremium": "2400",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "袁政",
+          "insuredRelation": "儿子",
+          "insuredId": "441802200103120511",
+          "insuredPhone": "？",
+          "beneficiaries": [
+            {
+              "name": "袁建明",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [
+        {
+          "name": "袁政",
+          "relationship": "儿子",
+          "idCard": "441802200103120511",
+          "phone": "？",
+          "note": ""
+        }
+      ],
+      "contactHistory": []
+    },
+    {
+      "name": "张彩美",
+      "idCard": "441827197608106224",
+      "phone": "13553962268",
+      "address": "广东省清远市清城区凤城街道高基里社区松鹤西街24号古城华景苑",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2001442011S49200002186",
+          "insuranceName": "国寿99鸿福两全保险",
+          "codeType": "R48",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20010605",
+          "paymentMethod": "年缴",
+          "annualPremium": "1180",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "卢芷瑶",
+          "insuredRelation": "女儿",
+          "insuredId": "441802200002080928",
+          "insuredPhone": "13553962268",
+          "beneficiaries": [
+            {
+              "name": "张彩美",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [
+        {
+          "name": "卢芷瑶",
+          "relationship": "女儿",
+          "idCard": "441802200002080928",
+          "phone": "13553962268",
+          "note": ""
+        }
+      ],
+      "contactHistory": []
+    },
+    {
+      "name": "张清葵",
+      "idCard": "441802197811051487",
+      "phone": "13431985082",
+      "address": "广东省清远市清城区洲心沙湖管理区沙尾二村7号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2011442001432015011354",
+          "insuranceName": "国寿康宁终身重大疾病保险",
+          "codeType": "R49",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20110325",
+          "paymentMethod": "年缴",
+          "annualPremium": "1060",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "何家辉",
+          "insuredRelation": "儿子",
+          "insuredId": "441802200108081419",
+          "insuredPhone": "13431985082",
+          "beneficiaries": [
+            {
+              "name": "张清葵",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2005442001S42000004238",
+          "insuranceName": "康宁终身保险",
+          "codeType": "R50",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20050127",
+          "paymentMethod": "年缴",
+          "annualPremium": "1390",
+          "sumInsured": "",
+          "paymentTerm": "10",
+          "insured": "何卫常",
+          "insuredRelation": "丈夫",
+          "insuredId": "441802197312201436",
+          "insuredPhone": "？",
+          "beneficiaries": [
+            {
+              "name": "张清葵",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "张雪玲",
+      "idCard": "441811197010057260",
+      "phone": "13500293192",
+      "address": "广东省清远市清城区金碧路金碧湾花园32号楼1503",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2004442011S66000001136",
+          "insuranceName": "国寿鸿运少儿两全保险（分红型）",
+          "codeType": "R51",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20040117",
+          "paymentMethod": "年缴",
+          "annualPremium": "1694",
+          "sumInsured": "",
+          "paymentTerm": "15",
+          "insured": "林冠熙",
+          "insuredRelation": "",
+          "insuredId": "441827200304240058",
+          "insuredPhone": "18924414383",
+          "beneficiaries": [
+            {
+              "name": "张雪玲",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [
+        {
+          "name": "林冠熙",
+          "relationship": "儿子",
+          "idCard": "441827200304240058",
+          "phone": "18924414383",
+          "note": ""
+        }
+      ],
+      "contactHistory": []
+    },
+    {
+      "name": "郑婕",
+      "idCard": "441827198404067061",
+      "phone": "15602355117",
+      "address": "广东省清远市清城区人民一路三建宿舍北栋1梯602",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2011442011432015001738",
+          "insuranceName": "国寿康宁终身重大疾病保险",
+          "codeType": "R52",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20110505",
+          "paymentMethod": "年缴",
+          "annualPremium": "1460",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "郑婕",
+          "insuredRelation": "本人",
+          "insuredId": "441827198404067061",
+          "insuredPhone": "15602355117",
+          "beneficiaries": [
+            {
+              "name": "宋品杰",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "钟永全",
+      "idCard": "44180219730929001X",
+      "phone": "18948935743",
+      "address": "广东省清远市清城区凤城街道城北路二路西9座雅居乐苑1号楼402",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2000442009S43000002074",
+          "insuranceName": "康宁定期保险",
+          "codeType": "R53",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20001124",
+          "paymentMethod": "年缴",
+          "annualPremium": "690",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "钟永全",
+          "insuredRelation": "本人",
+          "insuredId": "44180219730929001X",
+          "insuredPhone": "18948935743",
+          "beneficiaries": [
+            {
+              "name": "钟文浩",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "邹瑞琼",
+      "idCard": "441802197212251428",
+      "phone": "13926685401",
+      "address": "广东省清远市清城区洲心街道北江三路金鑫花园1704号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2010442011432015004259",
+          "insuranceName": "国寿康宁终身重大疾病保险",
+          "codeType": "R54",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20101001",
+          "paymentMethod": "年缴",
+          "annualPremium": "4600",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "邹瑞琼",
+          "insuredRelation": "本人",
+          "insuredId": "441802197212251428",
+          "insuredPhone": "13926685401",
+          "beneficiaries": [
+            {
+              "name": "朱欣然",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        },
+        {
+          "policyCode": "2010442011432015004262",
+          "insuranceName": "国寿康宁终身重大疾病保险",
+          "codeType": "R55",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "20100928",
+          "paymentMethod": "年缴",
+          "annualPremium": "2350",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "insured": "朱欣然",
+          "insuredRelation": "女儿",
+          "insuredId": "441802200009296924",
+          "insuredPhone": "？",
+          "beneficiaries": [
+            {
+              "name": "邹瑞琼",
+              "quota": 100
+            }
+          ],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    },
+    {
+      "name": "冯晓明",
+      "idCard": "",
+      "phone": "1582032850",
+      "address": "",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "",
+          "insuranceName": "国寿新绿舟定期寿险",
+          "codeType": "",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "effectiveDate": "",
+          "paymentMethod": "年缴",
+          "annualPremium": "",
+          "sumInsured": "",
+          "paymentTerm": "",
+          "insured": "",
+          "insuredRelation": "",
+          "insuredId": "",
+          "insuredPhone": "",
+          "beneficiaries": [],
+          "remark": "",
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [],
+      "contactHistory": []
+    }
+  ],
+  "reminders": [],
+  "_timestamp": "1785023935959",
+  "_user": "liwenhao",
+  "insuranceTypes": []
+}
