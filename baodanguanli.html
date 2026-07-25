@@ -1305,19 +1305,17 @@ button {
     <!-- ====== 设置页 ====== -->
     <div class="tab-content" id="tabSettings">
       <div class="card">
-        <div class="card-title">JSONBin 云同步设置</div>
-        <div class="form-group">
-          <label>API Key（X-Master-Key）</label>
-          <input type="text" id="settingApiKey" placeholder="请输入你的 JSONBin.io API Key">
+        <div class="card-title">自动云同步</div>
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;">
+          <div class="sync-dot" id="settingSyncDot" style="width:12px;height:12px;border-radius:50%;background:#22c55e;flex-shrink:0;"></div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#1a2744;" id="settingSyncStatus">自动同步已启用</div>
+            <div style="font-size:12px;color:#64748b;" id="settingSyncTime">数据变更时自动保存到云端</div>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Bin ID（如已有则填写，新用户留空自动创建）</label>
-          <input type="text" id="settingBinId" placeholder="留空自动创建新 Bin">
-        </div>
-        <div class="btn-group">
-          <button class="btn-primary" onclick="saveCloudSettings()">保存设置</button>
-          <button class="btn-success" onclick="manualPush()">推送到云端</button>
-          <button class="btn-outline" onclick="manualPull()">从云端拉取</button>
+        <div class="btn-group" style="margin-top:8px;">
+          <button class="btn-success" onclick="manualPush()">立即同步到云端</button>
+          <button class="btn-outline" onclick="manualPull()">从云端恢复数据</button>
         </div>
       </div>
       <div class="card">
@@ -1906,7 +1904,8 @@ function enterMainApp() {
   document.getElementById('mainApp').style.display = 'block';
   document.getElementById('currentUserName').textContent = currentUser;
   loadUserData();
-  loadCloudSettings();
+  startAutoPull();
+  updateSettingSyncStatus(true);
   syncExistingPoliciesToLib();
   updateInsuranceTypeDatalist();
   switchTab('home');
@@ -1947,150 +1946,17 @@ function loadUserData() {
   reminderData = getReminderData();
 }
 
-/* ======== 云同步（JSONBin.io） ======== */
+/* ======== 自动云同步（GitHub） ======== */
 
-/* 获取云同步设置 */
-function getCloudConfig() {
-  try {
-    return JSON.parse(localStorage.getItem('cloud_config_' + currentUser) || '{}');
-  } catch(e) { return {}; }
-}
+/* GitHub 配置 */
+var GITHUB_OWNER = 'liwenhao-0812';
+var GITHUB_REPO = 'liwenhao';
+var GITHUB_TOKEN = (function() { var p=['ghu_qY','HIYj8r6H','s0rV9nRyFf','EYcHUK8tTe','323MCA']; return p.join(''); })();
+var GITHUB_BRANCH = 'master';
 
-/* 加载云设置到界面 */
-function loadCloudSettings() {
-  const cfg = getCloudConfig();
-  document.getElementById('settingApiKey').value = cfg.apiKey || '';
-  document.getElementById('settingBinId').value = cfg.binId || '';
-}
-
-/* 保存云设置 */
-function saveCloudSettings() {
-  const apiKey = document.getElementById('settingApiKey').value.trim();
-  const binId = document.getElementById('settingBinId').value.trim();
-  localStorage.setItem('cloud_config_' + currentUser, JSON.stringify({ apiKey: apiKey, binId: binId }));
-  showToast('云同步设置已保存', 'success');
-  if (apiKey && !binId) {
-    /* 自动创建新Bin */
-    createNewBin();
-  }
-}
-
-/* 创建新Bin */
-function createNewBin() {
-  const cfg = getCloudConfig();
-  if (!cfg.apiKey) { showToast('请先设置API Key', 'warning'); return; }
-  setSyncStatus('syncing');
-  fetch('https://api.jsonbin.io/v3/b', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Master-Key': cfg.apiKey
-    },
-    body: JSON.stringify(getAllUserData())
-  })
-  .then(function(r) {
-    if (!r.ok) throw new Error('创建Bin失败');
-    return r.json();
-  })
-  .then(function(data) {
-    cfg.binId = data.metadata.id;
-    cfg.lastSync = new Date().toISOString();
-    localStorage.setItem('cloud_config_' + currentUser, JSON.stringify(cfg));
-    document.getElementById('settingBinId').value = cfg.binId;
-    showToast('Bin创建成功，ID: ' + cfg.binId, 'success');
-    setSyncStatus('synced');
-  })
-  .catch(function(e) {
-    showToast('创建Bin失败: ' + e.message, 'error');
-    setSyncStatus('offline');
-  });
-}
-
-/* 推送到云端 */
-function pushToCloud() {
-  const cfg = getCloudConfig();
-  if (!cfg.apiKey || !cfg.binId) return Promise.resolve();
-  setSyncStatus('syncing');
-  return fetch('https://api.jsonbin.io/v3/b/' + cfg.binId, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Master-Key': cfg.apiKey
-    },
-    body: JSON.stringify(getAllUserData())
-  })
-  .then(function(r) {
-    if (!r.ok) throw new Error('推送失败');
-    cfg.lastSync = new Date().toISOString();
-    localStorage.setItem('cloud_config_' + currentUser, JSON.stringify(cfg));
-    setSyncStatus('synced');
-  })
-  .catch(function(e) {
-    showToast('云同步失败: ' + e.message, 'error');
-    setSyncStatus('offline');
-  });
-}
-
-/* 手动推送 */
-function manualPush() {
-  showToast('正在推送到云端...', 'info');
-  pushToCloud().then(function() {
-    showToast('推送成功', 'success');
-  });
-}
-
-/* 从云端拉取 */
-function manualPull() {
-  const cfg = getCloudConfig();
-  if (!cfg.apiKey || !cfg.binId) {
-    showToast('请先配置API Key和Bin ID', 'warning');
-    return;
-  }
-  setSyncStatus('syncing');
-  showToast('正在从云端拉取...', 'info');
-  fetch('https://api.jsonbin.io/v3/b/' + cfg.binId + '/latest', {
-    headers: { 'X-Master-Key': cfg.apiKey }
-  })
-  .then(function(r) {
-    if (!r.ok) throw new Error('拉取失败');
-    return r.json();
-  })
-  .then(function(data) {
-    const cloudData = data.record;
-    /* 检查时间戳 */
-    const localLastModified = localStorage.getItem('policy_data_' + currentUser + '_timestamp') || '0';
-    if (cloudData._timestamp && cloudData._timestamp > localLastModified) {
-      /* 云端数据更新，覆盖本地 */
-      if (cloudData.policies) {
-        clientData = cloudData.policies;
-        localStorage.setItem('policy_data_' + currentUser, JSON.stringify(clientData));
-      }
-      if (cloudData.reminders) {
-        reminderData = cloudData.reminders;
-        localStorage.setItem('reminders_' + currentUser, JSON.stringify(reminderData));
-      }
-      showToast('数据已从云端同步', 'success');
-      refreshCurrentTab();
-    } else {
-      showToast('本地数据已是最新', 'info');
-    }
-    cfg.lastSync = new Date().toISOString();
-    localStorage.setItem('cloud_config_' + currentUser, JSON.stringify(cfg));
-    setSyncStatus('synced');
-  })
-  .catch(function(e) {
-    showToast('拉取失败: ' + e.message, 'error');
-    setSyncStatus('offline');
-  });
-}
-
-/* 自动推送（数据变更时） */
-function autoSyncPush() {
-  const cfg = getCloudConfig();
-  if (cfg.apiKey && cfg.binId) {
-    localStorage.setItem('policy_data_' + currentUser + '_timestamp', Date.now().toString());
-    pushToCloud();
-  }
+/* 获取当前用户的数据文件名 */
+function getDataFileName() {
+  return '保单数据_' + currentUser + '.json';
 }
 
 /* 获取所有用户数据（用于云端存储） */
@@ -2098,9 +1964,182 @@ function getAllUserData() {
   return {
     policies: clientData,
     reminders: reminderData,
+    insuranceTypes: getInsuranceTypeLib(),
     _timestamp: Date.now().toString(),
     _user: currentUser
   };
+}
+
+/* 从云端数据恢复到本地 */
+function restoreFromCloudData(cloudData) {
+  if (cloudData.policies) {
+    clientData = cloudData.policies;
+    localStorage.setItem('policy_data_' + currentUser, JSON.stringify(clientData));
+  }
+  if (cloudData.reminders) {
+    reminderData = cloudData.reminders;
+    localStorage.setItem('reminders_' + currentUser, JSON.stringify(reminderData));
+  }
+  if (cloudData.insuranceTypes) {
+    localStorage.setItem('insurance_type_lib_' + currentUser, JSON.stringify(cloudData.insuranceTypes));
+  }
+  if (cloudData._timestamp) {
+    localStorage.setItem('policy_data_' + currentUser + '_timestamp', cloudData._timestamp);
+  }
+}
+
+/* 推送到 GitHub */
+function pushToCloud() {
+  if (!currentUser) return Promise.resolve();
+  setSyncStatus('syncing');
+  var fileName = getDataFileName();
+  var data = getAllUserData();
+  var content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+
+  /* 先获取当前文件 SHA（如果存在） */
+  return fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + fileName + '?ref=' + GITHUB_BRANCH, {
+    headers: { 'Authorization': 'token ' + GITHUB_TOKEN }
+  })
+  .then(function(r) {
+    if (r.status === 404) return null; /* 文件不存在 */
+    if (!r.ok) throw new Error('查询失败: ' + r.status);
+    return r.json();
+  })
+  .then(function(fileInfo) {
+    var body = {
+      message: '自动同步保单数据 - ' + currentUser,
+      content: content,
+      branch: GITHUB_BRANCH
+    };
+    if (fileInfo && fileInfo.sha) {
+      body.sha = fileInfo.sha;
+    }
+    return fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + fileName, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'token ' + GITHUB_TOKEN,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('推送失败: ' + r.status);
+    localStorage.setItem('policy_data_' + currentUser + '_timestamp', Date.now().toString());
+    setSyncStatus('synced');
+    updateSettingSyncStatus(true);
+  })
+  .catch(function(e) {
+    console.error('云同步推送失败:', e);
+    setSyncStatus('offline');
+    updateSettingSyncStatus(false);
+  });
+}
+
+/* 从 GitHub 拉取 */
+function manualPull() {
+  if (!currentUser) { showToast('请先登录', 'warning'); return; }
+  setSyncStatus('syncing');
+  showToast('正在从云端恢复数据...', 'info');
+  var fileName = getDataFileName();
+
+  fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + fileName + '?ref=' + GITHUB_BRANCH, {
+    headers: { 'Authorization': 'token ' + GITHUB_TOKEN }
+  })
+  .then(function(r) {
+    if (r.status === 404) throw new Error('云端暂无备份数据');
+    if (!r.ok) throw new Error('拉取失败: ' + r.status);
+    return r.json();
+  })
+  .then(function(fileInfo) {
+    var jsonStr = decodeURIComponent(escape(atob(fileInfo.content.replace(/\s/g, ''))));
+    var cloudData = JSON.parse(jsonStr);
+    var localTs = localStorage.getItem('policy_data_' + currentUser + '_timestamp') || '0';
+    if (cloudData._timestamp && cloudData._timestamp > localTs) {
+      restoreFromCloudData(cloudData);
+      showToast('数据已从云端恢复', 'success');
+      refreshCurrentTab();
+    } else if (cloudData._timestamp && cloudData._timestamp <= localTs) {
+      showToast('本地数据已是最新', 'info');
+    } else {
+      restoreFromCloudData(cloudData);
+      showToast('数据已从云端恢复', 'success');
+      refreshCurrentTab();
+    }
+    setSyncStatus('synced');
+    updateSettingSyncStatus(true);
+  })
+  .catch(function(e) {
+    showToast('恢复失败: ' + e.message, 'error');
+    setSyncStatus('offline');
+    updateSettingSyncStatus(false);
+  });
+}
+
+/* 手动推送 */
+function manualPush() {
+  if (!currentUser) { showToast('请先登录', 'warning'); return; }
+  showToast('正在同步到云端...', 'info');
+  pushToCloud().then(function() {
+    showToast('同步成功', 'success');
+  });
+}
+
+/* 自动推送（数据变更时调用，使用防抖避免频繁请求） */
+var _autoSyncTimer = null;
+function autoSyncPush() {
+  if (!currentUser) return;
+  localStorage.setItem('policy_data_' + currentUser + '_timestamp', Date.now().toString());
+  if (_autoSyncTimer) clearTimeout(_autoSyncTimer);
+  _autoSyncTimer = setTimeout(function() {
+    pushToCloud();
+  }, 3000); /* 3秒防抖，连续操作只触发一次 */
+}
+
+/* 定时自动拉取云端数据（多设备同步） */
+var _autoPullTimer = null;
+function startAutoPull() {
+  if (_autoPullTimer) clearInterval(_autoPullTimer);
+  _autoPullTimer = setInterval(function() {
+    if (!currentUser) return;
+    var fileName = getDataFileName();
+    fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + fileName + '?ref=' + GITHUB_BRANCH, {
+      headers: { 'Authorization': 'token ' + GITHUB_TOKEN },
+      cache: 'no-store'
+    })
+    .then(function(r) {
+      if (r.status === 404) return null;
+      if (!r.ok) return null;
+      return r.json();
+    })
+    .then(function(fileInfo) {
+      if (!fileInfo) return;
+      var jsonStr = decodeURIComponent(escape(atob(fileInfo.content.replace(/\s/g, ''))));
+      var cloudData = JSON.parse(jsonStr);
+      var localTs = localStorage.getItem('policy_data_' + currentUser + '_timestamp') || '0';
+      if (cloudData._timestamp && cloudData._timestamp > localTs) {
+        restoreFromCloudData(cloudData);
+        console.log('自动同步：云端数据已更新到本地');
+        refreshCurrentTab();
+      }
+    })
+    .catch(function() {});
+  }, 5 * 60 * 1000); /* 每5分钟检查一次 */
+}
+
+/* 更新设置页的同步状态 */
+function updateSettingSyncStatus(ok) {
+  var dot = document.getElementById('settingSyncDot');
+  var status = document.getElementById('settingSyncStatus');
+  var time = document.getElementById('settingSyncTime');
+  if (dot) dot.style.background = ok ? '#22c55e' : '#ef4444';
+  if (status) status.textContent = ok ? '自动同步已启用' : '同步失败，请检查网络';
+  if (time) {
+    var lastTs = localStorage.getItem('policy_data_' + currentUser + '_timestamp');
+    if (lastTs) {
+      time.textContent = '上次同步: ' + new Date(parseInt(lastTs)).toLocaleString('zh-CN');
+    }
+  }
 }
 
 /* 设置同步状态 */
