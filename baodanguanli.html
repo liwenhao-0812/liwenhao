@@ -1102,6 +1102,23 @@ button {
   margin-top: 8px;
   width: 100%;
 }
+.pwa-guide-content .btn-copy-url {
+  background: #fff;
+  color: #1a2744;
+  border: 2px solid #1a2744;
+  padding: 10px 32px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 8px;
+  width: 100%;
+  transition: all 0.2s;
+}
+.pwa-guide-content .btn-copy-url:active {
+  background: #1a2744;
+  color: #fff;
+}
 
 /* ======== toast消息 ======== */
 .toast-container {
@@ -4806,20 +4823,44 @@ if ('serviceWorker' in navigator) {
     });
   }
 
+  /* 3秒后检测：如果 beforeinstallprompt 从未触发，说明是 OEM 浏览器 */
+  /* 提前更新安装条文案，让用户知道需要换 Chrome */
+  setTimeout(function() {
+    if (!deferredPrompt) {
+      var ua = navigator.userAgent;
+      var isAndroid = /Android/.test(ua);
+      var isOEM = /HeyTapBrowser|OppoBrowser|RealmeBrowser|MiuiBrowser|XiaoMi|HuaweiBrowser|HMBrowser|VivoBrowser|MZBrowser|MeiZu/.test(ua);
+      var isChromeLike = /Chrome/.test(ua) && !/Edg|OPR|Samsung|QQBrowser|UCBrowser/.test(ua);
+      /* 如果是安卓且 Chrome 内核但 beforeinstallprompt 没触发，很可能是 OEM 浏览器 */
+      if (isAndroid && (isOEM || isChromeLike)) {
+        var installText = document.querySelector('.install-text');
+        var installSub = document.querySelector('.install-sub');
+        if (installText) installText.textContent = '使用 Chrome 安装';
+        if (installSub) installSub.textContent = '当前浏览器不支持，请点击查看指引';
+      }
+    }
+  }, 3000);
+
   /* 显示安装指引弹窗（根据平台显示不同步骤） */
   function showInstallGuide() {
     var ua = navigator.userAgent;
     var isIOS = /iPad|iPhone|iPod/.test(ua) || (ua.indexOf('Macintosh') !== -1 && 'ontouchend' in document);
     var isAndroid = /Android/.test(ua);
-    var isChrome = /Chrome/.test(ua) && !/Edg|OPR|Samsung/.test(ua);
     var isEdge = /Edg/.test(ua);
     var isSamsung = /SamsungBrowser/.test(ua);
     var isQQ = /QQBrowser/.test(ua);
     var isUC = /UCBrowser/.test(ua);
     var isSafari = /Safari/.test(ua) && !/Chrome/.test(ua);
 
+    /* 检测 OEM 手机自带浏览器（Realme/OPPO/一加/Xiaomi/华为/Vivo等） */
+    /* 这些浏览器虽然内核是 Chromium，但 PWA 安装功能被厂商阉割了 */
+    var isOEMBrowser = /HeyTapBrowser|OppoBrowser|RealmeBrowser|MiuiBrowser|XiaoMi|HuaweiBrowser|HMBrowser|VivoBrowser|MZBrowser|MeiZu/.test(ua);
+    /* 检测是否是真正的 Chrome 浏览器（非 OEM 套壳） */
+    var isRealChrome = /Chrome\/(\d+)/.test(ua) && !/Edg|OPR|Samsung|HeyTapBrowser|OppoBrowser|RealmeBrowser|MiuiBrowser|XiaoMi|HuaweiBrowser|HMBrowser|VivoBrowser|MZBrowser|MeiZu|QQBrowser|UCBrowser|MicroMessenger|WeChat/.test(ua);
+
     var title = '';
     var steps = '';
+    var extraBtn = '';
 
     if (isIOS) {
       title = 'iPhone 安装步骤';
@@ -4828,7 +4869,16 @@ if ('serviceWorker' in navigator) {
         '<div class="guide-step"><span class="step-num">2</span>在弹出的菜单中向下滑动，找到<strong>「添加到主屏幕」</strong></div>' +
         '<div class="guide-step"><span class="step-num">3</span>点击<strong>「添加」</strong>，桌面即可出现保单管理APP图标</div>' +
         '<div class="guide-step" style="background:#fef3c7;color:#92400e;"><strong>注意：</strong>iPhone 必须用 <strong>Safari 浏览器</strong>打开才能安装</div>';
-    } else if (isAndroid && (isChrome || isEdge || isSamsung)) {
+    } else if (isAndroid && isOEMBrowser) {
+      /* Realme/OPPO/小米/华为/Vivo 等手机自带浏览器 → 必须换 Chrome */
+      title = '请使用 Chrome 浏览器安装';
+      steps =
+        '<div class="guide-step" style="background:#fef3c7;color:#92400e;"><strong>您当前使用的是手机自带浏览器</strong>，该浏览器不支持安装应用到桌面</div>' +
+        '<div class="guide-step"><span class="step-num">1</span>打开手机<strong>应用商店</strong>，搜索 <strong>Chrome</strong> 并安装</div>' +
+        '<div class="guide-step"><span class="step-num">2</span>打开 Chrome，在地址栏输入：<strong style="word-break:break-all;">liwenhao-0812.github.io/liwenhao</strong></div>' +
+        '<div class="guide-step"><span class="step-num">3</span>打开页面后，点击 Chrome 右上角菜单 → <strong>「安装应用」</strong>或<strong>「添加到主屏幕」</strong></div>';
+      extraBtn = '<button class="btn-copy-url" onclick="copyPWAUrl()">复制链接到剪贴板</button>';
+    } else if (isAndroid && (isRealChrome || isEdge || isSamsung)) {
       title = '安卓安装步骤';
       steps =
         '<div class="guide-step"><span class="step-num">1</span>点击浏览器右上角的<strong>三个点菜单</strong>（⋮）</div>' +
@@ -4842,6 +4892,16 @@ if ('serviceWorker' in navigator) {
         '<div class="guide-step"><span class="step-num">1</span>请先安装<strong> Chrome 浏览器</strong>（应用商店搜索"Chrome"）</div>' +
         '<div class="guide-step"><span class="step-num">2</span>用 Chrome 打开本页面：<strong>liwenhao-0812.github.io/liwenhao</strong></div>' +
         '<div class="guide-step"><span class="step-num">3</span>点击 Chrome 菜单 → <strong>「安装应用」</strong></div>';
+      extraBtn = '<button class="btn-copy-url" onclick="copyPWAUrl()">复制链接到剪贴板</button>';
+    } else if (isAndroid) {
+      /* 其他安卓浏览器（未知浏览器） */
+      title = '请使用 Chrome 浏览器安装';
+      steps =
+        '<div class="guide-step" style="background:#fef3c7;color:#92400e;">当前浏览器可能<strong>不支持</strong>安装应用到桌面</div>' +
+        '<div class="guide-step"><span class="step-num">1</span>打开手机<strong>应用商店</strong>，搜索 <strong>Chrome</strong> 并安装</div>' +
+        '<div class="guide-step"><span class="step-num">2</span>打开 Chrome，在地址栏输入：<strong style="word-break:break-all;">liwenhao-0812.github.io/liwenhao</strong></div>' +
+        '<div class="guide-step"><span class="step-num">3</span>打开页面后，点击 Chrome 右上角菜单 → <strong>「安装应用」</strong>或<strong>「添加到主屏幕」</strong></div>';
+      extraBtn = '<button class="btn-copy-url" onclick="copyPWAUrl()">复制链接到剪贴板</button>';
     } else {
       title = '安装步骤';
       steps =
@@ -4852,9 +4912,23 @@ if ('serviceWorker' in navigator) {
     }
 
     document.getElementById('guideTitle').textContent = title;
-    document.getElementById('guideSteps').innerHTML = steps;
+    document.getElementById('guideSteps').innerHTML = steps + extraBtn;
     document.getElementById('pwaGuideModal').classList.add('show');
   }
+
+  /* 复制 PWA 链接到剪贴板 */
+  window.copyPWAUrl = function() {
+    var url = 'https://liwenhao-0812.github.io/liwenhao/baodanguanli.html';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(function() {
+        alert('链接已复制！\n\n请打开 Chrome 浏览器，粘贴到地址栏访问。');
+      }).catch(function() {
+        prompt('请手动复制以下链接，然后粘贴到 Chrome 浏览器中打开：', url);
+      });
+    } else {
+      prompt('请手动复制以下链接，然后粘贴到 Chrome 浏览器中打开：', url);
+    }
+  };
 
   /* 已安装后隐藏安装条 */
   window.addEventListener('appinstalled', function() {
