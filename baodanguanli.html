@@ -4851,12 +4851,20 @@ checkLogin();
 /* 核心原则：安装条及其弹窗完全由 JS 在运行时创建， */
 /* 确保 APK WebView 中永远不会出现这些元素。 */
 
+/* 检测是否为 APK WebView 环境（URL 参数 或 User-Agent） */
+var _isApkEnv = (function() {
+  if (location.search.indexOf('from=apk') !== -1) return true;
+  if (navigator.userAgent.indexOf('BaodanApp') !== -1) return true;
+  return false;
+})();
+
 var _deferredPrompt = null;
 var _swReg = null;
 var _pwaBarInjected = false;
 
-/* 仅在 beforeinstallprompt 触发时动态注入安装条 */
+/* 仅在 beforeinstallprompt 触发时动态注入安装条（APK 环境跳过） */
 window.addEventListener('beforeinstallprompt', function(e) {
+  if (_isApkEnv) return; /* APK 内永不显示安装条 */
   e.preventDefault();
   _deferredPrompt = e;
   if (!_pwaBarInjected) injectPwaBar();
@@ -4871,6 +4879,7 @@ window.addEventListener('appinstalled', function() {
 
 /* 动态注入安装条到 body 底部 */
 function injectPwaBar() {
+  if (_isApkEnv) return; /* 双重保险：APK 环境直接返回 */
   if (_pwaBarInjected) return;
   _pwaBarInjected = true;
 
@@ -4907,7 +4916,7 @@ function pwaInstallClick() {
 /* ========== Service Worker 注册（仅用于更新检测） ========== */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/liwenhao/sw.js?v=6', { scope: '/liwenhao/' }).then(function(reg) {
+    navigator.serviceWorker.register('/liwenhao/sw.js?v=8', { scope: '/liwenhao/' }).then(function(reg) {
       _swReg = reg;
       console.log('SW registered:', reg.scope);
       reg.addEventListener('updatefound', function() {

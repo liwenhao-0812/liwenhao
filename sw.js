@@ -1,7 +1,7 @@
-/* Service Worker v7 - 稳定版 */
+/* Service Worker v8 - 稳定版 */
 /* 提供离线缓存支持，使 PWA 可安装 */
 
-var CACHE_NAME = 'baodan-v7';
+var CACHE_NAME = 'baodan-v8';
 var urlsToCache = [
   '/liwenhao/baodanguanli.html',
   '/liwenhao/manifest.json',
