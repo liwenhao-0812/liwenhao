@@ -5,30 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>保单管理系统</title>
 <style>
-/* ======== CSS Variables - Clean Professional ======== */
+/* ======== CSS Variables - Financial Precision ======== */
 :root {
-  --color-bg: #f9fafb;
+  --color-bg: #f5f3ef;
   --color-surface: #ffffff;
-  --color-primary: #1d4ed8;
-  --color-primary-light: #3b82f6;
-  --color-accent: #1d4ed8;
-  --color-accent-light: #3b82f6;
-  --color-accent-pale: #eff6ff;
+  --color-primary: #1a2744;
+  --color-primary-light: #243656;
+  --color-accent: #1a2744;
+  --color-accent-light: #243656;
+  --color-accent-pale: #eef1f7;
   --color-success: #059669;
   --color-success-light: #10b981;
-  --color-danger: #dc2626;
-  --color-danger-light: #ef4444;
-  --color-text-primary: #111827;
-  --color-text-secondary: #374151;
-  --color-text-muted: #6b7280;
-  --color-border: #e5e7eb;
-  --color-border-light: #f3f4f6;
-  --color-subtle: #f3f4f6;
-  --color-subtle-warm: #f9fafb;
-  --color-shadow-sm: rgba(0,0,0,0.04);
-  --color-shadow-md: rgba(0,0,0,0.07);
-  --color-shadow-lg: rgba(0,0,0,0.12);
-  --color-overlay: rgba(0,0,0,0.55);
+  --color-danger: #c41e3a;
+  --color-danger-light: #dc2626;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-muted: #64748b;
+  --color-border: #d1d5db;
+  --color-border-light: #e5e7eb;
+  --color-subtle: #f1f5f9;
+  --color-subtle-warm: #f5f3ef;
+  --color-shadow-sm: rgba(0,0,0,0.05);
+  --color-shadow-md: rgba(0,0,0,0.08);
+  --color-shadow-lg: rgba(0,0,0,0.15);
+  --color-overlay: rgba(0,0,0,0.6);
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -41,7 +41,7 @@
 }
 
 /* ======== 全局样式重置 ======== */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;800;900&display=swap');
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { font-size: 16px; }
@@ -74,8 +74,8 @@ input, select, textarea {
 input:hover, select:hover, textarea:hover { border-color: var(--color-text-muted); }
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(29,78,216,0.1), 0 1px 4px rgba(0,0,0,0.04);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(26,39,68,0.12), 0 1px 4px rgba(0,0,0,0.06);
   background: var(--color-surface);
 }
 button {
@@ -89,20 +89,20 @@ button {
   min-width: 44px;
   letter-spacing: 0.02em;
 }
-.btn-primary { background: var(--color-primary); color: #fff; box-shadow: 0 2px 8px rgba(29,78,216,0.2); }
-.btn-primary:hover { background: var(--color-primary-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(29,78,216,0.3); }
+.btn-primary { background: var(--color-primary); color: #fff; box-shadow: 0 2px 8px rgba(26,39,68,0.25); }
+.btn-primary:hover { background: var(--color-primary-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(26,39,68,0.35); }
 .btn-primary:active { transform: translateY(0); }
-.btn-success { background: var(--color-success); color: #fff; box-shadow: 0 2px 8px rgba(5,150,105,0.2); }
-.btn-success:hover { background: var(--color-success-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(5,150,105,0.3); }
+.btn-success { background: var(--color-success); color: #fff; box-shadow: 0 2px 8px rgba(5,150,105,0.25); }
+.btn-success:hover { background: var(--color-success-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(5,150,105,0.35); }
 .btn-success:active { transform: translateY(0); }
-.btn-danger { background: var(--color-danger); color: #fff; box-shadow: 0 2px 8px rgba(220,38,38,0.2); }
-.btn-danger:hover { background: var(--color-danger-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(220,38,38,0.3); }
+.btn-danger { background: var(--color-danger); color: #fff; box-shadow: 0 2px 8px rgba(196,30,58,0.25); }
+.btn-danger:hover { background: var(--color-danger-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(196,30,58,0.35); }
 .btn-danger:active { transform: translateY(0); }
-.btn-warning { background: #d97706; color: #fff; box-shadow: 0 2px 8px rgba(217,119,6,0.2); }
-.btn-warning:hover { background: #f59e0b; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(217,119,6,0.3); }
+.btn-warning { background: #b45309; color: #fff; box-shadow: 0 2px 8px rgba(180,83,9,0.25); }
+.btn-warning:hover { background: #d97706; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(180,83,9,0.35); }
 .btn-warning:active { transform: translateY(0); }
-.btn-secondary { background: var(--color-text-secondary); color: #fff; box-shadow: 0 2px 8px rgba(55,65,81,0.2); }
-.btn-secondary:hover { background: #4b5563; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(55,65,81,0.3); }
+.btn-secondary { background: var(--color-text-secondary); color: #fff; box-shadow: 0 2px 8px rgba(51,65,85,0.25); }
+.btn-secondary:hover { background: #475569; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(51,65,85,0.35); }
 .btn-secondary:active { transform: translateY(0); }
 .btn-outline {
   background: transparent;
@@ -110,7 +110,7 @@ button {
   color: var(--color-primary);
   box-shadow: none;
 }
-.btn-outline:hover { background: var(--color-primary); color: #fff; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(29,78,216,0.25); }
+.btn-outline:hover { background: var(--color-primary); color: #fff; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(26,39,68,0.3); }
 .btn-outline:active { transform: translateY(0); }
 .btn-sm { padding: 6px 14px; font-size: 12px; min-height: 36px; border-radius: var(--radius-sm); }
 .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -127,15 +127,15 @@ button {
 }
 .card:hover { box-shadow: 0 2px 6px var(--color-shadow-sm), 0 8px 24px var(--color-shadow-md); border-color: var(--color-text-muted); }
 .card-title {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
   margin-bottom: 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   color: var(--color-text-primary);
   padding-bottom: 10px;
-  border-bottom: 2px solid var(--color-border-light);
+  border-bottom: 2px solid var(--color-primary);
   letter-spacing: 0.03em;
 }
 
@@ -162,7 +162,7 @@ button {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(160deg, #1e3a5f 0%, #1d4ed8 30%, #2563eb 50%, #1d4ed8 70%, #1e3a5f 100%);
+  background: linear-gradient(160deg, #0f1a2e 0%, #1a2744 30%, #1e3560 50%, #1a2744 70%, #0f1a2e 100%);
   padding: 20px;
   position: relative;
   overflow: hidden;
@@ -178,7 +178,7 @@ button {
 .auth-container {
   background: var(--color-surface);
   border-radius: var(--radius-xl);
-  box-shadow: 0 24px 64px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.08);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.08);
   width: 100%;
   max-width: 420px;
   padding: 44px 34px;
@@ -266,7 +266,7 @@ button {
 /* ======== 主界面布局 ======== */
 #mainApp { display: none; min-height: 100vh; background: var(--color-bg); }
 .top-bar {
-  background: linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 50%, #1e3a5f 100%);
+  background: linear-gradient(135deg, #0f1a2e 0%, #1a2744 50%, #0f1a2e 100%);
   padding: 14px 24px;
   display: flex;
   align-items: center;
@@ -274,12 +274,12 @@ button {
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.25);
 }
 .top-bar h1 {
   font-family: var(--font-heading);
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 700;
   color: #fff;
   display: flex;
   align-items: center;
@@ -291,7 +291,7 @@ button {
   align-items: center;
   gap: 12px;
   font-size: 13px;
-  color: #d1d5db;
+  color: #cbd5e1;
   font-weight: 500;
 }
 .top-bar .user-info span { color: #fff; font-weight: 600; }
@@ -312,7 +312,7 @@ button {
 /* 导航栏 */
 .nav-bar {
   background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 2px solid var(--color-border);
   padding: 0 24px;
   display: flex;
   overflow-x: auto;
@@ -340,13 +340,13 @@ button {
   transform: translateX(-50%) scaleX(0);
   width: 60%;
   height: 3px;
-  background: var(--color-accent);
+  background: var(--color-primary);
   border-radius: 3px 3px 0 0;
   transition: transform 0.35s var(--ease-spring);
 }
 .nav-item.active {
   color: var(--color-primary);
-  font-weight: 700;
+  font-weight: 800;
 }
 .nav-item.active::after { transform: translateX(-50%) scaleX(1); }
 .nav-item:hover { color: var(--color-primary); }
@@ -377,8 +377,8 @@ button {
   background: var(--color-success);
   box-shadow: 0 0 6px rgba(5,150,105,0.4);
 }
-.sync-dot.offline { background: var(--color-danger); box-shadow: 0 0 6px rgba(220,38,38,0.4); }
-.sync-dot.syncing { background: #d97706; animation: pulse 1s infinite; }
+.sync-dot.offline { background: var(--color-danger); box-shadow: 0 0 6px rgba(196,30,58,0.4); }
+.sync-dot.syncing { background: #b45309; animation: pulse 1s infinite; }
 @keyframes pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.4; transform: scale(0.7); }
@@ -406,15 +406,15 @@ button {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 3px;
+  height: 4px;
   background: var(--color-primary);
   border-radius: 3px 3px 0 0;
 }
 .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px var(--color-shadow-sm), 0 12px 28px var(--color-shadow-md); }
 .stat-card .stat-value {
   font-family: var(--font-heading);
-  font-size: 32px;
-  font-weight: 700;
+  font-size: 34px;
+  font-weight: 800;
   color: var(--color-text-primary);
   letter-spacing: -0.01em;
 }
@@ -422,16 +422,16 @@ button {
   font-size: 12px;
   color: var(--color-text-secondary);
   margin-top: 4px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 .stat-card.green::before { background: var(--color-success); }
 .stat-card.green .stat-value { color: #059669; }
 .stat-card.red::before { background: var(--color-danger); }
-.stat-card.red .stat-value { color: #dc2626; }
-.stat-card.yellow::before { background: #d97706; }
-.stat-card.yellow .stat-value { color: #d97706; }
+.stat-card.red .stat-value { color: #c41e3a; }
+.stat-card.yellow::before { background: #b45309; }
+.stat-card.yellow .stat-value { color: #b45309; }
 
 /* ======== 双栏布局（电脑端） ======== */
 @media (min-width: 768px) {
@@ -472,20 +472,20 @@ button {
   content: '';
   position: absolute;
   left: 0; top: 0; bottom: 0;
-  width: 3px;
+  width: 4px;
   background: transparent;
   border-radius: 3px 0 0 3px;
   transition: background 0.25s var(--ease-out);
 }
-.client-item:hover { border-color: var(--color-accent); background: var(--color-accent-pale); transform: translateX(2px); box-shadow: 0 2px 10px var(--color-shadow-sm); }
-.client-item:hover::before { background: var(--color-accent); }
-.client-item.active { border-color: var(--color-primary); background: var(--color-accent-pale); box-shadow: 0 0 0 2px rgba(29,78,216,0.1); }
+.client-item:hover { border-color: var(--color-primary); background: var(--color-accent-pale); transform: translateX(2px); box-shadow: 0 2px 10px var(--color-shadow-sm); }
+.client-item:hover::before { background: var(--color-primary); }
+.client-item.active { border-color: var(--color-primary); background: var(--color-accent-pale); box-shadow: 0 0 0 2px rgba(26,39,68,0.12); }
 .client-item.active::before { background: var(--color-primary); }
 .client-item .client-name {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 800;
   margin-bottom: 4px;
-  color: #111827;
+  color: #0f172a;
 }
 .client-item .client-meta {
   font-size: 12px;
@@ -524,31 +524,31 @@ button {
 .detail-section h3 {
   font-family: var(--font-heading);
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 12px;
   padding-bottom: 8px;
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 2px solid var(--color-primary);
   color: var(--color-text-primary);
   letter-spacing: 0.04em;
 }
 
 /* 客户姓名高亮卡片 */
 .client-name-hero {
-  background: linear-gradient(135deg, #1e3a5f, #1d4ed8);
-  padding: 16px 20px;
+  background: linear-gradient(135deg, #0f1a2e, #1a2744);
+  padding: 20px 24px;
   border-radius: 12px;
   margin-bottom: 16px;
-  box-shadow: 0 4px 20px rgba(29,78,216,0.2);
+  box-shadow: 0 4px 20px rgba(26,39,68,0.3);
 }
 .client-name-hero h3 {
-  font-size: 24px;
-  font-weight: 800;
+  font-size: 32px;
+  font-weight: 900;
   color: #ffffff;
   margin: 0;
   letter-spacing: 0.05em;
 }
 .client-name-hero .client-meta-info {
-  font-size: 13px;
+  font-size: 14px;
   color: rgba(255,255,255,0.85);
   margin-top: 4px;
   font-weight: 500;
@@ -557,54 +557,54 @@ button {
 /* 保单详情卡 */
 .policy-detail-card {
   background: #ffffff;
-  border: 1px solid #d1d5db;
+  border: 1.5px solid #cbd5e1;
   border-radius: 10px;
-  margin-bottom: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 }
 .policy-detail-header {
-  background: #f8fafc;
-  padding: 12px 16px;
-  border-bottom: 1px solid #e5e7eb;
+  background: #1a2744;
+  padding: 14px 18px;
+  border-bottom: 1px solid #0f1a2e;
   border-radius: 10px 10px 0 0;
 }
 .policy-detail-header h5 {
   font-size: 16px;
-  font-weight: 700;
-  color: #0f172a;
+  font-weight: 800;
+  color: #ffffff;
   margin: 0;
 }
 .policy-detail-header .policy-meta {
   font-size: 13px;
-  color: #374151;
+  color: rgba(255,255,255,0.75);
   margin-top: 4px;
   font-weight: 500;
 }
 .policy-detail-body {
-  padding: 14px 16px;
+  padding: 16px 18px;
 }
 .policy-detail-body .info-block {
   background: #f8fafc;
-  border: 1px solid #e5e7eb;
+  border: 1.5px solid #d1d5db;
   border-radius: 8px;
-  padding: 12px;
+  padding: 14px;
   margin-bottom: 10px;
 }
 .policy-detail-body .info-block h6 {
-  font-size: 13px;
-  color: #1e293b;
+  font-size: 14px;
+  color: #0f172a;
   margin-bottom: 8px;
   padding-bottom: 6px;
-  border-bottom: 2px solid #e2e8f0;
-  font-weight: 700;
+  border-bottom: 2px solid #cbd5e1;
+  font-weight: 800;
 }
 .policy-detail-body .info-block.insured-block {
-  background: #f0f4ff;
-  border-color: #dbeafe;
+  background: #eef1f7;
+  border-color: #bcc6d8;
 }
 .policy-detail-body .info-block.insured-block h6 {
-  color: #1e40af;
-  border-bottom-color: #bfdbfe;
+  color: #1a2744;
+  border-bottom-color: #1a2744;
 }
 .policy-detail-body .info-block.amount-block {
   background: #fef2f2;
@@ -616,21 +616,21 @@ button {
 }
 .policy-detail-body .amount-item {
   text-align: center;
-  padding: 10px;
+  padding: 14px;
   background: #ffffff;
   border-radius: 8px;
-  border: 1px solid #fecaca;
+  border: 1.5px solid #fecaca;
 }
 .policy-detail-body .amount-item .amount-label {
-  font-size: 12px;
+  font-size: 13px;
   color: #991b1b;
-  margin-bottom: 2px;
-  font-weight: 600;
+  margin-bottom: 4px;
+  font-weight: 700;
 }
 .policy-detail-body .amount-item .amount-value {
-  font-size: 22px;
-  font-weight: 800;
-  color: #dc2626;
+  font-size: 28px;
+  font-weight: 900;
+  color: #c41e3a;
 }
 .policy-detail-body .amount-item.sum-insured-item {
   border-color: #fcd34d;
@@ -639,6 +639,8 @@ button {
   color: #92400e;
 }
 .policy-detail-body .amount-item.sum-insured-item .amount-value {
+  font-size: 28px;
+  font-weight: 900;
   color: #b45309;
 }
 
@@ -667,7 +669,7 @@ button {
 /* ======== 保单分组样式 ======== */
 .policy-group {
   margin-bottom: 20px;
-  border: 1px solid var(--color-border);
+  border: 1.5px solid var(--color-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--color-surface);
@@ -675,33 +677,33 @@ button {
 }
 .policy-group-main {
   background: var(--color-accent-pale);
-  padding: 12px 18px;
-  font-weight: 700;
-  font-size: 13px;
+  padding: 14px 18px;
+  font-weight: 800;
+  font-size: 14px;
   color: var(--color-text-primary);
   border-bottom: 1px solid var(--color-border-light);
   letter-spacing: 0.02em;
-  border-left: 3px solid var(--color-primary);
+  border-left: 4px solid var(--color-primary);
 }
 .policy-group-addon {
   background: #fffbeb;
-  padding: 10px 18px;
-  font-weight: 700;
-  font-size: 12px;
+  padding: 12px 18px;
+  font-weight: 800;
+  font-size: 13px;
   color: #92400e;
   border-top: 1px dashed #fcd34d;
   letter-spacing: 0.02em;
-  border-left: 3px solid #d97706;
+  border-left: 4px solid #b45309;
 }
 .policy-group-universal {
   background: #f5f3ff;
-  padding: 10px 18px;
-  font-weight: 700;
-  font-size: 12px;
+  padding: 12px 18px;
+  font-weight: 800;
+  font-size: 13px;
   color: #5b21b6;
   border-top: 1px dashed #c4b5fd;
   letter-spacing: 0.02em;
-  border-left: 3px solid #7c3aed;
+  border-left: 4px solid #7c3aed;
 }
 
 /* ======== 保单表格 ======== */
@@ -716,18 +718,18 @@ button {
   border-bottom: 1px solid var(--color-border);
 }
 .policy-table th {
-  background: var(--color-subtle);
-  font-weight: 700;
-  color: var(--color-text-secondary);
+  background: var(--color-primary);
+  font-weight: 800;
+  color: #ffffff;
   white-space: nowrap;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 2px solid #0f1a2e;
 }
 .policy-table tr:hover { background: var(--color-accent-pale); }
-.policy-table .col-premium { font-size: 16px; font-weight: 800; color: #dc2626; }
-.policy-table .col-sum-insured { font-size: 16px; font-weight: 800; color: #b45309; }
+.policy-table .col-premium { font-size: 20px; font-weight: 900; color: #c41e3a; }
+.policy-table .col-sum-insured { font-size: 20px; font-weight: 900; color: #b45309; }
 
 /* ======== 模态框 ======== */
 .modal-overlay {
@@ -751,11 +753,11 @@ button {
   background: var(--color-surface);
   border-radius: var(--radius-xl);
   width: 100%;
-  max-width: 600px;
+  max-width: 620px;
   max-height: 90vh;
   overflow-y: auto;
-  padding: 28px;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+  padding: 32px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.3);
   animation: modalSlideUp 0.35s var(--ease-spring);
   border: 1px solid var(--color-border);
 }
@@ -767,25 +769,25 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 22px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--color-primary);
   position: relative;
 }
 .modal-header::after {
   content: '';
   position: absolute;
-  bottom: -1px;
+  bottom: -2px;
   left: 0;
   width: 48px;
-  height: 2px;
-  background: var(--color-accent);
+  height: 3px;
+  background: var(--color-primary);
   border-radius: 1px;
 }
 .modal-header h2 {
   font-family: var(--font-heading);
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 800;
   color: var(--color-text-primary);
   letter-spacing: 0.04em;
 }
@@ -804,22 +806,22 @@ button {
   font-weight: 500;
 }
 .modal-close:hover { background: var(--color-border); color: var(--color-text-primary); }
-.modal-body .form-group { margin-bottom: 14px; }
+.modal-body .form-group { margin-bottom: 16px; }
 .modal-body label {
   display: block;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 5px;
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
   letter-spacing: 0.02em;
 }
 .modal-footer {
-  margin-top: 24px;
+  margin-top: 28px;
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-border-light);
+  padding-top: 18px;
+  border-top: 1.5px solid var(--color-border);
 }
 
 /* ======== 提醒模块 ======== */
@@ -838,7 +840,7 @@ button {
 }
 .reminder-item:hover { box-shadow: 0 4px 16px var(--color-shadow-md); transform: translateY(-1px); }
 .reminder-item.overdue { border-left: 4px solid var(--color-danger); background: #fef2f2; }
-.reminder-item.urgent { border-left: 4px solid #d97706; background: #fffbeb; }
+.reminder-item.urgent { border-left: 4px solid #b45309; background: #fffbeb; }
 .reminder-item.normal { border-left: 4px solid var(--color-primary); }
 .reminder-item.dismissed { opacity: 0.45; }
 .reminder-info h4 { font-size: 14px; margin-bottom: 4px; font-weight: 700; color: var(--color-text-primary); }
@@ -854,7 +856,7 @@ button {
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(to bottom, var(--color-accent), var(--color-accent-light), var(--color-border));
+  background: linear-gradient(to bottom, var(--color-primary), var(--color-primary-light), var(--color-border));
   border-radius: 1px;
 }
 .timeline-item {
@@ -874,7 +876,7 @@ button {
   box-shadow: 0 0 0 2px var(--color-primary);
 }
 .timeline-item.success::before { background: var(--color-success); box-shadow: 0 0 0 2px var(--color-success); }
-.timeline-item.warning::before { background: #d97706; box-shadow: 0 0 0 2px #d97706; }
+.timeline-item.warning::before { background: #b45309; box-shadow: 0 0 0 2px #b45309; }
 .timeline-item.danger::before { background: var(--color-danger); box-shadow: 0 0 0 2px var(--color-danger); }
 .timeline-date { font-size: 11px; color: var(--color-text-muted); margin-bottom: 4px; font-weight: 600; letter-spacing: 0.03em; }
 .timeline-content { font-size: 14px; color: var(--color-text-primary); }
@@ -888,7 +890,7 @@ button {
   transition: all 0.25s var(--ease-out);
   background: var(--color-surface);
 }
-.rule-card:hover { border-color: var(--color-accent); box-shadow: 0 4px 16px var(--color-shadow-md); transform: translateY(-1px); }
+.rule-card:hover { border-color: var(--color-primary); box-shadow: 0 4px 16px var(--color-shadow-md); transform: translateY(-1px); }
 .rule-card h4 { font-size: 14px; margin-bottom: 8px; font-weight: 700; color: var(--color-text-primary); }
 .rule-conditions {
   font-size: 12px;
@@ -928,10 +930,10 @@ button {
   background: var(--color-surface);
 }
 .setting-group h4 {
-  font-size: 14px;
+  font-size: 15px;
   margin-bottom: 12px;
   color: var(--color-text-primary);
-  font-weight: 700;
+  font-weight: 800;
 }
 
 /* ======== 空状态 ======== */
@@ -966,15 +968,15 @@ button {
   border-radius: var(--radius-md);
   color: #fff;
   font-size: 14px;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.25);
   animation: slideIn 0.35s var(--ease-spring);
   max-width: 360px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.02em;
 }
 .toast.success { background: var(--color-success); }
 .toast.error { background: var(--color-danger); }
-.toast.warning { background: #d97706; }
+.toast.warning { background: #b45309; }
 .toast.info { background: var(--color-primary); }
 @keyframes slideIn {
   from { transform: translateX(120%); opacity: 0; }
@@ -1043,6 +1045,30 @@ button {
   accent-color: var(--color-primary);
 }
 
+/* ======== 生存金检测提示 ======== */
+.survival-benefit-hint {
+  display: none;
+  margin-top: 6px;
+  padding: 10px 14px;
+  background: #fff7ed;
+  border: 1.5px solid #f97316;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  color: #9a3412;
+  line-height: 1.5;
+  animation: fadeIn 0.3s var(--ease-out);
+}
+.survival-benefit-hint.show { display: block; }
+.survival-benefit-hint::before {
+  content: '▲';
+  display: block;
+  font-size: 10px;
+  color: #f97316;
+  margin-top: -18px;
+  margin-bottom: 2px;
+}
+
 /* ======== 手机端适配 ======== */
 @media (max-width: 600px) {
   .top-bar { padding: 10px 14px; }
@@ -1060,6 +1086,10 @@ button {
   .btn-group button { width: 100%; }
   .advanced-search-grid { grid-template-columns: 1fr; }
   .auth-container { padding: 32px 20px; }
+  .client-name-hero h3 { font-size: 24px; }
+  .policy-detail-body .amount-item .amount-value { font-size: 22px; }
+  .policy-table .col-premium { font-size: 16px; }
+  .policy-table .col-sum-insured { font-size: 16px; }
 }</style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
@@ -1427,8 +1457,9 @@ button {
       </div>
       <div class="form-group">
         <label>险种名称 *</label>
-        <input type="text" id="insuranceName" placeholder="请输入险种名称" required list="insuranceTypeList" onchange="syncInsuranceTypeToForm(this.value)">
+        <input type="text" id="insuranceName" placeholder="请输入险种名称" required list="insuranceTypeList" onchange="syncInsuranceTypeToForm(this.value);checkSurvivalBenefitHint(this.value)" oninput="checkSurvivalBenefitHint(this.value)">
         <datalist id="insuranceTypeList"></datalist>
+        <div class="survival-benefit-hint" id="survivalBenefitHint">检测到该险种可能属于年金/分红/养老/理财类险种，建议设置生存金信息</div>
       </div>
       <div class="form-group">
         <label>险种代码</label>
@@ -1496,7 +1527,7 @@ button {
       <!-- 生存金信息 -->
       <div class="form-group">
         <label>生存金类型</label>
-        <select id="survivalBenefitType">
+        <select id="survivalBenefitType" onchange="autoCalcSurvivalNextDate()">
           <option value="">无生存金</option>
           <option value="annual">每年领取</option>
           <option value="triennial">每3年领取</option>
@@ -1509,7 +1540,7 @@ button {
       </div>
       <div class="form-group">
         <label>最近一次领取日期</label>
-        <input type="date" id="survivalLastDate">
+        <input type="date" id="survivalLastDate" onchange="autoCalcSurvivalNextDate()">
       </div>
       <div class="form-group">
         <label>下次领取日期</label>
@@ -2651,13 +2682,13 @@ function renderDetailPanel(idx) {
       if (p.survivalBenefit && p.survivalBenefit.type) {
         var sb = p.survivalBenefit;
         var typeLabel = sb.type === 'annual' ? '每年领取' : sb.type === 'triennial' ? '每3年领取' : '到期领取';
-        detail += '<div style="background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;padding:14px;margin-bottom:10px;">' +
-          '<h6 style="font-size:13px;color:#065f46;margin-bottom:10px;border-bottom:2px solid #a7f3d0;padding-bottom:6px;font-weight:700;">生存金信息</h6>' +
-          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;font-size:13px;">' +
-          '<div style="text-align:center;padding:8px;background:#d1fae5;border-radius:6px;"><div style="font-size:12px;color:#065f46;margin-bottom:2px;font-weight:600;">领取方式</div><div style="font-size:16px;font-weight:700;color:#047857;">' + typeLabel + '</div></div>' +
-          '<div style="text-align:center;padding:8px;background:#fef3c7;border-radius:6px;"><div style="font-size:12px;color:#92400e;margin-bottom:2px;font-weight:600;">生存金金额</div><div style="font-size:20px;font-weight:800;color:#b45309;">' + formatMoney(sb.amount) + ' 元</div></div>' +
+        detail += '<div style="background:#f0fdf4;border:2px solid #22c55e;border-radius:10px;padding:16px;margin-bottom:10px;">' +
+          '<h6 style="font-size:14px;color:#166534;margin-bottom:12px;border-bottom:2px solid #86efac;padding-bottom:8px;font-weight:700;">生存金信息</h6>' +
+          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;font-size:13px;">' +
+          '<div style="text-align:center;padding:10px;background:#ffffff;border:1.5px solid #86efac;border-radius:8px;"><div style="font-size:12px;color:#166534;margin-bottom:4px;font-weight:700;">领取方式</div><div style="font-size:18px;font-weight:800;color:#166534;">' + typeLabel + '</div></div>' +
+          '<div style="text-align:center;padding:10px;background:#ffffff;border:1.5px solid #fbbf24;border-radius:8px;"><div style="font-size:12px;color:#92400e;margin-bottom:4px;font-weight:700;">生存金金额</div><div style="font-size:22px;font-weight:900;color:#b45309;">' + formatMoney(sb.amount) + ' 元</div></div>' +
           '</div>' +
-          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;font-size:13px;margin-top:10px;color:#1e293b;">' +
+          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;font-size:14px;margin-top:12px;color:#0f172a;">' +
           '<p><strong>最近领取：</strong>' + formatDate(sb.lastDate) + '</p>' +
           '<p><strong>下次领取：</strong>' + formatDate(sb.nextDate) + '</p>' +
           (sb.note ? '<p><strong>备注：</strong>' + sb.note + '</p>' : '') +
@@ -3054,6 +3085,7 @@ function savePolicy() {
   }
 
   savePolicyData();
+  updateInsuranceTypeDatalist();
   closeModal('policyModal');
   refreshCurrentTab();
   if (selectedClientIdx === clientIdx && currentTab === 'query' && document.getElementById('clientDetailView').style.display !== 'none') {
@@ -3141,6 +3173,82 @@ function syncInsuranceTypeToForm(name) {
   var match = lib.find(function(item) { return item.insuranceName === name; });
   if (match) {
     document.getElementById('codeType').value = match.codeType || '';
+  }
+  /* 检测生存金类型 */
+  if (checkSurvivalBenefitType(name)) {
+    showSurvivalBenefitHint();
+  } else {
+    hideSurvivalBenefitHint();
+  }
+}
+
+/* 检测是否为生存金相关险种 */
+function checkSurvivalBenefitType(name) {
+  if (!name) return false;
+  var keywords = ['年金', '分红', '养老', '理财', '生存金', '返还', '领取', '两全'];
+  for (var i = 0; i < keywords.length; i++) {
+    if (name.indexOf(keywords[i]) !== -1) return true;
+  }
+  return false;
+}
+
+/* 显示生存金提示 */
+function showSurvivalBenefitHint() {
+  var hint = document.getElementById('survivalBenefitHint');
+  if (hint) hint.classList.add('show');
+}
+
+/* 隐藏生存金提示 */
+function hideSurvivalBenefitHint() {
+  var hint = document.getElementById('survivalBenefitHint');
+  if (hint) hint.classList.remove('show');
+}
+
+/* 检查险种名称并显示/隐藏生存金提示 */
+function checkSurvivalBenefitHint(name) {
+  if (checkSurvivalBenefitType(name)) {
+    showSurvivalBenefitHint();
+  } else {
+    hideSurvivalBenefitHint();
+  }
+}
+
+/* 自动计算下次领取日期 */
+function autoCalcSurvivalNextDate() {
+  var type = document.getElementById('survivalBenefitType').value;
+  var lastDateStr = document.getElementById('survivalLastDate').value;
+  var nextDateInput = document.getElementById('survivalNextDate');
+
+  if (!type || !lastDateStr) {
+    /* 如果类型为空或没有上次日期，不自动填充（但也不清空已有值） */
+    return;
+  }
+
+  var parts = lastDateStr.split('-');
+  if (parts.length !== 3) return;
+  var y = parseInt(parts[0]);
+  var m = parseInt(parts[1]);
+  var d = parseInt(parts[2]);
+
+  var nextDate = null;
+
+  if (type === 'annual') {
+    /* 每年领取：lastDate + 1年 */
+    nextDate = new Date(y + 1, m - 1, d);
+  } else if (type === 'triennial') {
+    /* 每3年领取：lastDate + 3年 */
+    nextDate = new Date(y + 3, m - 1, d);
+  } else if (type === 'maturity') {
+    /* 到期领取：lastDate即为到期日，无下次日期 */
+    nextDateInput.value = '';
+    return;
+  }
+
+  if (nextDate) {
+    var ny = nextDate.getFullYear();
+    var nm = String(nextDate.getMonth() + 1).padStart(2, '0');
+    var nd = String(nextDate.getDate()).padStart(2, '0');
+    nextDateInput.value = ny + '-' + nm + '-' + nd;
   }
 }
 
