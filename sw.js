@@ -1,5 +1,5 @@
-/* Service Worker - 保单管理系统离线缓存 v3 */
-var CACHE_NAME = 'policy-manager-v3';
+/* Service Worker - 保单管理系统离线缓存 v4 */
+var CACHE_NAME = 'policy-manager-v4';
 var urlsToCache = [
   '/liwenhao/baodanguanli.html',
   '/liwenhao/index.html',
@@ -13,7 +13,6 @@ self.addEventListener('install', function(event) {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
-      console.log('SW: 缓存资源');
       return cache.addAll(urlsToCache);
     })
   );
@@ -27,26 +26,35 @@ self.addEventListener('activate', function(event) {
         cacheNames.filter(function(name) {
           return name !== CACHE_NAME;
         }).map(function(name) {
-          console.log('SW: 删除旧缓存', name);
           return caches.delete(name);
         })
       );
     }).then(function() {
-      /* 接管所有打开的页面，广播更新消息 */
-      return self.clients.claim().then(function() {
-        return self.clients.matchAll().then(function(clients) {
-          clients.forEach(function(client) {
-            client.postMessage({ type: 'SW_UPDATED', version: CACHE_NAME });
-          });
-        });
-      });
+      return self.clients.claim();
     })
   );
 });
 
-/* 拦截请求 - 网络优先，失败回退缓存 */
+/* 拦截请求 - 网络优先（HTML），缓存优先（静态资源） */
 self.addEventListener('fetch', function(event) {
   if (event.request.method !== 'GET') return;
+
+  /* HTML 文件：网络优先，确保拿到最新版本 */
+  if (event.request.url.indexOf('baodanguanli.html') !== -1 || event.request.url.indexOf('index.html') !== -1) {
+    event.respondWith(
+      fetch(event.request).then(function(fetchResponse) {
+        return caches.open(CACHE_NAME).then(function(cache) {
+          cache.put(event.request, fetchResponse.clone());
+          return fetchResponse;
+        });
+      }).catch(function() {
+        return caches.match(event.request);
+      })
+    );
+    return;
+  }
+
+  /* CDN 资源：缓存优先 */
   if (event.request.url.indexOf('cdn.jsdelivr.net') !== -1) {
     event.respondWith(
       caches.match(event.request).then(function(response) {
@@ -60,7 +68,8 @@ self.addEventListener('fetch', function(event) {
     );
     return;
   }
-  /* 本地资源：网络优先，离线时回退缓存 */
+
+  /* 其他资源：网络优先，离线回退缓存 */
   event.respondWith(
     fetch(event.request).catch(function() {
       return caches.match(event.request);

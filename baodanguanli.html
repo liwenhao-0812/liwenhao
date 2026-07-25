@@ -1034,6 +1034,75 @@ button {
   top: 4px; right: 8px;
 }
 
+/* PWA 安装指引弹窗 */
+.pwa-guide-modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 10002;
+  background: rgba(0,0,0,0.5);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.pwa-guide-modal.show { display: flex; }
+.pwa-guide-content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 24px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  animation: popIn 0.25s ease;
+}
+@keyframes popIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.pwa-guide-content h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a2744;
+  margin-bottom: 16px;
+}
+.pwa-guide-content .guide-step {
+  text-align: left;
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: #334155;
+  line-height: 1.6;
+}
+.pwa-guide-content .guide-step strong {
+  color: #1a2744;
+}
+.pwa-guide-content .guide-step .step-num {
+  display: inline-flex;
+  width: 22px; height: 22px;
+  background: #1a2744;
+  color: #fff;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  margin-right: 8px;
+}
+.pwa-guide-content .btn-close-guide {
+  background: #1a2744;
+  color: #fff;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 8px;
+  width: 100%;
+}
+
 /* ======== toast消息 ======== */
 .toast-container {
   position: fixed;
@@ -1194,7 +1263,7 @@ button {
 </div>
 
 <!-- PWA 安装提示条 -->
-<div class="pwa-install-bar" id="pwaInstallBar">
+<div class="pwa-install-bar" id="pwaInstallBar" style="display:flex;">
   <div style="position:relative;display:flex;justify-content:space-between;align-items:center;width:100%;">
     <div>
       <div class="install-text">添加到主屏幕</div>
@@ -1202,6 +1271,15 @@ button {
     </div>
     <button class="btn-install" id="pwaInstallBtn">立即安装</button>
     <button class="btn-install-close" onclick="document.getElementById('pwaInstallBar').style.display='none'">&times;</button>
+  </div>
+</div>
+
+<!-- PWA 安装指引弹窗 -->
+<div class="pwa-guide-modal" id="pwaGuideModal">
+  <div class="pwa-guide-content">
+    <h3 id="guideTitle">安装到手机桌面</h3>
+    <div id="guideSteps"></div>
+    <button class="btn-close-guide" onclick="document.getElementById('pwaGuideModal').classList.remove('show')">我知道了</button>
   </div>
 </div>
 
@@ -4699,46 +4777,94 @@ checkLogin();
 if ('serviceWorker' in navigator) {
   var swReg = null;
 
-  /* 捕获 beforeinstallprompt 事件，用于手动触发安装 */
+  /* 捕获 beforeinstallprompt 事件 */
   var deferredPrompt = null;
   window.addEventListener('beforeinstallprompt', function(e) {
     e.preventDefault();
     deferredPrompt = e;
-    /* 显示安装按钮 */
-    var bar = document.getElementById('pwaInstallBar');
-    if (bar) { bar.style.display = 'flex'; }
   });
 
-  /* 安装按钮点击 */
+  /* 安装按钮点击 - 智能检测平台 */
   var installBtn = document.getElementById('pwaInstallBtn');
   if (installBtn) {
     installBtn.addEventListener('click', function() {
-      if (!deferredPrompt) {
-        showToast('请用 Chrome 或 Edge 浏览器打开此页面', 'warning');
-        return;
+      /* 如果浏览器支持 beforeinstallprompt，直接调起安装 */
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function(result) {
+          console.log('PWA install:', result.outcome);
+          deferredPrompt = null;
+          document.getElementById('pwaInstallBar').style.display = 'none';
+        }).catch(function(err) {
+          console.log('PWA install error:', err);
+          showInstallGuide();
+        });
+      } else {
+        /* 不支持自动安装，弹出操作指引 */
+        showInstallGuide();
       }
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(function(result) {
-        console.log('PWA install:', result.outcome);
-        deferredPrompt = null;
-        var bar = document.getElementById('pwaInstallBar');
-        if (bar) { bar.style.display = 'none'; }
-      });
     });
   }
 
-  /* 已安装后隐藏按钮 */
+  /* 显示安装指引弹窗（根据平台显示不同步骤） */
+  function showInstallGuide() {
+    var ua = navigator.userAgent;
+    var isIOS = /iPad|iPhone|iPod/.test(ua) || (ua.indexOf('Macintosh') !== -1 && 'ontouchend' in document);
+    var isAndroid = /Android/.test(ua);
+    var isChrome = /Chrome/.test(ua) && !/Edg|OPR|Samsung/.test(ua);
+    var isEdge = /Edg/.test(ua);
+    var isSamsung = /SamsungBrowser/.test(ua);
+    var isQQ = /QQBrowser/.test(ua);
+    var isUC = /UCBrowser/.test(ua);
+    var isSafari = /Safari/.test(ua) && !/Chrome/.test(ua);
+
+    var title = '';
+    var steps = '';
+
+    if (isIOS) {
+      title = 'iPhone 安装步骤';
+      steps =
+        '<div class="guide-step"><span class="step-num">1</span>点击 Safari 底部的<strong>分享按钮</strong>（方框+向上箭头图标）</div>' +
+        '<div class="guide-step"><span class="step-num">2</span>在弹出的菜单中向下滑动，找到<strong>「添加到主屏幕」</strong></div>' +
+        '<div class="guide-step"><span class="step-num">3</span>点击<strong>「添加」</strong>，桌面即可出现保单管理APP图标</div>' +
+        '<div class="guide-step" style="background:#fef3c7;color:#92400e;"><strong>注意：</strong>iPhone 必须用 <strong>Safari 浏览器</strong>打开才能安装</div>';
+    } else if (isAndroid && (isChrome || isEdge || isSamsung)) {
+      title = '安卓安装步骤';
+      steps =
+        '<div class="guide-step"><span class="step-num">1</span>点击浏览器右上角的<strong>三个点菜单</strong>（⋮）</div>' +
+        '<div class="guide-step"><span class="step-num">2</span>在菜单中找到<strong>「添加到主屏幕」</strong>或<strong>「安装应用」</strong></div>' +
+        '<div class="guide-step"><span class="step-num">3</span>点击确认，桌面即可出现保单管理APP图标</div>' +
+        '<div class="guide-step" style="background:#ecfdf5;color:#065f46;"><strong>提示：</strong>如果菜单中没有安装选项，请先<strong>关闭所有标签页后重新打开</strong>本页面再试</div>';
+    } else if (isAndroid && (isQQ || isUC)) {
+      title = '更换浏览器安装';
+      steps =
+        '<div class="guide-step" style="background:#fef3c7;color:#92400e;">当前浏览器（QQ/UC）<strong>不支持</strong>安装PWA应用</div>' +
+        '<div class="guide-step"><span class="step-num">1</span>请先安装<strong> Chrome 浏览器</strong>（应用商店搜索"Chrome"）</div>' +
+        '<div class="guide-step"><span class="step-num">2</span>用 Chrome 打开本页面：<strong>liwenhao-0812.github.io/liwenhao</strong></div>' +
+        '<div class="guide-step"><span class="step-num">3</span>点击 Chrome 菜单 → <strong>「安装应用」</strong></div>';
+    } else {
+      title = '安装步骤';
+      steps =
+        '<div class="guide-step"><span class="step-num">1</span>点击浏览器菜单（通常在右上角<strong>三个点 ⋮</strong>）</div>' +
+        '<div class="guide-step"><span class="step-num">2</span>找到<strong>「添加到主屏幕」</strong>或<strong>「安装应用」</strong>选项</div>' +
+        '<div class="guide-step"><span class="step-num">3</span>点击确认即可安装到桌面</div>' +
+        '<div class="guide-step" style="background:#ecfdf5;color:#065f46;"><strong>推荐：</strong>使用 <strong>Chrome</strong> 浏览器打开效果最佳</div>';
+    }
+
+    document.getElementById('guideTitle').textContent = title;
+    document.getElementById('guideSteps').innerHTML = steps;
+    document.getElementById('pwaGuideModal').classList.add('show');
+  }
+
+  /* 已安装后隐藏安装条 */
   window.addEventListener('appinstalled', function() {
     deferredPrompt = null;
-    var bar = document.getElementById('pwaInstallBar');
-    if (bar) { bar.style.display = 'none'; }
-    console.log('PWA 已安装');
+    document.getElementById('pwaInstallBar').style.display = 'none';
   });
 
-  /* 如果已经以 standalone 模式运行，隐藏安装按钮 */
+  /* 如果已经以 standalone 模式运行（已安装），隐藏安装条 */
   if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
-    var bar = document.getElementById('pwaInstallBar');
-    if (bar) { bar.style.display = 'none'; }
+    document.getElementById('pwaInstallBar').style.display = 'none';
   }
 
   window.addEventListener('load', function() {
