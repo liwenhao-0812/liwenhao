@@ -493,6 +493,18 @@ button {
   font-weight: 500;
 }
 
+/* CRM卡片样式 */
+.crm-client-card:hover {
+  border-color: #1a2744 !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+  transform: translateY(-2px);
+}
+.crm-client-card.active {
+  border-color: #1a2744 !important;
+  box-shadow: 0 0 0 2px rgba(26,39,68,0.15) !important;
+  background: #eef1f7 !important;
+}
+
 /* ======== 高级搜索面板 ======== */
 .advanced-search {
   display: none;
@@ -2510,7 +2522,7 @@ function handleSearch() {
   renderClientList(filtered);
 }
 
-/* 渲染客户列表 */
+/* 渲染客户列表 - 卡片式CRM布局 */
 function renderClientList(filtered) {
   var html = '';
   if (filtered.length === 0) {
@@ -2524,11 +2536,86 @@ function renderClientList(filtered) {
       var totalPrem = 0;
       item.matchedPolicies.forEach(function(p) { totalPrem += parseFloat(p.annualPremium) || 0; });
       var isActive = selectedClientIdx === item.clientIdx ? ' active' : '';
-      html += '<div class="client-item' + isActive + '" onclick="selectClient(' + item.clientIdx + ')">' +
-        '<div class="client-name">' + (c.name || '未命名') + (hasIncompleteInfo(c) ? ' <span class="tag tag-red" style="font-size:10px;padding:2px 6px;">信息不完整</span>' : '') +
-        ' <span class="tag ' + (vCount > 0 ? 'tag-green' : 'tag-red') + '">' + vCount + '/' + pCount + ' 有效</span></div>' +
-        '<div class="client-meta">' + (c.phone || '') + ' | 保费: ' + formatMoney(totalPrem) + ' 元/年</div>' +
-        '</div>';
+
+      /* 计算年龄 */
+      var age = '';
+      var idCard = c.idCard || '';
+      if (idCard.length >= 14) {
+        try {
+          var by = parseInt(idCard.substring(6, 10));
+          if (by > 1900 && by < 2100) {
+            age = (new Date().getFullYear() - by) + '岁';
+          }
+        } catch(e) {}
+      }
+      var familyCount = (c.familyMembers || []).length;
+      var address = c.address || '';
+
+      /* 获取最新联系记录 */
+      var latestContact = null;
+      if (c.contactHistory && c.contactHistory.length > 0) {
+        var sorted = c.contactHistory.slice().sort(function(a, b) {
+          return (b.date || '').localeCompare(a.date || '');
+        });
+        latestContact = sorted[0];
+      }
+
+      /* 联系记录状态颜色 */
+      var contactColor = '';
+      var contactBg = '';
+      if (latestContact) {
+        var st = latestContact.status || '';
+        if (st === '已加微信' || st === '已电话联系' || st === '面见客户') {
+          contactColor = '#065f46'; contactBg = '#ecfdf5';
+        } else if (st === '未联系上' || st === '电话挂断') {
+          contactColor = '#991b1b'; contactBg = '#fef2f2';
+        } else {
+          contactColor = '#92400e'; contactBg = '#fffbeb';
+        }
+      }
+
+      html += '<div class="crm-client-card' + isActive + '" onclick="selectClient(' + item.clientIdx + ')" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-bottom:12px;cursor:pointer;transition:all 0.25s;position:relative;">';
+
+      /* 顶部：姓名 + 保单数徽章 */
+      html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">';
+      html += '<div style="font-size:17px;font-weight:800;color:#0f172a;">' + (c.name || '未命名');
+      if (hasIncompleteInfo(c)) {
+        html += ' <span class="tag tag-red" style="font-size:10px;padding:2px 6px;vertical-align:middle;">信息不完整</span>';
+      }
+      html += '</div>';
+      html += '<div style="background:#1a2744;color:#fff;border-radius:20px;min-width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;padding:0 10px;">' + pCount + '</div>';
+      html += '</div>';
+
+      /* ID + 手机号 */
+      var maskedId = idCard.length > 10 ? idCard.substring(0, 6) + '********' + idCard.substring(idCard.length - 4) : idCard;
+      html += '<div style="font-size:13px;color:#64748b;margin-bottom:4px;">' +
+        (maskedId ? maskedId : '') + (c.phone ? ' · ' + c.phone : '') + '</div>';
+
+      /* 地址 */
+      if (address) {
+        html += '<div style="font-size:12px;color:#94a3b8;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + address + '</div>';
+      }
+
+      /* 统计行：年龄、保单、家人 */
+      html += '<div style="display:flex;gap:12px;font-size:12px;color:#64748b;margin-bottom:10px;flex-wrap:wrap;">';
+      if (age) html += '<span>年龄：' + age + '</span>';
+      html += '<span>保单：' + pCount + '份</span>';
+      html += '<span>家人：' + familyCount + '人</span>';
+      html += '<span>年保费：' + formatMoney(totalPrem) + '</span>';
+      html += '</div>';
+
+      /* 联系记录条 */
+      if (latestContact) {
+        html += '<div style="display:flex;align-items:center;gap:8px;background:' + contactBg + ';border-radius:8px;padding:8px 12px;font-size:13px;color:' + contactColor + ';font-weight:600;">';
+        html += '<span style="font-size:16px;">📞</span>';
+        html += '<span>' + (latestContact.status || '') + '</span>';
+        html += '<span style="margin-left:auto;font-weight:500;">' + formatDate(latestContact.date) + '</span>';
+        html += '</div>';
+      } else {
+        html += '<div style="display:flex;align-items:center;gap:8px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;padding:8px 12px;font-size:12px;color:#94a3b8;">📞 暂无联系记录，点击添加</div>';
+      }
+
+      html += '</div>';
     });
   }
   document.getElementById('clientList').innerHTML = html;
@@ -3267,8 +3354,10 @@ function renderInsuranceTypeLib() {
     html += '<tr>' +
       '<td>' + (item.insuranceName || '') + '</td>' +
       '<td>' + (item.codeType || '') + '</td>' +
-      '<td><button class="btn-sm btn-danger" onclick="deleteInsuranceType(\'' + item.insuranceName.replace(/'/g, "\\'") + '\')">删除</button></td>' +
-      '</tr>';
+      '<td>' +
+      '<button class="btn-sm btn-outline" onclick="editInsuranceType(\'' + item.insuranceName.replace(/'/g, "\\'") + '\', \'' + (item.codeType || '').replace(/'/g, "\\'") + '\')">编辑</button> ' +
+      '<button class="btn-sm btn-danger" onclick="deleteInsuranceTypeConfirm(\'' + item.insuranceName.replace(/'/g, "\\'") + '\')">删除</button>' +
+      '</td></tr>';
   });
   html += '</tbody></table>';
   table.innerHTML = html;
@@ -3276,13 +3365,43 @@ function renderInsuranceTypeLib() {
   updateInsuranceTypeDatalist();
 }
 
-/* 删除险种库条目 */
-function deleteInsuranceType(insuranceName) {
+/* 删除险种库条目（二次确认） */
+function deleteInsuranceTypeConfirm(insuranceName) {
+  showConfirm('确定要删除险种 "' + insuranceName + '" 吗？', function() {
+    var lib = getInsuranceTypeLib();
+    lib = lib.filter(function(item) { return item.insuranceName !== insuranceName; });
+    saveInsuranceTypeLib(lib);
+    renderInsuranceTypeLib();
+    showToast('险种已删除', 'success');
+  });
+}
+
+/* 编辑险种库条目 */
+function editInsuranceType(oldName, code) {
+  var newName = prompt('修改险种名称：', oldName);
+  if (newName === null) return;
+  newName = newName.trim();
+  if (!newName) { showToast('险种名称不能为空', 'warning'); return; }
+  var newCode = prompt('修改险种代码：', code);
+  if (newCode === null) return;
+  newCode = newCode.trim();
+  if (!newCode) { showToast('险种代码不能为空', 'warning'); return; }
+  
   var lib = getInsuranceTypeLib();
-  lib = lib.filter(function(item) { return item.insuranceName !== insuranceName; });
-  saveInsuranceTypeLib(lib);
-  renderInsuranceTypeLib();
-  showToast('险种已删除', 'success');
+  var found = false;
+  for (var i = 0; i < lib.length; i++) {
+    if (lib[i].insuranceName === oldName) {
+      lib[i].insuranceName = newName;
+      lib[i].codeType = newCode;
+      found = true;
+      break;
+    }
+  }
+  if (found) {
+    saveInsuranceTypeLib(lib);
+    renderInsuranceTypeLib();
+    showToast('险种已更新', 'success');
+  }
 }
 
 /* 自动填充险种代码 */
