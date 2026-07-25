@@ -4884,6 +4884,23 @@ checkLogin();
 var _deferredPrompt = null;
 var _swReg = null;
 
+/* 检测是否在 APK WebView 中运行 */
+var _isInApp = (function() {
+  var ua = navigator.userAgent;
+  var urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('from') === 'apk') return true;
+  if (ua.indexOf('BaodanApp') !== -1) return true;
+  if (ua.indexOf('wv') !== -1 && ua.indexOf('Version/') !== -1) return true;
+  return false;
+})();
+
+/* 如果在 APK 中，立即隐藏安装条 */
+if (_isInApp) {
+  var bar = document.getElementById('pwaInstallBar');
+  if (bar) bar.style.display = 'none';
+  console.log('PWA: 检测到在APP中运行，已隐藏安装条');
+}
+
 /* 捕获 beforeinstallprompt 事件 */
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
@@ -5011,21 +5028,9 @@ window.copyPWAUrl = function() {
   }
 };
 
-/* 检测浏览器并调整按钮显示 */
-(function() {
-  /* 如果 beforeinstallprompt 已触发（真正的 Chrome/Edge），显示 PWA 安装按钮 */
-  if (_deferredPrompt) {
-    var btnInstall = document.getElementById('pwaInstallBtn');
-    var btnApk = document.getElementById('btnDownloadApk');
-    var installText = document.getElementById('installText');
-    var installSub = document.getElementById('installSub');
-    if (btnInstall) btnInstall.style.display = 'inline-block';
-    if (btnApk) btnApk.style.display = 'none';
-    if (installText) installText.textContent = '安装到手机';
-    if (installSub) installSub.textContent = '像原生APP一样快速打开';
-  }
-  /* 延迟再检测一次（beforeinstallprompt 可能稍后才触发） */
-  setTimeout(function() {
+/* 检测浏览器并调整按钮显示（仅在非APK模式下运行） */
+if (!_isInApp) {
+  (function() {
     if (_deferredPrompt) {
       var btnInstall = document.getElementById('pwaInstallBtn');
       var btnApk = document.getElementById('btnDownloadApk');
@@ -5034,13 +5039,24 @@ window.copyPWAUrl = function() {
       if (btnInstall) btnInstall.style.display = 'inline-block';
       if (btnApk) btnApk.style.display = 'none';
       if (installText) installText.textContent = '安装到手机';
-      if (installSub) installSub.textContent = '点击安装，像原生APP一样快速打开';
-    } else {
-      /* beforeinstallprompt 未触发，弹出 APK 下载引导 */
-      showApkGuidePopup();
+      if (installSub) installSub.textContent = '像原生APP一样快速打开';
     }
-  }, 3000);
-})();
+    setTimeout(function() {
+      if (_deferredPrompt) {
+        var btnInstall = document.getElementById('pwaInstallBtn');
+        var btnApk = document.getElementById('btnDownloadApk');
+        var installText = document.getElementById('installText');
+        var installSub = document.getElementById('installSub');
+        if (btnInstall) btnInstall.style.display = 'inline-block';
+        if (btnApk) btnApk.style.display = 'none';
+        if (installText) installText.textContent = '安装到手机';
+        if (installSub) installSub.textContent = '点击安装，像原生APP一样快速打开';
+      } else {
+        showApkGuidePopup();
+      }
+    }, 3000);
+  })();
+}
 
 /* 弹出 APK 下载引导弹窗 */
 function showApkGuidePopup() {
