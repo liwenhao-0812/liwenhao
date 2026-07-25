@@ -906,46 +906,6 @@ button {
 .timeline-date { font-size: 11px; color: var(--color-text-muted); margin-bottom: 4px; font-weight: 600; letter-spacing: 0.03em; }
 .timeline-content { font-size: 14px; color: var(--color-text-primary); }
 
-/* ======== 定价模块 ======== */
-.rule-card {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 18px;
-  margin-bottom: 12px;
-  transition: all 0.25s var(--ease-out);
-  background: var(--color-surface);
-}
-.rule-card:hover { border-color: var(--color-primary); box-shadow: 0 4px 16px var(--color-shadow-md); transform: translateY(-1px); }
-.rule-card h4 { font-size: 14px; margin-bottom: 8px; font-weight: 700; color: var(--color-text-primary); }
-.rule-conditions {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  margin-bottom: 8px;
-  font-weight: 500;
-}
-.calc-result {
-  background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
-  border: 2px solid var(--color-success);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  text-align: center;
-  margin-top: 16px;
-}
-.calc-result .premium {
-  font-family: var(--font-heading);
-  font-size: 42px;
-  font-weight: 700;
-  color: #059669;
-  letter-spacing: -0.01em;
-}
-.calc-result .premium-label {
-  font-size: 13px;
-  color: var(--color-success);
-  margin-bottom: 4px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-}
-
 /* ======== 设置页面 ======== */
 .setting-group {
   padding: 18px;
@@ -1118,6 +1078,13 @@ button {
 }</style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<!-- PWA Meta Tags -->
+<meta name="theme-color" content="#1a2744">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="保单管理">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
 </head>
 <body>
 
@@ -1186,7 +1153,6 @@ button {
     <button class="nav-item" data-tab="query" onclick="switchTab('query')">查询</button>
     <button class="nav-item" data-tab="reminders" onclick="switchTab('reminders')">提醒</button>
     <button class="nav-item" data-tab="tracking" onclick="switchTab('tracking')">追踪</button>
-    <button class="nav-item" data-tab="pricing" onclick="switchTab('pricing')">定价</button>
     <button class="nav-item" data-tab="settings" onclick="switchTab('settings')">设置</button>
   </div>
 
@@ -1341,17 +1307,6 @@ button {
           <p>请选择一个客户查看追踪详情</p>
         </div>
       </div>
-    </div>
-
-    <!-- ====== 定价页 ====== -->
-    <div class="tab-content" id="tabPricing">
-      <h3 style="margin-bottom:16px;">定价规则管理</h3>
-      <div class="btn-group" style="margin-bottom:16px;">
-        <button class="btn-primary" onclick="openAddRuleModal()">创建定价规则</button>
-        <button class="btn-outline" onclick="openCalcModal()">保费计算器</button>
-        <button class="btn-outline" onclick="openBatchCalcModal()">批量计算</button>
-      </div>
-      <div id="ruleList"></div>
     </div>
 
     <!-- ====== 设置页 ====== -->
@@ -1735,119 +1690,6 @@ button {
   </div>
 </div>
 
-<!-- 定价规则模态框 -->
-<div class="modal-overlay" id="ruleModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 id="ruleModalTitle">创建定价规则</h2>
-      <button class="modal-close" onclick="closeModal('ruleModal')">&times;</button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="ruleEditId" value="">
-      <div class="form-group">
-        <label>规则名称 *</label>
-        <input type="text" id="ruleName" placeholder="如：重疾险基础定价">
-      </div>
-      <div class="form-group">
-        <label>规则描述</label>
-        <textarea id="ruleDescription" rows="2" placeholder="规则描述"></textarea>
-      </div>
-      <div class="form-group">
-        <label>条件组合（满足所有条件才算匹配）</label>
-        <div id="ruleConditions"></div>
-        <button type="button" class="btn-sm btn-outline" onclick="addRuleConditionField()">+ 添加条件</button>
-      </div>
-      <div class="form-group">
-        <label>计算方式</label>
-        <select id="ruleCalcType" onchange="toggleCalcFields()">
-          <option value="fixed">固定金额</option>
-          <option value="percentage">百分比</option>
-          <option value="formula">自定义公式</option>
-        </select>
-      </div>
-      <div class="form-group" id="ruleBaseGroup">
-        <label>基础保费（元）</label>
-        <input type="number" id="ruleBase" placeholder="如：1000" step="0.01">
-      </div>
-      <div class="form-group" id="ruleRateGroup">
-        <label>费率/百分比（%）</label>
-        <input type="number" id="ruleRate" placeholder="如：5 表示5%" step="0.01">
-      </div>
-      <div class="form-group hidden" id="ruleFormulaGroup">
-        <label>自定义公式（可用变量：base, age, sumInsured, paymentTerm, gender）</label>
-        <textarea id="ruleFormula" rows="3" placeholder="如：base * (1 + age/100) * sumInsured/100000"></textarea>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal('ruleModal')">取消</button>
-      <button class="btn-primary" onclick="saveRule()">保存规则</button>
-    </div>
-  </div>
-</div>
-
-<!-- 保费计算器模态框 -->
-<div class="modal-overlay" id="calcModal">
-  <div class="modal" style="max-width:500px;">
-    <div class="modal-header">
-      <h2>保费计算器</h2>
-      <button class="modal-close" onclick="closeModal('calcModal')">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label>选择定价规则</label>
-        <select id="calcRule"></select>
-      </div>
-      <div class="form-group">
-        <label>年龄</label>
-        <input type="number" id="calcAge" placeholder="如：30" min="0" max="120">
-      </div>
-      <div class="form-group">
-        <label>性别</label>
-        <select id="calcGender">
-          <option value="男">男</option>
-          <option value="女">女</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>保额（元）</label>
-        <input type="number" id="calcSumInsured" placeholder="如：500000" step="0.01">
-      </div>
-      <div class="form-group">
-        <label>缴费期限（年）</label>
-        <input type="number" id="calcPayTerm" placeholder="如：20" min="1">
-      </div>
-      <div class="form-group">
-        <label>险种类型</label>
-        <input type="text" id="calcInsType" placeholder="如：重疾险">
-      </div>
-      <button type="button" class="btn-primary" onclick="calculatePremium()" style="width:100%;margin-top:10px;">计算保费</button>
-      <div id="calcResult"></div>
-    </div>
-  </div>
-</div>
-
-<!-- 批量计算模态框 -->
-<div class="modal-overlay" id="batchCalcModal">
-  <div class="modal" style="max-width:700px;">
-    <div class="modal-header">
-      <h2>批量计算</h2>
-      <button class="modal-close" onclick="closeModal('batchCalcModal')">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label>选择定价规则</label>
-        <select id="batchCalcRule"></select>
-      </div>
-      <div class="form-group">
-        <label>选择要计算的保单（可多选）</label>
-        <div id="batchCalcPolicyList" style="max-height:300px;overflow-y:auto;"></div>
-      </div>
-      <button type="button" class="btn-primary" onclick="batchCalculate()" style="width:100%;margin-top:10px;">批量计算</button>
-      <div id="batchCalcResult" class="table-responsive"></div>
-    </div>
-  </div>
-</div>
-
 <!-- 确认对话框 -->
 <div class="modal-overlay" id="confirmModal">
   <div class="modal" style="max-width:400px;">
@@ -1874,7 +1716,6 @@ button {
 let currentUser = null;         // 当前登录用户名
 let clientData = [];            // 当前用户的保单数据
 let reminderData = [];          // 当前用户的提醒数据
-let pricingRules = [];          // 当前用户的定价规则
 let currentTab = 'home';        // 当前Tab页
 let selectedClientIdx = -1;     // 当前选中客户索引（查询页）
 let reminderFilter = 'all';     // 提醒筛选条件
@@ -2059,7 +1900,6 @@ function handleLogout() {
   localStorage.removeItem('pms_currentUser');
   clientData = [];
   reminderData = [];
-  pricingRules = [];
   document.getElementById('mainApp').style.display = 'none';
   document.getElementById('authPage').style.display = 'flex';
   document.getElementById('loginUsername').value = '';
@@ -2108,24 +1948,10 @@ function saveReminderData() {
   autoSyncPush();
 }
 
-/* 获取定价规则 */
-function getPricingRules() {
-  try {
-    return JSON.parse(localStorage.getItem('pricing_rules_' + currentUser) || '[]');
-  } catch(e) { return []; }
-}
-
-/* 保存定价规则 */
-function savePricingRules() {
-  localStorage.setItem('pricing_rules_' + currentUser, JSON.stringify(pricingRules));
-  autoSyncPush();
-}
-
 /* 加载当前用户所有数据 */
 function loadUserData() {
   clientData = getPolicyData();
   reminderData = getReminderData();
-  pricingRules = getPricingRules();
 }
 
 /* ======== 云同步（JSONBin.io） ======== */
@@ -2250,10 +2076,6 @@ function manualPull() {
         reminderData = cloudData.reminders;
         localStorage.setItem('reminders_' + currentUser, JSON.stringify(reminderData));
       }
-      if (cloudData.pricingRules) {
-        pricingRules = cloudData.pricingRules;
-        localStorage.setItem('pricing_rules_' + currentUser, JSON.stringify(pricingRules));
-      }
       showToast('数据已从云端同步', 'success');
       refreshCurrentTab();
     } else {
@@ -2283,7 +2105,6 @@ function getAllUserData() {
   return {
     policies: clientData,
     reminders: reminderData,
-    pricingRules: pricingRules,
     _timestamp: Date.now().toString(),
     _user: currentUser
   };
@@ -2336,7 +2157,6 @@ function refreshCurrentTab() {
     case 'query': handleSearch(); break;
     case 'reminders': renderReminders(); break;
     case 'tracking': populateTrackClientSelect(); break;
-    case 'pricing': renderPricingRules(); break;
     case 'settings': renderInsuranceTypeLib(); break;
   }
   updateBottomStats();
@@ -3176,9 +2996,12 @@ function openAddPolicyModal(clientIdx) {
   clearPolicyForm();
   /* 填充关联主险下拉 */
   populateParentPolicyDropdown(clientIdx, '');
-  /* 默认填入投保人姓名作为被保人 */
+  /* 默认填入投保人信息作为被保人（本人） */
   document.getElementById('insuredName').value = clientData[clientIdx].name || '';
   document.getElementById('insuredRelation').value = '本人';
+  document.getElementById('insuredId').value = clientData[clientIdx].idCard || '';
+  document.getElementById('insuredPhone').value = clientData[clientIdx].phone || '';
+  document.getElementById('insuredAddress').value = clientData[clientIdx].address || '';
   openModal('policyModal');
 }
 
@@ -3276,9 +3099,10 @@ function editPolicy(clientIdx, policyIdx) {
   document.getElementById('paymentTerm').value = p.paymentTerm || '';
   document.getElementById('insuredName').value = p.insured || '';
   document.getElementById('insuredRelation').value = p.insuredRelation || '';
-  document.getElementById('insuredId').value = p.insuredId || '';
-  document.getElementById('insuredPhone').value = p.insuredPhone || '';
-  document.getElementById('insuredAddress').value = p.insuredAddress || '';
+  /* 被保人身份证/手机/地址：优先保单级，为空则回退客户端级 */
+  document.getElementById('insuredId').value = p.insuredId || clientData[clientIdx].idCard || '';
+  document.getElementById('insuredPhone').value = p.insuredPhone || clientData[clientIdx].phone || '';
+  document.getElementById('insuredAddress').value = p.insuredAddress || clientData[clientIdx].address || '';
   document.getElementById('policyRemark').value = p.remark || '';
 
   /* 生存金 */
@@ -3370,6 +3194,21 @@ function savePolicy() {
     }
   }
 
+  var clientIdx = parseInt(document.getElementById('policyClientIndex').value);
+  var c = clientData[clientIdx];
+  var insuredName = document.getElementById('insuredName').value.trim() || c.name;
+  var insuredRelation = document.getElementById('insuredRelation').value;
+  /* 被保人为本人时，空字段自动从客户信息回填，确保数据一致 */
+  var isSelf = (insuredRelation === '本人') || (!insuredRelation && insuredName === (c.name || ''));
+  var insuredId = document.getElementById('insuredId').value.trim();
+  var insuredPhone = document.getElementById('insuredPhone').value.trim();
+  var insuredAddress = document.getElementById('insuredAddress').value.trim();
+  if (isSelf) {
+    if (!insuredId) insuredId = c.idCard || '';
+    if (!insuredPhone) insuredPhone = c.phone || '';
+    if (!insuredAddress) insuredAddress = c.address || '';
+  }
+
   var policyObj = {
     policyCode: policyCode,
     insuranceName: insuranceName,
@@ -3384,11 +3223,11 @@ function savePolicy() {
     annualPremium: document.getElementById('annualPremium').value,
     sumInsured: document.getElementById('sumInsured').value,
     paymentTerm: document.getElementById('paymentTerm').value,
-    insured: document.getElementById('insuredName').value.trim() || clientData[parseInt(document.getElementById('policyClientIndex').value)].name,
-    insuredRelation: document.getElementById('insuredRelation').value,
-    insuredId: document.getElementById('insuredId').value.trim(),
-    insuredPhone: document.getElementById('insuredPhone').value.trim(),
-    insuredAddress: document.getElementById('insuredAddress').value.trim(),
+    insured: insuredName,
+    insuredRelation: insuredRelation,
+    insuredId: insuredId,
+    insuredPhone: insuredPhone,
+    insuredAddress: insuredAddress,
     beneficiaries: beneficiaries,
     remark: document.getElementById('policyRemark').value.trim(),
     survivalBenefit: {
@@ -3403,7 +3242,6 @@ function savePolicy() {
     serviceRecords: []
   };
 
-  var clientIdx = parseInt(document.getElementById('policyClientIndex').value);
   var editIdx = parseInt(document.getElementById('policyEditIndex').value);
 
   if (editIdx >= 0) {
@@ -3454,9 +3292,13 @@ function getClientIncompleteFields(c) {
 /* 获取保单信息缺失字段 */
 function getPolicyIncompleteFields(c, p) {
   var missing = [];
-  if (!p.insuredId || p.insuredId.trim() === '') missing.push('被保人身份证');
-  if (!p.insuredPhone || p.insuredPhone.trim() === '') missing.push('被保人手机号');
-  if (!p.insuredAddress || p.insuredAddress.trim() === '') missing.push('被保人联系地址');
+  /* 当被保人是投保人本人时，投保人信息已覆盖被保人信息，无需重复校验 */
+  var isSelf = (p.insuredRelation === '本人') || (!p.insuredRelation && (p.insured || '') === (c.name || ''));
+  if (!isSelf) {
+    if (!p.insuredId || p.insuredId.trim() === '') missing.push('被保人身份证');
+    if (!p.insuredPhone || p.insuredPhone.trim() === '') missing.push('被保人手机号');
+    if (!p.insuredAddress || p.insuredAddress.trim() === '') missing.push('被保人联系地址');
+  }
   return missing;
 }
 
@@ -3484,7 +3326,7 @@ function hasIncompleteInfo(c) {
 /* 从现有保单数据中同步险种到险种库 */
 function syncExistingPoliciesToLib() {
   var lib = getInsuranceTypeLib();
-  var libNames = lib.map(function(item) { return item.insuranceName; });
+  var libNames = lib.map(function(item) { return (item.insuranceName || '').trim(); });
   var addedCount = 0;
   var noNameCount = 0;
 
@@ -3509,7 +3351,7 @@ function syncExistingPoliciesToLib() {
           }
         } else if (name && libNames.indexOf(name) !== -1) {
           /* 名称已存在但代码可能不同，更新代码 */
-          var existing = lib.find(function(item) { return item.insuranceName === name; });
+          var existing = lib.find(function(item) { return (item.insuranceName || '').trim() === name; });
           if (existing && existing.codeType !== code) {
             existing.codeType = code;
           }
@@ -3544,14 +3386,30 @@ function saveInsuranceTypeLib(lib) {
 /* 添加到险种库（去重） */
 function addToInsuranceTypeLib(name, code) {
   if (!name || !code) return false;
+  name = name.trim();
+  code = code.trim();
   var lib = getInsuranceTypeLib();
   var exists = lib.some(function(item) {
-    return item.insuranceName === name && item.codeType === code;
+    return (item.insuranceName || '').trim() === name && (item.codeType || '').trim() === code;
   });
   if (exists) return false;
   lib.push({ insuranceName: name, codeType: code });
   saveInsuranceTypeLib(lib);
   return true;
+}
+
+/* 安全转义：用于生成 HTML 属性中的 JavaScript 字符串字面量（注意：& 必须最先转义，避免破坏后续实体） */
+function escapeForJsAttr(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '');
 }
 
 /* 渲染险种库表格 */
@@ -3565,12 +3423,14 @@ function renderInsuranceTypeLib() {
   }
   var html = '<table class="policy-table"><thead><tr><th>险种名称</th><th>险种代码</th><th>操作</th></tr></thead><tbody>';
   lib.forEach(function(item) {
+    var safeName = escapeForJsAttr(item.insuranceName);
+    var safeCode = escapeForJsAttr(item.codeType);
     html += '<tr>' +
       '<td>' + (item.insuranceName || '') + '</td>' +
       '<td>' + (item.codeType || '') + '</td>' +
       '<td>' +
-      '<button class="btn-sm btn-outline" onclick="editInsuranceType(\'' + item.insuranceName.replace(/'/g, "\\'") + '\', \'' + (item.codeType || '').replace(/'/g, "\\'") + '\')">编辑</button> ' +
-      '<button class="btn-sm btn-danger" onclick="deleteInsuranceTypeConfirm(\'' + item.insuranceName.replace(/'/g, "\\'") + '\')">删除</button>' +
+      '<button class="btn-sm btn-outline" onclick="editInsuranceType(\'' + safeName + '\', \'' + safeCode + '\')">编辑</button> ' +
+      '<button class="btn-sm btn-danger" onclick="deleteInsuranceTypeConfirm(\'' + safeName + '\')">删除</button>' +
       '</td></tr>';
   });
   html += '</tbody></table>';
@@ -3581,9 +3441,10 @@ function renderInsuranceTypeLib() {
 
 /* 删除险种库条目（二次确认） */
 function deleteInsuranceTypeConfirm(insuranceName) {
+  insuranceName = (insuranceName || '').trim();
   showConfirm('确定要删除险种 "' + insuranceName + '" 吗？', function() {
     var lib = getInsuranceTypeLib();
-    lib = lib.filter(function(item) { return item.insuranceName !== insuranceName; });
+    lib = lib.filter(function(item) { return (item.insuranceName || '').trim() !== insuranceName; });
     saveInsuranceTypeLib(lib);
     renderInsuranceTypeLib();
     showToast('险种已删除', 'success');
@@ -3592,6 +3453,7 @@ function deleteInsuranceTypeConfirm(insuranceName) {
 
 /* 编辑险种库条目 */
 function editInsuranceType(oldName, code) {
+  oldName = (oldName || '').trim();
   var newName = prompt('修改险种名称：', oldName);
   if (newName === null) return;
   newName = newName.trim();
@@ -3604,7 +3466,7 @@ function editInsuranceType(oldName, code) {
   var lib = getInsuranceTypeLib();
   var found = false;
   for (var i = 0; i < lib.length; i++) {
-    if (lib[i].insuranceName === oldName) {
+    if ((lib[i].insuranceName || '').trim() === oldName) {
       lib[i].insuranceName = newName;
       lib[i].codeType = newCode;
       found = true;
@@ -3619,7 +3481,8 @@ function editInsuranceType(oldName, code) {
     var syncCount = 0;
     clientData.forEach(function(c) {
       (c.policies || []).forEach(function(p) {
-        if (p.insuranceName === oldName) {
+        var pName = (p.insuranceName || '').trim();
+        if (pName === oldName) {
           p.insuranceName = newName;
           p.codeType = newCode;
           syncCount++;
@@ -3638,8 +3501,9 @@ function editInsuranceType(oldName, code) {
 /* 自动填充险种代码 */
 function syncInsuranceTypeToForm(name) {
   if (!name) return;
+  name = name.trim();
   var lib = getInsuranceTypeLib();
-  var match = lib.find(function(item) { return item.insuranceName === name; });
+  var match = lib.find(function(item) { return (item.insuranceName || '').trim() === name; });
   if (match) {
     document.getElementById('codeType').value = match.codeType || '';
   }
@@ -4270,397 +4134,6 @@ function loadTrackingData() {
   content.innerHTML = html;
 }
 
-/* ======== 定价规则功能 ======== */
-
-/* 渲染定价规则列表 */
-function renderPricingRules() {
-  if (pricingRules.length === 0) {
-    document.getElementById('ruleList').innerHTML = '<div class="empty-state"><div class="empty-icon">&#128290;</div><p>暂无定价规则，点击"创建定价规则"开始</p></div>';
-    return;
-  }
-
-  var html = '';
-  pricingRules.forEach(function(rule) {
-    var condStr = '';
-    (rule.conditions || []).forEach(function(cond) {
-      var opMap = { gt: '>', lt: '<', eq: '=', gte: '>=', lte: '<=', between: '介于', 'in': '属于' };
-      condStr += cond.field + ' ' + (opMap[cond.operator] || cond.operator) + ' ' + cond.value + '; ';
-    });
-
-    var calcStr = '';
-    if (rule.calculation) {
-      if (rule.calculation.type === 'fixed') calcStr = '固定: ' + (rule.calculation.base || 0) + ' 元';
-      else if (rule.calculation.type === 'percentage') calcStr = '费率: ' + (rule.calculation.rate || 0) + '%';
-      else calcStr = '公式: ' + (rule.calculation.formula || '');
-    }
-
-    html += '<div class="rule-card">' +
-      '<h4>' + (rule.name || '') + '</h4>' +
-      '<p style="font-size:12px;color:#64748b;margin-bottom:6px;">' + (rule.description || '') + '</p>' +
-      '<div class="rule-conditions"><strong>条件：</strong>' + (condStr || '无') + '</div>' +
-      '<div class="rule-conditions"><strong>计算：</strong>' + (calcStr || '未设置') + '</div>' +
-      '<div class="btn-group" style="margin-top:8px;">' +
-      '<button class="btn-sm btn-outline" onclick="editRule(\'' + rule.id + '\')">编辑</button>' +
-      '<button class="btn-sm btn-danger" onclick="deleteRule(\'' + rule.id + '\')">删除</button>' +
-      '</div></div>';
-  });
-  document.getElementById('ruleList').innerHTML = html;
-}
-
-/* 构建条件字段HTML */
-function buildConditionField(data) {
-  return '<div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:6px;margin-bottom:6px;align-items:end;">' +
-    '<div><label style="font-size:11px;">字段</label><select class="cond-field">' +
-    '<option value="age"' + (data && data.field === 'age' ? ' selected' : '') + '>年龄</option>' +
-    '<option value="gender"' + (data && data.field === 'gender' ? ' selected' : '') + '>性别</option>' +
-    '<option value="sumInsured"' + (data && data.field === 'sumInsured' ? ' selected' : '') + '>保额</option>' +
-    '<option value="paymentTerm"' + (data && data.field === 'paymentTerm' ? ' selected' : '') + '>缴费期限</option>' +
-    '<option value="insuranceType"' + (data && data.field === 'insuranceType' ? ' selected' : '') + '>险种类型</option>' +
-    '</select></div>' +
-    '<div><label style="font-size:11px;">运算符</label><select class="cond-op">' +
-    '<option value="gt"' + (data && data.operator === 'gt' ? ' selected' : '') + '>&gt; 大于</option>' +
-    '<option value="lt"' + (data && data.operator === 'lt' ? ' selected' : '') + '>&lt; 小于</option>' +
-    '<option value="eq"' + (data && data.operator === 'eq' ? ' selected' : '') + '>= 等于</option>' +
-    '<option value="gte"' + (data && data.operator === 'gte' ? ' selected' : '') + '>&gt;= 大于等于</option>' +
-    '<option value="lte"' + (data && data.operator === 'lte' ? ' selected' : '') + '>&lt;= 小于等于</option>' +
-    '<option value="in"' + (data && data.operator === 'in' ? ' selected' : '') + '>属于</option>' +
-    '</select></div>' +
-    '<div><label style="font-size:11px;">值</label><input type="text" class="cond-val" value="' + (data && data.value || '') + '" placeholder="值"></div>' +
-    '<div><button type="button" class="btn-sm btn-danger" onclick="this.parentElement.remove()">删除</button></div>' +
-    '</div>';
-}
-
-/* 添加条件字段 */
-function addRuleConditionField() {
-  var container = document.getElementById('ruleConditions');
-  var div = document.createElement('div');
-  div.innerHTML = buildConditionField(null);
-  container.appendChild(div.firstElementChild);
-}
-
-/* 切换计算方式字段 */
-function toggleCalcFields() {
-  var type = document.getElementById('ruleCalcType').value;
-  document.getElementById('ruleBaseGroup').classList.toggle('hidden', type === 'formula');
-  document.getElementById('ruleRateGroup').classList.toggle('hidden', type === 'formula');
-  document.getElementById('ruleFormulaGroup').classList.toggle('hidden', type !== 'formula');
-}
-
-/* 打开添加规则模态框 */
-function openAddRuleModal() {
-  document.getElementById('ruleModalTitle').textContent = '创建定价规则';
-  document.getElementById('ruleEditId').value = '';
-  document.getElementById('ruleName').value = '';
-  document.getElementById('ruleDescription').value = '';
-  document.getElementById('ruleConditions').innerHTML = '';
-  document.getElementById('ruleCalcType').value = 'fixed';
-  document.getElementById('ruleBase').value = '';
-  document.getElementById('ruleRate').value = '';
-  document.getElementById('ruleFormula').value = '';
-  toggleCalcFields();
-  openModal('ruleModal');
-}
-
-/* 编辑规则 */
-function editRule(id) {
-  var rule = pricingRules.find(function(r) { return r.id === id; });
-  if (!rule) return;
-  document.getElementById('ruleModalTitle').textContent = '编辑定价规则';
-  document.getElementById('ruleEditId').value = id;
-  document.getElementById('ruleName').value = rule.name || '';
-  document.getElementById('ruleDescription').value = rule.description || '';
-
-  /* 条件 */
-  var condHtml = '';
-  (rule.conditions || []).forEach(function(c) { condHtml += buildConditionField(c); });
-  document.getElementById('ruleConditions').innerHTML = condHtml;
-
-  /* 计算 */
-  var calc = rule.calculation || {};
-  document.getElementById('ruleCalcType').value = calc.type || 'fixed';
-  document.getElementById('ruleBase').value = calc.base || '';
-  document.getElementById('ruleRate').value = calc.rate || '';
-  document.getElementById('ruleFormula').value = calc.formula || '';
-  toggleCalcFields();
-  openModal('ruleModal');
-}
-
-/* 保存规则 */
-function saveRule() {
-  var name = document.getElementById('ruleName').value.trim();
-  if (!name) { showToast('请输入规则名称', 'warning'); return; }
-
-  /* 收集条件 */
-  var conditions = [];
-  var condEls = document.getElementById('ruleConditions').children;
-  for (var i = 0; i < condEls.length; i++) {
-    conditions.push({
-      field: condEls[i].querySelector('.cond-field').value,
-      operator: condEls[i].querySelector('.cond-op').value,
-      value: condEls[i].querySelector('.cond-val').value.trim()
-    });
-  }
-
-  var calcType = document.getElementById('ruleCalcType').value;
-  var calculation = {
-    type: calcType,
-    base: document.getElementById('ruleBase').value,
-    rate: document.getElementById('ruleRate').value,
-    formula: document.getElementById('ruleFormula').value
-  };
-
-  var editId = document.getElementById('ruleEditId').value;
-  var obj = {
-    id: editId || genId(),
-    name: name,
-    description: document.getElementById('ruleDescription').value.trim(),
-    conditions: conditions,
-    calculation: calculation
-  };
-
-  if (editId) {
-    var idx = pricingRules.findIndex(function(r) { return r.id === editId; });
-    if (idx >= 0) pricingRules[idx] = obj;
-  } else {
-    pricingRules.push(obj);
-  }
-
-  savePricingRules();
-  closeModal('ruleModal');
-  renderPricingRules();
-  showToast('定价规则已保存', 'success');
-}
-
-/* 删除规则 */
-function deleteRule(id) {
-  showConfirm('确定要删除此定价规则吗？', function() {
-    pricingRules = pricingRules.filter(function(r) { return r.id !== id; });
-    savePricingRules();
-    renderPricingRules();
-    showToast('规则已删除', 'success');
-  });
-}
-
-/* 打开保费计算器 */
-function openCalcModal() {
-  var sel = document.getElementById('calcRule');
-  sel.innerHTML = '<option value="">选择定价规则</option>';
-  pricingRules.forEach(function(r) {
-    sel.innerHTML += '<option value="' + r.id + '">' + r.name + '</option>';
-  });
-  document.getElementById('calcAge').value = '';
-  document.getElementById('calcGender').value = '男';
-  document.getElementById('calcSumInsured').value = '';
-  document.getElementById('calcPayTerm').value = '';
-  document.getElementById('calcInsType').value = '';
-  document.getElementById('calcResult').innerHTML = '';
-  openModal('calcModal');
-}
-
-/* 计算保费 */
-function calculatePremium() {
-  var ruleId = document.getElementById('calcRule').value;
-  var rule = pricingRules.find(function(r) { return r.id === ruleId; });
-  if (!rule) { showToast('请选择定价规则', 'warning'); return; }
-
-  var age = parseFloat(document.getElementById('calcAge').value) || 0;
-  var gender = document.getElementById('calcGender').value;
-  var sumInsured = parseFloat(document.getElementById('calcSumInsured').value) || 0;
-  var paymentTerm = parseFloat(document.getElementById('calcPayTerm').value) || 0;
-  var insType = document.getElementById('calcInsType').value;
-
-  /* 检查条件是否匹配 */
-  var matched = true;
-  var condDetails = '';
-  (rule.conditions || []).forEach(function(cond) {
-    var actualVal;
-    switch(cond.field) {
-      case 'age': actualVal = age; break;
-      case 'gender': actualVal = gender; break;
-      case 'sumInsured': actualVal = sumInsured; break;
-      case 'paymentTerm': actualVal = paymentTerm; break;
-      case 'insuranceType': actualVal = insType; break;
-      default: actualVal = 0;
-    }
-    var condVal = parseFloat(cond.value) || cond.value;
-    var pass = false;
-    switch(cond.operator) {
-      case 'gt': pass = actualVal > condVal; break;
-      case 'lt': pass = actualVal < condVal; break;
-      case 'eq': pass = actualVal == condVal; break;
-      case 'gte': pass = actualVal >= condVal; break;
-      case 'lte': pass = actualVal <= condVal; break;
-      case 'in': pass = String(condVal).split(',').indexOf(String(actualVal)) >= 0; break;
-    }
-    if (!pass) matched = false;
-    condDetails += cond.field + ' ' + (pass ? '✓' : '✗') + ' (' + actualVal + ' ' + cond.operator + ' ' + cond.value + ')  ';
-  });
-
-  if (!matched) {
-    document.getElementById('calcResult').innerHTML = '<div class="calc-result" style="border-color:#ef4444;background:#fef2f2;">' +
-      '<div style="color:#991b1b;margin-bottom:8px;">条件不匹配</div>' +
-      '<div style="font-size:13px;color:#475569;">' + condDetails + '</div></div>';
-    return;
-  }
-
-  /* 计算保费 */
-  var premium = 0;
-  var calc = rule.calculation || {};
-  try {
-    if (calc.type === 'fixed') {
-      premium = parseFloat(calc.base) || 0;
-    } else if (calc.type === 'percentage') {
-      var base = parseFloat(calc.base) || 0;
-      var rate = parseFloat(calc.rate) || 0;
-      premium = base + sumInsured * rate / 100;
-    } else if (calc.type === 'formula') {
-      /* 替换公式变量 */
-      var expr = (calc.formula || '')
-        .replace(/base/g, parseFloat(calc.base) || 0)
-        .replace(/age/g, age)
-        .replace(/sumInsured/g, sumInsured)
-        .replace(/paymentTerm/g, paymentTerm)
-        .replace(/gender/g, gender === '男' ? 1 : 0);
-      premium = eval(expr);
-    }
-  } catch(e) {
-    document.getElementById('calcResult').innerHTML = '<div class="calc-result" style="border-color:#ef4444;background:#fef2f2;">' +
-      '<div style="color:#991b1b;">计算出错：' + e.message + '</div></div>';
-    return;
-  }
-
-  premium = Math.max(0, premium);
-  document.getElementById('calcResult').innerHTML = '<div class="calc-result">' +
-    '<div class="premium-label">计算保费</div>' +
-    '<div class="premium">' + formatMoney(premium) + ' 元</div>' +
-    '<div style="font-size:13px;color:#4ade80;margin-top:8px;">规则: ' + (rule.name || '') + '</div>' +
-    (condDetails ? '<div style="font-size:12px;color:#475569;margin-top:4px;">' + condDetails + '</div>' : '') +
-    '</div>';
-}
-
-/* 打开批量计算模态框 */
-function openBatchCalcModal() {
-  var sel = document.getElementById('batchCalcRule');
-  sel.innerHTML = '<option value="">选择定价规则</option>';
-  pricingRules.forEach(function(r) {
-    sel.innerHTML += '<option value="' + r.id + '">' + r.name + '</option>';
-  });
-
-  /* 填充保单列表 */
-  var listHtml = '';
-  clientData.forEach(function(c, cIdx) {
-    (c.policies || []).forEach(function(p, pIdx) {
-      listHtml += '<div class="checkbox-wrap" style="padding:6px 0;">' +
-        '<input type="checkbox" class="batch-policy-check" value="' + cIdx + '-' + pIdx + '">' +
-        '<span style="font-size:13px;">' + (c.name || '') + ' | ' + (p.policyCode || '') + ' - ' + (p.insuranceName || '') +
-        ' | 保额: ' + formatMoney(p.sumInsured) + ' | 被保人: ' + (p.insured || c.name || '') + '</span></div>';
-    });
-  });
-  document.getElementById('batchCalcPolicyList').innerHTML = listHtml || '<p style="color:#94a3b8;">暂无保单</p>';
-  document.getElementById('batchCalcResult').innerHTML = '';
-  openModal('batchCalcModal');
-}
-
-/* 批量计算 */
-function batchCalculate() {
-  var ruleId = document.getElementById('batchCalcRule').value;
-  var rule = pricingRules.find(function(r) { return r.id === ruleId; });
-  if (!rule) { showToast('请选择定价规则', 'warning'); return; }
-
-  var checks = document.querySelectorAll('.batch-policy-check:checked');
-  if (checks.length === 0) { showToast('请选择要计算的保单', 'warning'); return; }
-
-  var results = [];
-  checks.forEach(function(chk) {
-    var parts = chk.value.split('-');
-    var cIdx = parseInt(parts[0]);
-    var pIdx = parseInt(parts[1]);
-    var c = clientData[cIdx];
-    var p = c.policies[pIdx];
-    if (!p) return;
-
-    /* 从身份证推算年龄（简易） */
-    var age = 30;
-    if (p.insuredId && p.insuredId.length >= 14) {
-      var birthYear = p.insuredId.substr(6, 4);
-      age = new Date().getFullYear() - parseInt(birthYear);
-    }
-    var sumInsured = parseFloat(p.sumInsured) || 0;
-    var payTerm = parseFloat(p.paymentTerm) || 0;
-    var gender = '男';
-    if (p.insuredId && p.insuredId.length >= 17) {
-      var genderCode = parseInt(p.insuredId.charAt(16));
-      gender = genderCode % 2 === 0 ? '女' : '男';
-    }
-
-    /* 检查条件 */
-    var matched = true;
-    (rule.conditions || []).forEach(function(cond) {
-      var actualVal;
-      switch(cond.field) {
-        case 'age': actualVal = age; break;
-        case 'gender': actualVal = gender; break;
-        case 'sumInsured': actualVal = sumInsured; break;
-        case 'paymentTerm': actualVal = payTerm; break;
-        default: actualVal = 0;
-      }
-      var condVal = parseFloat(cond.value) || cond.value;
-      switch(cond.operator) {
-        case 'gt': if (!(actualVal > condVal)) matched = false; break;
-        case 'lt': if (!(actualVal < condVal)) matched = false; break;
-        case 'eq': if (!(actualVal == condVal)) matched = false; break;
-        case 'gte': if (!(actualVal >= condVal)) matched = false; break;
-        case 'lte': if (!(actualVal <= condVal)) matched = false; break;
-        case 'in': if (String(condVal).split(',').indexOf(String(actualVal)) < 0) matched = false; break;
-      }
-    });
-
-    var premium = 0;
-    var calc = rule.calculation || {};
-    if (matched) {
-      try {
-        if (calc.type === 'fixed') {
-          premium = parseFloat(calc.base) || 0;
-        } else if (calc.type === 'percentage') {
-          premium = (parseFloat(calc.base) || 0) + sumInsured * (parseFloat(calc.rate) || 0) / 100;
-        } else if (calc.type === 'formula') {
-          var expr = (calc.formula || '')
-            .replace(/base/g, parseFloat(calc.base) || 0)
-            .replace(/age/g, age)
-            .replace(/sumInsured/g, sumInsured)
-            .replace(/paymentTerm/g, payTerm)
-            .replace(/gender/g, gender === '男' ? 1 : 0);
-          premium = eval(expr);
-        }
-        premium = Math.max(0, premium);
-      } catch(e) { premium = -1; }
-    }
-
-    results.push({
-      client: c.name, policy: p.policyCode, insurance: p.insuranceName,
-      matched: matched, premium: premium, currentPremium: parseFloat(p.annualPremium) || 0
-    });
-  });
-
-  /* 渲染结果表 */
-  var html = '<table class="policy-table" style="margin-top:16px;"><thead><tr>' +
-    '<th>客户</th><th>保单</th><th>险种</th><th>匹配</th><th>计算保费</th><th>当前保费</th><th>差额</th></tr></thead><tbody>';
-  results.forEach(function(r) {
-    var diff = r.premium >= 0 ? r.premium - r.currentPremium : NaN;
-    html += '<tr>' +
-      '<td>' + r.client + '</td>' +
-      '<td>' + r.policy + '</td>' +
-      '<td>' + r.insurance + '</td>' +
-      '<td>' + (r.matched ? '<span class="tag tag-green">匹配</span>' : '<span class="tag tag-red">不匹配</span>') + '</td>' +
-      '<td>' + (r.premium >= 0 ? formatMoney(r.premium) : '计算失败') + '</td>' +
-      '<td>' + formatMoney(r.currentPremium) + '</td>' +
-      '<td style="color:' + (diff > 0 ? '#ef4444' : diff < 0 ? '#22c55e' : '#64748b') + ';">' +
-        (r.premium >= 0 ? (diff > 0 ? '+' : '') + formatMoney(diff) : '-') + '</td></tr>';
-  });
-  html += '</tbody></table>';
-  document.getElementById('batchCalcResult').innerHTML = html;
-}
-
 /* ======== 数据导入导出 ======== */
 
 /* 导出数据 */
@@ -4668,7 +4141,6 @@ function exportData() {
   var data = {
     policies: clientData,
     reminders: reminderData,
-    pricingRules: pricingRules,
     exportDate: new Date().toISOString(),
     user: currentUser
   };
@@ -4744,14 +4216,10 @@ function importData(e) {
       showConfirm('检测到 ' + normalized.length + ' 位客户数据。确定导入将覆盖当前数据。', function() {
         clientData = normalized;
         savePolicyData();
-        /* 如果包装格式还有提醒和定价规则，也导入 */
+        /* 如果包装格式还有提醒，也导入 */
         if (raw && raw.reminders && Array.isArray(raw.reminders)) {
           reminderData = raw.reminders;
           saveReminderData();
-        }
-        if (raw && raw.pricingRules && Array.isArray(raw.pricingRules)) {
-          pricingRules = raw.pricingRules;
-          savePricingRules();
         }
         refreshCurrentTab();
         updateBottomStats();
@@ -5033,10 +4501,8 @@ function confirmClearData() {
   showConfirm('确定要清空当前用户的所有数据吗？此操作不可撤销！', function() {
     clientData = [];
     reminderData = [];
-    pricingRules = [];
     savePolicyData();
     saveReminderData();
-    savePricingRules();
     refreshCurrentTab();
     showToast('数据已清空', 'success');
   });
@@ -5111,6 +4577,17 @@ document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
 /* 启动应用 */
 initAdmin();
 checkLogin();
+
+/* PWA - 注册 Service Worker */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('sw.js').then(function(reg) {
+      console.log('SW registered:', reg.scope);
+    }).catch(function(err) {
+      console.log('SW registration failed:', err);
+    });
+  });
+}
 </script>
 </body>
 </html>
