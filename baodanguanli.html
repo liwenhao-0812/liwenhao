@@ -1355,8 +1355,8 @@ button {
   </div>
 </div>
 
-<!-- PWA 安装提示条 -->
-<div class="pwa-install-bar" id="pwaInstallBar" style="display:flex;">
+<!-- PWA 安装提示条（默认隐藏，JS检测到支持时才显示） -->
+<div class="pwa-install-bar" id="pwaInstallBar" style="display:none;">
   <div style="position:relative;display:flex;justify-content:space-between;align-items:center;width:100%;">
     <div>
       <div class="install-text" id="installText">下载安装 APP</div>
@@ -4894,18 +4894,32 @@ var _isInApp = (function() {
   return false;
 })();
 
-/* 如果在 APK 中，立即隐藏安装条 */
-if (_isInApp) {
+/* 已作为 PWA 安装 */
+var _isStandalone = window.matchMedia('(display-mode: standalone)').matches || (typeof navigator.standalone !== 'undefined' && navigator.standalone);
+
+/* 核心逻辑：只在浏览器支持 PWA 且未安装且不在 APK 中时，才显示安装条 */
+function _showInstallBar() {
+  if (_isInApp || _isStandalone) return;
   var bar = document.getElementById('pwaInstallBar');
-  if (bar) bar.style.display = 'none';
-  console.log('PWA: 检测到在APP中运行，已隐藏安装条');
+  if (bar) bar.style.display = 'flex';
+  console.log('PWA: 显示安装条');
 }
 
 /* 捕获 beforeinstallprompt 事件 */
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   _deferredPrompt = e;
-  console.log('PWA: beforeinstallprompt 已触发，支持原生安装');
+  /* 转换为 PWA 安装模式 */
+  var btnInstall = document.getElementById('pwaInstallBtn');
+  var btnApk = document.getElementById('btnDownloadApk');
+  var installText = document.getElementById('installText');
+  var installSub = document.getElementById('installSub');
+  if (btnInstall) btnInstall.style.display = 'inline-block';
+  if (btnApk) btnApk.style.display = 'none';
+  if (installText) installText.textContent = '安装到手机';
+  if (installSub) installSub.textContent = '像原生APP一样快速打开';
+  _showInstallBar();
+  console.log('PWA: beforeinstallprompt 已触发');
 });
 
 /* 已安装后隐藏安装条 */
@@ -4914,12 +4928,6 @@ window.addEventListener('appinstalled', function() {
   var bar = document.getElementById('pwaInstallBar');
   if (bar) bar.style.display = 'none';
 });
-
-/* 如果已经以 standalone 模式运行，隐藏安装条 */
-if (window.matchMedia('(display-mode: standalone)').matches || (typeof navigator.standalone !== 'undefined' && navigator.standalone)) {
-  var bar = document.getElementById('pwaInstallBar');
-  if (bar) bar.style.display = 'none';
-}
 
 /* 安装按钮点击 */
 function pwaInstallClick() {
