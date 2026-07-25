@@ -981,6 +981,59 @@ button {
   padding: 0 4px;
 }
 
+/* PWA 安装按钮 */
+.pwa-install-bar {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 10000;
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+  padding: 14px 20px;
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
+  box-shadow: 0 -2px 16px rgba(0,0,0,0.1);
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.pwa-install-bar .install-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a2744;
+}
+.pwa-install-bar .install-sub {
+  font-size: 12px;
+  color: #64748b;
+}
+.pwa-install-bar .btn-install {
+  background: #1a2744;
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.pwa-install-bar .btn-install:active { transform: scale(0.95); opacity: 0.85; }
+.pwa-install-bar .btn-install-close {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  position: absolute;
+  top: 4px; right: 8px;
+}
+
 /* ======== toast消息 ======== */
 .toast-container {
   position: fixed;
@@ -1137,6 +1190,18 @@ button {
   <div style="display:flex;align-items:center;gap:8px;">
     <button class="btn-refresh" onclick="pwaRefresh()">立即更新</button>
     <button class="btn-close-banner" onclick="document.getElementById('pwaUpdateBanner').style.display='none'">&times;</button>
+  </div>
+</div>
+
+<!-- PWA 安装提示条 -->
+<div class="pwa-install-bar" id="pwaInstallBar">
+  <div style="position:relative;display:flex;justify-content:space-between;align-items:center;width:100%;">
+    <div>
+      <div class="install-text">添加到主屏幕</div>
+      <div class="install-sub">像原生APP一样快速打开</div>
+    </div>
+    <button class="btn-install" id="pwaInstallBtn">立即安装</button>
+    <button class="btn-install-close" onclick="document.getElementById('pwaInstallBar').style.display='none'">&times;</button>
   </div>
 </div>
 
@@ -4633,6 +4698,49 @@ checkLogin();
 /* PWA - 注册 Service Worker（带自动更新检测） */
 if ('serviceWorker' in navigator) {
   var swReg = null;
+
+  /* 捕获 beforeinstallprompt 事件，用于手动触发安装 */
+  var deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    /* 显示安装按钮 */
+    var bar = document.getElementById('pwaInstallBar');
+    if (bar) { bar.style.display = 'flex'; }
+  });
+
+  /* 安装按钮点击 */
+  var installBtn = document.getElementById('pwaInstallBtn');
+  if (installBtn) {
+    installBtn.addEventListener('click', function() {
+      if (!deferredPrompt) {
+        showToast('请用 Chrome 或 Edge 浏览器打开此页面', 'warning');
+        return;
+      }
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function(result) {
+        console.log('PWA install:', result.outcome);
+        deferredPrompt = null;
+        var bar = document.getElementById('pwaInstallBar');
+        if (bar) { bar.style.display = 'none'; }
+      });
+    });
+  }
+
+  /* 已安装后隐藏按钮 */
+  window.addEventListener('appinstalled', function() {
+    deferredPrompt = null;
+    var bar = document.getElementById('pwaInstallBar');
+    if (bar) { bar.style.display = 'none'; }
+    console.log('PWA 已安装');
+  });
+
+  /* 如果已经以 standalone 模式运行，隐藏安装按钮 */
+  if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
+    var bar = document.getElementById('pwaInstallBar');
+    if (bar) { bar.style.display = 'none'; }
+  }
+
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('/liwenhao/sw.js', { scope: '/liwenhao/' }).then(function(reg) {
       swReg = reg;
