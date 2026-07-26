@@ -170,7 +170,8 @@
               "date": "2026-07-17",
               "content": "电话号码不正确"
             }
-          ]
+          ],
+          "_idx": 0
         }
       ],
       "familyMembers": [],
@@ -793,7 +794,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 0
         },
         {
           "policyCode": "2017442001553015097024",
@@ -819,7 +821,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 1
         },
         {
           "policyCode": "2017442001286000327397",
@@ -845,7 +848,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 2
         }
       ],
       "familyMembers": [],
@@ -2871,16 +2875,19 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 0
         },
         {
           "policyCode": "2005442001S42000004238",
           "insuranceName": "康宁终身保险",
-          "codeType": "R50",
+          "codeType": "S42",
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20050127",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "1390",
           "sumInsured": "",
@@ -2889,15 +2896,25 @@
           "insuredRelation": "丈夫",
           "insuredId": "441802197312201436",
           "insuredPhone": "？",
+          "insuredAddress": "广东省清远市清城区洲心沙湖管理区沙尾二村7号",
           "beneficiaries": [
             {
               "name": "张清葵",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 1
         }
       ],
       "familyMembers": [],
@@ -3163,19 +3180,19 @@
     },
     {
       "insuranceName": "国寿鑫账户年金保险（万能型）（卓越版）",
-      "codeType": "287"
+      "codeType": "R39"
     },
     {
       "insuranceName": "国寿鸿福至尊年金保险（分红型）",
-      "codeType": "553"
+      "codeType": "R38"
     },
     {
       "insuranceName": "国寿鑫账户年金保险（万能型）（惠享版）",
-      "codeType": "286"
+      "codeType": "R40"
     },
     {
       "insuranceName": "康宁终身保险",
-      "codeType": "S42"
+      "codeType": "R50"
     },
     {
       "insuranceName": "国寿金账户两全保险(万能型)",
@@ -3195,7 +3212,7 @@
     },
     {
       "insuranceName": "国寿附加国寿福提前给付重大疾病保险(至尊版)",
-      "codeType": "315"
+      "codeType": "R37"
     },
     {
       "insuranceName": "国寿附加国寿福豁免保险费疾病保险(至尊版)",
@@ -3203,7 +3220,7 @@
     },
     {
       "insuranceName": "国寿99鸿福两全保险",
-      "codeType": "S49"
+      "codeType": "R48"
     },
     {
       "insuranceName": "国寿美满一生年金保险(分红型)",
@@ -3227,7 +3244,7 @@
     },
     {
       "insuranceName": "国寿康宁终身重大疾病保险",
-      "codeType": "432"
+      "codeType": "R55"
     },
     {
       "insuranceName": "国寿少儿国寿福终身寿险(庆典版)",
@@ -3247,7 +3264,7 @@
     },
     {
       "insuranceName": "康宁定期保险",
-      "codeType": "S43"
+      "codeType": "R53"
     },
     {
       "insuranceName": "国寿通泰无忧意外伤害保险(节假日版)",
@@ -3255,7 +3272,7 @@
     },
     {
       "insuranceName": "国寿千禧理财两全保险(分红型)",
-      "codeType": "S50"
+      "codeType": "R47"
     },
     {
       "insuranceName": "国寿百万如意行两全保险",
@@ -3303,7 +3320,7 @@
     },
     {
       "insuranceName": "鸿寿养老金保险(97版)",
-      "codeType": "R44"
+      "codeType": "R45"
     },
     {
       "insuranceName": "鸿寿养老金保险(97版)",
@@ -3348,8 +3365,33 @@
     {
       "insuranceName": "国寿康宁终身重大疾病保险",
       "codeType": "R55"
+    },
+    {
+      "insuranceName": "[待补充] 522",
+      "codeType": "522"
+    },
+    {
+      "insuranceName": "[待补充] 778",
+      "codeType": "778"
+    },
+    {
+      "insuranceName": "[待补充] S42",
+      "codeType": "S42"
+    },
+    {
+      "insuranceName": "[待补充] 512",
+      "codeType": "512"
+    },
+    {
+      "insuranceName": "[待补充] 769",
+      "codeType": "769"
+    },
+    {
+      "insuranceName": "康宁终身保险",
+      "codeType": "S42"
     }
   ],
-  "_timestamp": "1785027037713",
-  "_user": "liwenhao"
+  "_timestamp": "1785029962410",
+  "_user": "liwenhao",
+  "_passwordHash": "Hg10hvh"
 }
