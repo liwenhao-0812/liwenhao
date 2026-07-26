@@ -505,26 +505,6 @@ button {
   background: #eef1f7 !important;
 }
 
-/* ======== 高级搜索面板 ======== */
-.advanced-search {
-  display: none;
-  background: var(--color-subtle);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 18px;
-  margin-bottom: 16px;
-}
-.advanced-search.show { display: block; animation: slideDown 0.3s var(--ease-out); }
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.advanced-search-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
-}
-
 /* ======== 客户详情 ======== */
 .detail-panel { display: none; }
 .detail-panel.show { display: block; animation: fadeIn 0.3s var(--ease-out); }
@@ -684,8 +664,8 @@ button {
   font-weight: 600;
   margin-bottom: 14px;
   position: sticky;
-  top: 0;
-  z-index: 10;
+  top: 50px;
+  z-index: 50;
   box-shadow: 0 2px 8px var(--color-shadow-sm);
   transition: all 0.25s var(--ease-out);
 }
@@ -1181,69 +1161,8 @@ button {
       <!-- 查询列表视图 -->
       <div id="queryListView">
       <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="按投保人/被保人姓名搜索..." oninput="handleSearch()">
-        <button class="btn-primary" onclick="toggleAdvancedSearch()">高级搜索</button>
+        <input type="text" id="searchInput" placeholder="按投保人/被保人/地址/险种名称/险种代码搜索..." oninput="handleSearch()">
         <button class="btn-outline" onclick="clearSearch()">清空</button>
-      </div>
-      <div class="advanced-search" id="advancedSearch">
-        <div class="advanced-search-grid">
-          <div class="form-group">
-            <label>保单代码</label>
-            <input type="text" id="advPolicyCode" placeholder="精确搜索">
-          </div>
-          <div class="form-group">
-            <label>险种名称</label>
-            <input type="text" id="advInsuranceName" placeholder="模糊搜索">
-          </div>
-          <div class="form-group">
-            <label>保单状态</label>
-            <select id="advStatus">
-              <option value="">全部</option>
-              <option value="有效">有效</option>
-              <option value="失效">失效</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>生效日期（起）</label>
-            <input type="date" id="advDateFrom">
-          </div>
-          <div class="form-group">
-            <label>生效日期（止）</label>
-            <input type="date" id="advDateTo">
-          </div>
-          <div class="form-group">
-            <label>年缴保费（最低）</label>
-            <input type="number" id="advPremMin" placeholder="元">
-          </div>
-          <div class="form-group">
-            <label>年缴保费（最高）</label>
-            <input type="number" id="advPremMax" placeholder="元">
-          </div>
-          <div class="form-group">
-            <label>保额（最低）</label>
-            <input type="number" id="advSumMin" placeholder="元">
-          </div>
-          <div class="form-group">
-            <label>保额（最高）</label>
-            <input type="number" id="advSumMax" placeholder="元">
-          </div>
-          <div class="form-group">
-            <label>缴费期限</label>
-            <input type="text" id="advPayTerm" placeholder="如：20">
-          </div>
-          <div class="form-group">
-            <label>被保人身份证</label>
-            <input type="text" id="advInsuredId" placeholder="身份证号">
-          </div>
-          <div class="form-group">
-            <label>联系电话</label>
-            <input type="text" id="advPhone" placeholder="手机号">
-          </div>
-        </div>
-        <div style="margin-top:12px;display:flex;gap:8px;">
-          <button class="btn-primary" onclick="handleSearch()">搜索</button>
-          <button class="btn-outline" onclick="clearAdvancedSearch()">清空条件</button>
-        </div>
       </div>
       <div class="search-result-info" id="searchResultInfo"></div>
       <div class="sort-bar">
@@ -2417,84 +2336,35 @@ function renderAdminPanel() {
 
 /* ======== 查询功能 ======== */
 
-/* 切换高级搜索 */
-function toggleAdvancedSearch() {
-  document.getElementById('advancedSearch').classList.toggle('show');
-}
-
 /* 清空搜索 */
 function clearSearch() {
   document.getElementById('searchInput').value = '';
-  clearAdvancedSearch();
   handleSearch();
 }
 
-/* 清空高级搜索条件 */
-function clearAdvancedSearch() {
-  ['advPolicyCode','advInsuranceName','advStatus','advDateFrom','advDateTo',
-   'advPremMin','advPremMax','advSumMin','advSumMax','advPayTerm','advInsuredId','advPhone'
-  ].forEach(function(id) { document.getElementById(id).value = ''; });
-}
-
-/* 执行搜索 */
+/* 执行搜索 - 支持姓名、地址、险种名称、险种代码模糊搜索 */
 function handleSearch() {
   var keyword = document.getElementById('searchInput').value.trim().toLowerCase();
-
-  /* 高级搜索条件 */
-  var advPolicyCode = document.getElementById('advPolicyCode').value.trim();
-  var advInsuranceName = document.getElementById('advInsuranceName').value.trim().toLowerCase();
-  var advStatus = document.getElementById('advStatus').value;
-  var advDateFrom = document.getElementById('advDateFrom').value;
-  var advDateTo = document.getElementById('advDateTo').value;
-  var advPremMin = parseFloat(document.getElementById('advPremMin').value) || 0;
-  var advPremMax = parseFloat(document.getElementById('advPremMax').value) || Infinity;
-  var advSumMin = parseFloat(document.getElementById('advSumMin').value) || 0;
-  var advSumMax = parseFloat(document.getElementById('advSumMax').value) || Infinity;
-  var advPayTerm = document.getElementById('advPayTerm').value.trim();
-  var advInsuredId = document.getElementById('advInsuredId').value.trim();
-  var advPhone = document.getElementById('advPhone').value.trim();
 
   /* 过滤客户 */
   var filtered = clientData.map(function(client, idx) {
     /* 过滤保单 */
     var matchedPolicies = (client.policies || []).filter(function(p) {
-      /* 基础关键词搜索 */
+      /* 关键词搜索：投保人/被保人姓名、地址、险种名称、险种代码 */
       if (keyword) {
         var nameMatch = (client.name || '').toLowerCase().includes(keyword) ||
                         (p.insured || '').toLowerCase().includes(keyword);
-        if (!nameMatch) return false;
+        var addrMatch = (client.address || '').toLowerCase().includes(keyword) ||
+                        (client.workAddress || '').toLowerCase().includes(keyword) ||
+                        (p.insuredAddress || '').toLowerCase().includes(keyword);
+        var insNameMatch = (p.insuranceName || '').toLowerCase().includes(keyword);
+        var codeMatch = (p.codeType || '').toLowerCase().includes(keyword);
+        if (!nameMatch && !addrMatch && !insNameMatch && !codeMatch) return false;
       }
-      /* 高级搜索条件 */
-      if (advPolicyCode && (p.policyCode || '') !== advPolicyCode) return false;
-      if (advInsuranceName && !(p.insuranceName || '').toLowerCase().includes(advInsuranceName)) return false;
-      if (advStatus && (p.status || '') !== advStatus) return false;
-      if (advDateFrom && toYMD(p.effectiveDate) < toYMD(advDateFrom)) return false;
-      if (advDateTo && toYMD(p.effectiveDate) > toYMD(advDateTo)) return false;
-      var prem = parseFloat(p.annualPremium) || 0;
-      if (prem < advPremMin || prem > advPremMax) return false;
-      var sum = parseFloat(p.sumInsured) || 0;
-      if (sum < advSumMin || sum > advSumMax) return false;
-      if (advPayTerm && String(p.paymentTerm || '') !== advPayTerm) return false;
-      if (advInsuredId && (p.insuredId || '') !== advInsuredId) return false;
-      if (advPhone && (client.phone || '') !== advPhone && (p.insuredPhone || '') !== advPhone) return false;
       return true;
     });
     return { clientIdx: idx, client: client, matchedPolicies: matchedPolicies };
-  }).filter(function(item) { return item.matchedPolicies.length > 0 || (!keyword && !advPolicyCode && !advInsuranceName && !advStatus && !advDateFrom && !advDateTo && advPremMin === 0 && advPremMax === Infinity && advSumMin === 0 && advSumMax === Infinity && !advPayTerm && !advInsuredId && !advPhone); });
-
-  /* 如果没有高级条件且有关键词，只返回匹配的客户 */
-  var hasAdv = advPolicyCode || advInsuranceName || advStatus || advDateFrom || advDateTo ||
-    advPremMin > 0 || advPremMax < Infinity || advSumMin > 0 || advSumMax < Infinity ||
-    advPayTerm || advInsuredId || advPhone;
-
-  if (!hasAdv && keyword) {
-    filtered = filtered.filter(function(item) { return item.matchedPolicies.length > 0; });
-  }
-  if (!hasAdv && !keyword) {
-    filtered = clientData.map(function(client, idx) {
-      return { clientIdx: idx, client: client, matchedPolicies: client.policies || [] };
-    });
-  }
+  }).filter(function(item) { return item.matchedPolicies.length > 0 || !keyword; });
 
   /* 排序 */
   var sortBy = document.getElementById('sortSelect').value;
