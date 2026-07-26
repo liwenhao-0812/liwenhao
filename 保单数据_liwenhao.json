@@ -2913,8 +2913,7 @@
             "note": ""
           },
           "extraFields": {},
-          "serviceRecords": [],
-          "_idx": 1
+          "serviceRecords": []
         }
       ],
       "familyMembers": [],
@@ -3191,10 +3190,6 @@
       "codeType": "R40"
     },
     {
-      "insuranceName": "康宁终身保险",
-      "codeType": "R50"
-    },
-    {
       "insuranceName": "国寿金账户两全保险(万能型)",
       "codeType": "268"
     },
@@ -3307,10 +3302,6 @@
       "codeType": "R40"
     },
     {
-      "insuranceName": "康宁终身保险",
-      "codeType": "R41"
-    },
-    {
       "insuranceName": "99鸿福终身保险(97版)",
       "codeType": "R42"
     },
@@ -3341,10 +3332,6 @@
     {
       "insuranceName": "国寿康宁终身重大疾病保险",
       "codeType": "R49"
-    },
-    {
-      "insuranceName": "康宁终身保险",
-      "codeType": "R50"
     },
     {
       "insuranceName": "国寿鸿运少儿两全保险（分红型）",
@@ -3391,7 +3378,7 @@
       "codeType": "S42"
     }
   ],
-  "_timestamp": "1785029962410",
+  "_timestamp": "1785033017716",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
