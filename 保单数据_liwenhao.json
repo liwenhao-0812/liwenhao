@@ -3124,8 +3124,6 @@
     }
   ],
   "reminders": [],
-  "_timestamp": "1785023935959",
-  "_user": "liwenhao",
   "insuranceTypes": [
     {
       "insuranceName": "国寿福终身寿险（庆典版）",
@@ -3351,5 +3349,7 @@
       "insuranceName": "国寿康宁终身重大疾病保险",
       "codeType": "R55"
     }
-  ]
+  ],
+  "_timestamp": "1785027037713",
+  "_user": "liwenhao"
 }
