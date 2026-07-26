@@ -2960,7 +2960,9 @@
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20010605",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "1180",
           "sumInsured": "",
@@ -2969,15 +2971,25 @@
           "insuredRelation": "女儿",
           "insuredId": "441802200002080928",
           "insuredPhone": "13553962268",
+          "insuredAddress": "广东省清远市清城区凤城街道高基里社区松鹤西街24号古城华景苑",
           "beneficiaries": [
             {
               "name": "张彩美",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "triennial",
+            "amount": "500",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 0
         }
       ],
       "familyMembers": [
@@ -3535,7 +3547,7 @@
       "codeType": "S43"
     }
   ],
-  "_timestamp": "1785038347864",
+  "_timestamp": "1785042183175",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
