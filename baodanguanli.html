@@ -1826,7 +1826,9 @@ function handleLogin(e) {
   const users = getUsers();
   const user = users.find(function(u) { return u.username === username; });
   if (!user) {
-    errEl.textContent = '用户不存在';
+    /* 本地无此用户，尝试从云端验证 */
+    errEl.textContent = '正在云端验证...';
+    tryLoginFromCloud(username, password, errEl);
     return;
   }
   if (user.passwordHash !== simpleHash(password)) {
@@ -1834,13 +1836,61 @@ function handleLogin(e) {
     return;
   }
 
-  /* 登录成功，更新最后登录时间 */
+  /* 登录成功 */
+  finishLogin(username, user, errEl);
+}
+
+/* 从云端验证登录（跨浏览器支持） */
+function tryLoginFromCloud(username, password, errEl) {
+  var fileName = '保单数据_' + username + '.json';
+  fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName) + '?ref=' + GITHUB_BRANCH, {
+    headers: { 'Authorization': 'token ' + GITHUB_TOKEN },
+    cache: 'no-store'
+  })
+  .then(function(r) {
+    if (r.status === 404) throw new Error('用户不存在');
+    if (!r.ok) throw new Error('网络错误');
+    return r.json();
+  })
+  .then(function(fileInfo) {
+    var jsonStr = decodeURIComponent(escape(atob(fileInfo.content.replace(/\s/g, ''))));
+    var cloudData = JSON.parse(jsonStr);
+    var cloudHash = cloudData._passwordHash || '';
+    if (!cloudHash) {
+      errEl.textContent = '云端数据无密码记录，请先在当前浏览器注册后从云端恢复';
+      return;
+    }
+    if (cloudHash !== simpleHash(password)) {
+      errEl.textContent = '密码错误';
+      return;
+    }
+    /* 云端验证通过，本地创建账号并恢复数据 */
+    var users = getUsers();
+    var newUser = {
+      username: username,
+      passwordHash: cloudHash,
+      createdAt: new Date().toISOString(),
+      lastLogin: new Date().toISOString()
+    };
+    users.push(newUser);
+    saveUsers(users);
+    /* 恢复云端数据 */
+    restoreFromCloudData(cloudData);
+    syncExistingPoliciesToLib();
+    finishLogin(username, newUser, errEl);
+  })
+  .catch(function(e) {
+    errEl.textContent = e.message === '用户不存在' ? '用户不存在' : '云端验证失败，请检查网络';
+  });
+}
+
+/* 完成登录流程 */
+function finishLogin(username, user, errEl) {
   user.lastLogin = new Date().toISOString();
-  saveUsers(users);
+  saveUsers(getUsers());
   currentUser = username;
   localStorage.setItem('pms_currentUser', username);
   errEl.textContent = '';
-
   enterMainApp();
 }
 
@@ -1965,12 +2015,15 @@ function getDataFileName() {
 
 /* 获取所有用户数据（用于云端存储） */
 function getAllUserData() {
+  var users = getUsers();
+  var me = users.find(function(u) { return u.username === currentUser; });
   return {
     policies: clientData,
     reminders: reminderData,
     insuranceTypes: getInsuranceTypeLib(),
     _timestamp: Date.now().toString(),
-    _user: currentUser
+    _user: currentUser,
+    _passwordHash: me ? me.passwordHash : ''
   };
 }
 
@@ -2001,7 +2054,7 @@ function pushToCloud() {
   var content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
 
   /* 先获取当前文件 SHA（如果存在） */
-  return fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + fileName + '?ref=' + GITHUB_BRANCH, {
+  return fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName) + '?ref=' + GITHUB_BRANCH, {
     headers: { 'Authorization': 'token ' + GITHUB_TOKEN }
   })
   .then(function(r) {
@@ -2018,7 +2071,7 @@ function pushToCloud() {
     if (fileInfo && fileInfo.sha) {
       body.sha = fileInfo.sha;
     }
-    return fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + fileName, {
+    return fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName), {
       method: 'PUT',
       headers: {
         'Authorization': 'token ' + GITHUB_TOKEN,
@@ -2044,7 +2097,7 @@ function pushToCloud() {
 var autoPullFromCloud = function() {
   if (!currentUser) return;
   var fileName = getDataFileName();
-  fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + fileName + '?ref=' + GITHUB_BRANCH, {
+  fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName) + '?ref=' + GITHUB_BRANCH, {
     headers: { 'Authorization': 'token ' + GITHUB_TOKEN },
     cache: 'no-store'
   })
@@ -2076,7 +2129,7 @@ function manualPull() {
   showToast('正在从云端恢复数据...', 'info');
   var fileName = getDataFileName();
 
-  fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + fileName + '?ref=' + GITHUB_BRANCH, {
+  fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName) + '?ref=' + GITHUB_BRANCH, {
     headers: { 'Authorization': 'token ' + GITHUB_TOKEN }
   })
   .then(function(r) {
@@ -2138,7 +2191,7 @@ function startAutoPull() {
   _autoPullTimer = setInterval(function() {
     if (!currentUser) return;
     var fileName = getDataFileName();
-    fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + fileName + '?ref=' + GITHUB_BRANCH, {
+    fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName) + '?ref=' + GITHUB_BRANCH, {
       headers: { 'Authorization': 'token ' + GITHUB_TOKEN },
       cache: 'no-store'
     })
