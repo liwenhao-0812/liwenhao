@@ -10,107 +10,155 @@
       "policies": [
         {
           "policyCode": "2017442001522015014957",
-          "insuranceName": "",
+          "insuranceName": "国寿如意随行两全保险",
           "codeType": "522",
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20170127",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "1195",
           "sumInsured": "",
           "paymentTerm": "10",
           "insured": "罗浩强",
           "insuredRelation": "",
-          "insuredId": "",
-          "insuredPhone": "",
+          "insuredId": "441802198603143242",
+          "insuredPhone": "13542468210",
+          "insuredAddress": "横河镇佛祖居委会山星村 136 号",
           "beneficiaries": [
             {
               "name": "蔡伟霞",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "annual",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 0
         },
         {
           "policyCode": "2017442001778300013107",
-          "insuranceName": "",
+          "insuranceName": "国寿附加如意随行意外伤害住院定额给付医疗保险",
           "codeType": "778",
           "mainType": "附加险",
           "parentPolicyCode": "2017442001522015014957",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20170127",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "82",
           "sumInsured": "",
           "paymentTerm": "10",
           "insured": "罗浩强",
           "insuredRelation": "",
-          "insuredId": "",
-          "insuredPhone": "",
+          "insuredId": "441802198603143242",
+          "insuredPhone": "13542468210",
+          "insuredAddress": "横河镇佛祖居委会山星村 136 号",
           "beneficiaries": [
             {
               "name": "蔡伟霞",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 1
         },
         {
           "policyCode": "2017442001522015014931",
-          "insuranceName": "",
+          "insuranceName": "国寿如意随行两全保险",
           "codeType": "522",
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "失效",
+          "hasDividend": false,
           "effectiveDate": "20170127",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "1175",
           "sumInsured": "",
           "paymentTerm": "10",
           "insured": "蔡伟霞",
           "insuredRelation": "",
-          "insuredId": "",
-          "insuredPhone": "",
+          "insuredId": "441802198603143242",
+          "insuredPhone": "13542468210",
+          "insuredAddress": "横河镇佛祖居委会山星村 136 号",
           "beneficiaries": [
             {
               "name": "罗浩强",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "annual",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 2
         },
         {
           "policyCode": "2017442001778300013084",
-          "insuranceName": "",
+          "insuranceName": "国寿附加如意随行意外伤害住院定额给付医疗保险",
           "codeType": "778",
           "mainType": "附加险",
           "parentPolicyCode": "2017442001522015014931",
           "status": "失效",
+          "hasDividend": false,
           "effectiveDate": "20170127",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "82.5",
           "sumInsured": "",
           "paymentTerm": "10",
           "insured": "蔡伟霞",
           "insuredRelation": "",
-          "insuredId": "",
-          "insuredPhone": "",
+          "insuredId": "441802198603143242",
+          "insuredPhone": "13542468210",
+          "insuredAddress": "横河镇佛祖居委会山星村 136 号",
           "beneficiaries": [
             {
               "name": "罗浩强",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 3
         }
       ],
       "familyMembers": [
@@ -143,27 +191,38 @@
       "policies": [
         {
           "policyCode": "2006442001S42015024451",
-          "insuranceName": "",
+          "insuranceName": "康宁终身保险",
           "codeType": "S42",
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20060511",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "1800",
           "sumInsured": "",
           "paymentTerm": "20",
           "insured": "陈其辉",
           "insuredRelation": "",
-          "insuredId": "",
-          "insuredPhone": "",
+          "insuredId": "440127621229831",
+          "insuredPhone": "15975860225",
+          "insuredAddress": "东城建设 22 巷 19 号",
           "beneficiaries": [
             {
               "name": "禤水姐",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
           "serviceRecords": [
             {
@@ -214,7 +273,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 0
         },
         {
           "policyCode": "2021442000R41500002782",
@@ -240,7 +300,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 1
         },
         {
           "policyCode": "2021442000R42500002798",
@@ -266,7 +327,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 2
         },
         {
           "policyCode": "2021442000R44500002778",
@@ -292,7 +354,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 3
         }
       ],
       "familyMembers": [
@@ -995,7 +1058,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 0
         }
       ],
       "familyMembers": [],
@@ -1237,7 +1301,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 0
         },
         {
           "policyCode": "2017442001315300106866",
@@ -1263,7 +1328,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 1
         },
         {
           "policyCode": "2017442001316300106872",
@@ -1289,7 +1355,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 2
         }
       ],
       "familyMembers": [],
@@ -1694,7 +1761,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 0
         },
         {
           "policyCode": "2001442001S42000012233",
@@ -1720,7 +1788,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 1
         }
       ],
       "familyMembers": [
@@ -1877,7 +1946,9 @@
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20120414",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "4160",
           "sumInsured": "",
@@ -1886,15 +1957,25 @@
           "insuredRelation": "丈夫",
           "insuredId": "441802197501200934",
           "insuredPhone": "13431958147",
+          "insuredAddress": "广东省清远市清城区凤城街道梁围二街左七巷3号",
           "beneficiaries": [
             {
               "name": "吴翠芬",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 0
         },
         {
           "policyCode": "2004442001S42000007937",
@@ -1924,7 +2005,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 1
         }
       ],
       "familyMembers": [],
@@ -1962,7 +2044,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 0
         },
         {
           "policyCode": "2020442001R45300063875",
@@ -1988,7 +2071,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 1
         },
         {
           "policyCode": "2020442001R46300063894",
@@ -2014,7 +2098,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 2
         },
         {
           "policyCode": "2020442001R44300063885",
@@ -2040,7 +2125,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 3
         }
       ],
       "familyMembers": [],
@@ -2183,7 +2269,9 @@
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20100129",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "2500",
           "sumInsured": "",
@@ -2192,15 +2280,25 @@
           "insuredRelation": "儿子",
           "insuredId": "441802200304072018",
           "insuredPhone": "？",
+          "insuredAddress": "广东省清远市清城区广东省清远市清城区龙塘镇大丰豪庭海琴湾七",
           "beneficiaries": [
             {
               "name": "王永霞",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 0
         }
       ],
       "familyMembers": [],
@@ -2382,7 +2480,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 0
         },
         {
           "policyCode": "2019442000R36300050779",
@@ -2408,16 +2507,19 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 1
         },
         {
           "policyCode": "2019442000317300050766",
           "insuranceName": "国寿附加国寿福提前给付重大疾病保险(至尊版)",
-          "codeType": "R37",
+          "codeType": "317",
           "mainType": "附加险",
           "parentPolicyCode": "2019442000SI6015045052",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20191019",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "142",
           "sumInsured": "",
@@ -2426,24 +2528,36 @@
           "insuredRelation": "本人",
           "insuredId": "440783199103042425",
           "insuredPhone": "13726963050",
+          "insuredAddress": "广东省清远市清城区凤翔大道23号东方天城1号楼1205",
           "beneficiaries": [
             {
               "name": "未指定",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 2
         },
         {
           "policyCode": "2017442000553015026357",
           "insuranceName": "国寿鸿福至尊年金保险（分红型）",
-          "codeType": "R38",
+          "codeType": "553",
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20170530",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "12000",
           "sumInsured": "",
@@ -2452,24 +2566,36 @@
           "insuredRelation": "本人",
           "insuredId": "440783199103042425",
           "insuredPhone": "13726963050",
+          "insuredAddress": "广东省清远市清城区凤翔大道23号东方天城1号楼1205",
           "beneficiaries": [
             {
               "name": "未指定",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 3
         },
         {
           "policyCode": "2017442000287000007071",
           "insuranceName": "国寿鑫账户年金保险（万能型）（卓越版）",
-          "codeType": "R39",
+          "codeType": "287",
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20170529",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "0",
           "sumInsured": "",
@@ -2478,24 +2604,36 @@
           "insuredRelation": "本人",
           "insuredId": "440783199103042425",
           "insuredPhone": "13726963050",
+          "insuredAddress": "广东省清远市清城区凤翔大道23号东方天城1号楼1205",
           "beneficiaries": [
             {
               "name": "未指定",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 4
         },
         {
           "policyCode": "2017442000286000007081",
           "insuranceName": "国寿鑫账户年金保险（万能型）（惠享版）",
-          "codeType": "R40",
+          "codeType": "286",
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20170529",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "0",
           "sumInsured": "",
@@ -2504,15 +2642,25 @@
           "insuredRelation": "本人",
           "insuredId": "440783199103042425",
           "insuredPhone": "13726963050",
+          "insuredAddress": "广东省清远市清城区凤翔大道23号东方天城1号楼1205",
           "beneficiaries": [
             {
               "name": "未指定",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 5
         }
       ],
       "familyMembers": [
@@ -2854,11 +3002,13 @@
         {
           "policyCode": "2011442001432015011354",
           "insuranceName": "国寿康宁终身重大疾病保险",
-          "codeType": "R49",
+          "codeType": "432",
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20110325",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "1060",
           "sumInsured": "",
@@ -2867,13 +3017,22 @@
           "insuredRelation": "儿子",
           "insuredId": "441802200108081419",
           "insuredPhone": "13431985082",
+          "insuredAddress": "广东省清远市清城区洲心沙湖管理区沙尾二村7号",
           "beneficiaries": [
             {
               "name": "张清葵",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
           "serviceRecords": [],
           "_idx": 0
@@ -2913,7 +3072,8 @@
             "note": ""
           },
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 1
         }
       ],
       "familyMembers": [],
@@ -2951,7 +3111,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 0
         }
       ],
       "familyMembers": [
@@ -2976,11 +3137,13 @@
         {
           "policyCode": "2011442011432015001738",
           "insuranceName": "国寿康宁终身重大疾病保险",
-          "codeType": "R52",
+          "codeType": "432",
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20110505",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "1460",
           "sumInsured": "",
@@ -2989,15 +3152,25 @@
           "insuredRelation": "本人",
           "insuredId": "441827198404067061",
           "insuredPhone": "15602355117",
+          "insuredAddress": "广东省清远市清城区人民一路三建宿舍北栋1梯602",
           "beneficiaries": [
             {
               "name": "宋品杰",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 0
         }
       ],
       "familyMembers": [],
@@ -3035,7 +3208,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 0
         }
       ],
       "familyMembers": [],
@@ -3052,11 +3226,13 @@
         {
           "policyCode": "2010442011432015004259",
           "insuranceName": "国寿康宁终身重大疾病保险",
-          "codeType": "R54",
+          "codeType": "432",
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20101001",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "4600",
           "sumInsured": "",
@@ -3065,24 +3241,36 @@
           "insuredRelation": "本人",
           "insuredId": "441802197212251428",
           "insuredPhone": "13926685401",
+          "insuredAddress": "广东省清远市清城区洲心街道北江三路金鑫花园1704号",
           "beneficiaries": [
             {
               "name": "朱欣然",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 0
         },
         {
           "policyCode": "2010442011432015004262",
           "insuranceName": "国寿康宁终身重大疾病保险",
-          "codeType": "R55",
+          "codeType": "432",
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20100928",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "2350",
           "sumInsured": "",
@@ -3091,13 +3279,22 @@
           "insuredRelation": "女儿",
           "insuredId": "441802200009296924",
           "insuredPhone": "？",
+          "insuredAddress": "广东省清远市清城区洲心街道北江三路金鑫花园1704号",
           "beneficiaries": [
             {
               "name": "邹瑞琼",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
           "serviceRecords": []
         }
@@ -3142,6 +3339,78 @@
   "reminders": [],
   "insuranceTypes": [
     {
+      "insuranceName": "国寿金账户两全保险(万能型)",
+      "codeType": "268"
+    },
+    {
+      "insuranceName": "国寿鑫账户年金保险（万能型）（惠享版）",
+      "codeType": "286"
+    },
+    {
+      "insuranceName": "国寿鑫账户年金保险（万能型）（卓越版）",
+      "codeType": "287"
+    },
+    {
+      "insuranceName": "国寿鑫尊宝年金保险(万能型)(B款)",
+      "codeType": "290"
+    },
+    {
+      "insuranceName": "国寿鑫尊宝终身寿险(万能型)(A款)",
+      "codeType": "291"
+    },
+    {
+      "insuranceName": "国寿附加国寿福提前给付重大疾病保险(至尊版)",
+      "codeType": "315"
+    },
+    {
+      "insuranceName": "国寿附加国寿福豁免保险费疾病保险(至尊版)",
+      "codeType": "316"
+    },
+    {
+      "insuranceName": "国寿附加国寿福提前给付重大疾病保险(至尊版)",
+      "codeType": "317"
+    },
+    {
+      "insuranceName": "国寿附加防癌两全保险(优享版)",
+      "codeType": "321"
+    },
+    {
+      "insuranceName": "国寿附加百万如意行意外伤害住院定额给付医疗保险",
+      "codeType": "322"
+    },
+    {
+      "insuranceName": "国寿康宁终身重大疾病保险",
+      "codeType": "432"
+    },
+    {
+      "insuranceName": "国寿防癌疾病保险",
+      "codeType": "512"
+    },
+    {
+      "insuranceName": "国寿如意随行两全保险",
+      "codeType": "522"
+    },
+    {
+      "insuranceName": "国寿鸿福至尊年金保险（分红型）",
+      "codeType": "553"
+    },
+    {
+      "insuranceName": "国寿福终身寿险(至尊版)",
+      "codeType": "559"
+    },
+    {
+      "insuranceName": "国寿百万如意行两全保险",
+      "codeType": "564"
+    },
+    {
+      "insuranceName": "国寿附加防癌两全保险",
+      "codeType": "769"
+    },
+    {
+      "insuranceName": "国寿附加如意随行意外伤害住院定额给付医疗保险",
+      "codeType": "778"
+    },
+    {
       "insuranceName": "国寿福终身寿险（庆典版）",
       "codeType": "SK5"
     },
@@ -3162,22 +3431,6 @@
       "codeType": "S50"
     },
     {
-      "insuranceName": "国寿防癌疾病保险",
-      "codeType": "512"
-    },
-    {
-      "insuranceName": "国寿附加防癌两全保险",
-      "codeType": "769"
-    },
-    {
-      "insuranceName": "国寿如意随行两全保险",
-      "codeType": "522"
-    },
-    {
-      "insuranceName": "国寿附加如意随行意外伤害住院定额给付医疗保险",
-      "codeType": "778"
-    },
-    {
       "insuranceName": "国寿鑫账户年金保险（万能型）（卓越版）",
       "codeType": "R39"
     },
@@ -3190,28 +3443,12 @@
       "codeType": "R40"
     },
     {
-      "insuranceName": "国寿金账户两全保险(万能型)",
-      "codeType": "268"
-    },
-    {
       "insuranceName": "国寿康宁嘉保疾病保险",
       "codeType": "SD2"
     },
     {
-      "insuranceName": "国寿附加防癌两全保险(优享版)",
-      "codeType": "321"
-    },
-    {
-      "insuranceName": "国寿福终身寿险(至尊版)",
-      "codeType": "559"
-    },
-    {
       "insuranceName": "国寿附加国寿福提前给付重大疾病保险(至尊版)",
       "codeType": "R37"
-    },
-    {
-      "insuranceName": "国寿附加国寿福豁免保险费疾病保险(至尊版)",
-      "codeType": "316"
     },
     {
       "insuranceName": "国寿99鸿福两全保险",
@@ -3230,15 +3467,7 @@
       "codeType": "SD6"
     },
     {
-      "insuranceName": "国寿鑫尊宝终身寿险(万能型)(A款)",
-      "codeType": "291"
-    },
-    {
-      "insuranceName": "国寿鑫尊宝年金保险(万能型)(B款)",
-      "codeType": "290"
-    },
-    {
-      "insuranceName": "国寿康宁终身重大疾病保险",
+      "insuranceName": "国寿附加广佑人生提前给付重大疾病保险（臻享版）",
       "codeType": "R55"
     },
     {
@@ -3254,10 +3483,6 @@
       "codeType": "R46"
     },
     {
-      "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险(庆典版，B款)",
-      "codeType": "R44"
-    },
-    {
       "insuranceName": "康宁定期保险",
       "codeType": "R53"
     },
@@ -3270,14 +3495,6 @@
       "codeType": "R47"
     },
     {
-      "insuranceName": "国寿百万如意行两全保险",
-      "codeType": "564"
-    },
-    {
-      "insuranceName": "国寿附加百万如意行意外伤害住院定额给付医疗保险",
-      "codeType": "322"
-    },
-    {
       "insuranceName": "国寿康宁终身重大疾病保险（2019版）",
       "codeType": "SI6"
     },
@@ -3286,51 +3503,11 @@
       "codeType": "R36"
     },
     {
-      "insuranceName": "国寿附加国寿福提前给付重大疾病保险(至尊版)",
-      "codeType": "R37"
-    },
-    {
-      "insuranceName": "国寿鸿福至尊年金保险（分红型）",
-      "codeType": "R38"
-    },
-    {
-      "insuranceName": "国寿鑫账户年金保险（万能型）（卓越版）",
-      "codeType": "R39"
-    },
-    {
-      "insuranceName": "国寿鑫账户年金保险（万能型）（惠享版）",
-      "codeType": "R40"
-    },
-    {
-      "insuranceName": "99鸿福终身保险(97版)",
-      "codeType": "R42"
-    },
-    {
       "insuranceName": "国寿千禧理财两全保险(分红型)",
       "codeType": "R43"
     },
     {
-      "insuranceName": "鸿寿养老金保险(97版)",
-      "codeType": "R45"
-    },
-    {
-      "insuranceName": "鸿寿养老金保险(97版)",
-      "codeType": "R45"
-    },
-    {
-      "insuranceName": "66鸿运保险(B型)(97版)",
-      "codeType": "R46"
-    },
-    {
-      "insuranceName": "国寿千禧理财两全保险(分红型)",
-      "codeType": "R47"
-    },
-    {
-      "insuranceName": "国寿99鸿福两全保险",
-      "codeType": "R48"
-    },
-    {
-      "insuranceName": "国寿康宁终身重大疾病保险",
+      "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险（2019版A款）",
       "codeType": "R49"
     },
     {
@@ -3338,47 +3515,27 @@
       "codeType": "R51"
     },
     {
-      "insuranceName": "国寿康宁终身重大疾病保险",
+      "insuranceName": "国寿附加少儿国寿福豁免保险费疾病保险（2019版）",
       "codeType": "R52"
     },
     {
-      "insuranceName": "康宁定期保险",
-      "codeType": "R53"
-    },
-    {
-      "insuranceName": "国寿康宁终身重大疾病保险",
+      "insuranceName": "国寿附加康宁保提前给付重大疾病保险（B款）",
       "codeType": "R54"
-    },
-    {
-      "insuranceName": "国寿康宁终身重大疾病保险",
-      "codeType": "R55"
-    },
-    {
-      "insuranceName": "[待补充] 522",
-      "codeType": "522"
-    },
-    {
-      "insuranceName": "[待补充] 778",
-      "codeType": "778"
-    },
-    {
-      "insuranceName": "[待补充] S42",
-      "codeType": "S42"
-    },
-    {
-      "insuranceName": "[待补充] 512",
-      "codeType": "512"
-    },
-    {
-      "insuranceName": "[待补充] 769",
-      "codeType": "769"
     },
     {
       "insuranceName": "康宁终身保险",
       "codeType": "S42"
+    },
+    {
+      "insuranceName": "国寿99鸿福两全保险",
+      "codeType": "S49"
+    },
+    {
+      "insuranceName": "康宁定期保险",
+      "codeType": "S43"
     }
   ],
-  "_timestamp": "1785033017716",
+  "_timestamp": "1785038347864",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
