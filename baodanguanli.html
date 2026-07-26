@@ -1309,10 +1309,14 @@ button {
     <div class="tab-content" id="tabInsLib">
       <div class="card">
         <div class="card-title">险种库管理</div>
-        <div style="margin-bottom:12px;display:flex;gap:8px;">
-          <input type="text" id="newInsLibName" placeholder="险种名称" style="flex:1;">
-          <input type="text" id="newInsLibCode" placeholder="险种代码" style="flex:1;">
-          <button class="btn-primary btn-sm" onclick="addInsuranceTypeManually()">添加</button>
+        <p style="font-size:12px;color:#64748b;margin-bottom:10px;">手动添加险种，或点击下方按钮从保单数据中自动同步</p>
+        <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;">
+          <input type="text" id="newInsLibName" placeholder="险种名称" style="flex:1;min-width:120px;">
+          <input type="text" id="newInsLibCode" placeholder="险种代码" style="flex:1;min-width:100px;">
+          <button class="btn-primary btn-sm" onclick="addInsuranceTypeManually()" style="white-space:nowrap;">添加</button>
+        </div>
+        <div style="margin-bottom:12px;">
+          <button class="btn-outline btn-sm" onclick="syncExistingPoliciesToLib();renderInsuranceTypeLib();">从保单数据同步</button>
         </div>
         <div id="insuranceTypeLibTable" class="table-responsive"></div>
       </div>
@@ -1839,6 +1843,8 @@ function tryLoginFromCloud(username, password, errEl) {
     };
     users.push(newUser);
     saveUsers(users);
+    /* 先设置 currentUser，否则 restore 和 sync 会存到错误的 key（如 insurance_type_lib_null） */
+    currentUser = username;
     /* 恢复云端数据 */
     restoreFromCloudData(cloudData);
     syncExistingPoliciesToLib();
@@ -3367,47 +3373,51 @@ function hasIncompleteInfo(c) {
 
 /* 从现有保单数据中同步险种到险种库 */
 function syncExistingPoliciesToLib() {
-  var lib = getInsuranceTypeLib();
-  var libNames = lib.map(function(item) { return (item.insuranceName || '').trim(); });
-  var addedCount = 0;
-  var noNameCount = 0;
+  try {
+    var lib = getInsuranceTypeLib();
+    var libNames = lib.map(function(item) { return (item.insuranceName || '').trim(); });
+    var addedCount = 0;
+    var noNameCount = 0;
 
-  clientData.forEach(function(c) {
-    (c.policies || []).forEach(function(p) {
-      var name = (p.insuranceName || '').trim();
-      var code = (p.codeType || '').trim();
+    (clientData || []).forEach(function(c) {
+      (c.policies || []).forEach(function(p) {
+        var name = (p.insuranceName || '').trim();
+        var code = (p.codeType || '').trim();
 
-      if (code) {
-        /* 有代码，不管有没有名称都加入 */
-        if (name && libNames.indexOf(name) === -1) {
-          lib.push({ insuranceName: name, codeType: code });
-          libNames.push(name);
-          addedCount++;
-        } else if (!name) {
-          /* 有代码但没有名称，用代码作为临时名称 */
-          var placeholderName = '[待补充] ' + code;
-          if (libNames.indexOf(placeholderName) === -1) {
-            lib.push({ insuranceName: placeholderName, codeType: code });
-            libNames.push(placeholderName);
-            noNameCount++;
-          }
-        } else if (name && libNames.indexOf(name) !== -1) {
-          /* 名称已存在但代码可能不同，更新代码 */
-          var existing = lib.find(function(item) { return (item.insuranceName || '').trim() === name; });
-          if (existing && existing.codeType !== code) {
-            existing.codeType = code;
+        if (code) {
+          /* 有代码，不管有没有名称都加入 */
+          if (name && libNames.indexOf(name) === -1) {
+            lib.push({ insuranceName: name, codeType: code });
+            libNames.push(name);
+            addedCount++;
+          } else if (!name) {
+            /* 有代码但没有名称，用代码作为临时名称 */
+            var placeholderName = '[待补充] ' + code;
+            if (libNames.indexOf(placeholderName) === -1) {
+              lib.push({ insuranceName: placeholderName, codeType: code });
+              libNames.push(placeholderName);
+              noNameCount++;
+            }
+          } else if (name && libNames.indexOf(name) !== -1) {
+            /* 名称已存在但代码可能不同，更新代码 */
+            var existing = lib.find(function(item) { return (item.insuranceName || '').trim() === name; });
+            if (existing && existing.codeType !== code) {
+              existing.codeType = code;
+            }
           }
         }
-      }
+      });
     });
-  });
 
-  saveInsuranceTypeLib(lib);
+    saveInsuranceTypeLib(lib);
 
-  if (noNameCount > 0) {
-    showToast('已自动收录 ' + addedCount + ' 个险种，其中 ' + noNameCount + ' 个缺少名称（已标记为[待补充]），请在设置-险种库管理中手动修改名称', 'warning');
-  } else if (addedCount > 0) {
-    showToast('已自动收录 ' + addedCount + ' 个新险种到险种库', 'success');
+    if (noNameCount > 0) {
+      showToast('已自动收录 ' + addedCount + ' 个险种，其中 ' + noNameCount + ' 个缺少名称（已标记为[待补充]），请在险种库管理中手动修改名称', 'warning');
+    } else if (addedCount > 0) {
+      showToast('已自动收录 ' + addedCount + ' 个新险种到险种库', 'success');
+    }
+  } catch(e) {
+    console.error('syncExistingPoliciesToLib error:', e);
   }
 }
 
@@ -3457,11 +3467,17 @@ function addInsuranceTypeManually() {
 
 /* 渲染险种库表格 - 支持inline编辑 */
 function renderInsuranceTypeLib() {
+  /* 每次渲染前先从保单数据同步，确保数据不丢失 */
+  syncExistingPoliciesToLib();
   var lib = getInsuranceTypeLib();
   var table = document.getElementById('insuranceTypeLibTable');
   if (!table) return;
   if (lib.length === 0) {
-    table.innerHTML = '<div class="empty-state" style="padding:20px;"><p style="font-size:13px;">暂无险种数据，添加保单时将自动收录</p></div>';
+    table.innerHTML = '<div class="empty-state" style="padding:20px;text-align:center;">' +
+      '<p style="font-size:14px;color:#64748b;margin-bottom:8px;">暂无险种数据</p>' +
+      '<p style="font-size:12px;color:#94a3b8;margin-bottom:16px;">可通过上方表单手动添加，或从保单数据中自动同步</p>' +
+      '<button class="btn-primary" onclick="syncExistingPoliciesToLib();renderInsuranceTypeLib();" style="margin-bottom:8px;">从保单数据同步</button>' +
+      '</div>';
     return;
   }
   var html = '<table class="policy-table"><thead><tr><th>险种名称</th><th>险种代码</th><th>操作</th></tr></thead><tbody>';
