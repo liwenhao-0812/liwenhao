@@ -1090,6 +1090,81 @@ button {
   .policy-table .col-status { width: 36px; }
   .policy-table .col-premium { width: 60px; font-size: 12px; }
   .policy-table .col-insured { width: 44px; }
+}
+
+/* ======== 险种库卡片布局 ======== */
+.inslib-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+.inslib-card {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  transition: box-shadow 0.15s;
+}
+.inslib-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.inslib-card .inslib-info {
+  flex: 1;
+  min-width: 0;
+}
+.inslib-card .inslib-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  word-break: break-all;
+  line-height: 1.4;
+  margin-bottom: 2px;
+}
+.inslib-card .inslib-code {
+  font-size: 12px;
+  font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 1px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.inslib-card .inslib-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.inslib-card .inslib-edit-input {
+  flex: 1;
+  min-width: 0;
+}
+.inslib-card .inslib-edit-input input {
+  width: 100%;
+  padding: 5px 8px;
+  font-size: 13px;
+  border: 1.5px solid var(--color-primary);
+  border-radius: 4px;
+  margin-bottom: 4px;
+  box-sizing: border-box;
+}
+.inslib-card .inslib-edit-input input:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 600px) {
+  .inslib-grid {
+    grid-template-columns: 1fr;
+  }
+  .inslib-card {
+    padding: 10px 12px;
+  }
+  .inslib-card .inslib-name {
+    font-size: 13px;
+  }
 }</style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
@@ -3480,35 +3555,36 @@ function renderInsuranceTypeLib() {
       '</div>';
     return;
   }
-  var html = '<table class="policy-table"><thead><tr><th>险种名称</th><th>险种代码</th><th>操作</th></tr></thead><tbody>';
+  var html = '<div class="inslib-grid">';
   lib.forEach(function(item, idx) {
-    html += '<tr id="inslib_row_' + idx + '">' +
-      '<td id="inslib_name_' + idx + '">' + (item.insuranceName || '') + '</td>' +
-      '<td id="inslib_code_' + idx + '">' + (item.codeType || '') + '</td>' +
-      '<td style="white-space:nowrap;">' +
-      '<button class="btn-sm btn-outline" onclick="startEditInsuranceType(' + idx + ')">编辑</button> ' +
-      '<button class="btn-sm btn-danger" onclick="deleteInsuranceTypeByIndex(' + idx + ')">删除</button>' +
-      '</td></tr>';
+    html += '<div class="inslib-card" id="inslib_row_' + idx + '">' +
+      '<div class="inslib-info" id="inslib_info_' + idx + '">' +
+        '<div class="inslib-name" id="inslib_name_' + idx + '">' + (item.insuranceName || '') + '</div>' +
+        '<span class="inslib-code" id="inslib_code_' + idx + '">' + (item.codeType || '') + '</span>' +
+      '</div>' +
+      '<div class="inslib-actions" id="inslib_actions_' + idx + '">' +
+        '<button class="btn-sm btn-outline" onclick="startEditInsuranceType(' + idx + ')">编辑</button>' +
+        '<button class="btn-sm btn-danger" onclick="deleteInsuranceTypeByIndex(' + idx + ')">删除</button>' +
+      '</div></div>';
   });
-  html += '</tbody></table>';
+  html += '</div>';
   table.innerHTML = html;
   updateInsuranceTypeDatalist();
 }
 
-/* 进入编辑模式 - inline替换 */
+/* 进入编辑模式 - inline替换（卡片布局） */
 function startEditInsuranceType(idx) {
   var lib = getInsuranceTypeLib();
   if (idx < 0 || idx >= lib.length) return;
   var item = lib[idx];
-  var nameCell = document.getElementById('inslib_name_' + idx);
-  var codeCell = document.getElementById('inslib_code_' + idx);
-  var row = document.getElementById('inslib_row_' + idx);
-  if (!nameCell || !codeCell || !row) return;
-  nameCell.innerHTML = '<input type="text" id="inslib_edit_name_' + idx + '" value="' + htmlEscape(item.insuranceName) + '" style="width:100%;padding:4px 6px;font-size:12px;">';
-  codeCell.innerHTML = '<input type="text" id="inslib_edit_code_' + idx + '" value="' + htmlEscape(item.codeType) + '" style="width:100%;padding:4px 6px;font-size:12px;">';
-  /* 替换操作按钮 */
-  var td = row.querySelectorAll('td')[2];
-  td.innerHTML = '<button class="btn-sm btn-success" onclick="saveEditInsuranceType(' + idx + ')">保存</button> ' +
+  var infoDiv = document.getElementById('inslib_info_' + idx);
+  var actionsDiv = document.getElementById('inslib_actions_' + idx);
+  if (!infoDiv || !actionsDiv) return;
+  infoDiv.innerHTML = '<div class="inslib-edit-input">' +
+    '<input type="text" id="inslib_edit_name_' + idx + '" value="' + htmlEscape(item.insuranceName) + '" placeholder="险种名称">' +
+    '<input type="text" id="inslib_edit_code_' + idx + '" value="' + htmlEscape(item.codeType) + '" placeholder="险种代码">' +
+    '</div>';
+  actionsDiv.innerHTML = '<button class="btn-sm btn-success" onclick="saveEditInsuranceType(' + idx + ')">保存</button>' +
     '<button class="btn-sm btn-outline" onclick="cancelEditInsuranceType(' + idx + ')">取消</button>';
 }
 
