@@ -3450,46 +3450,67 @@ function hasIncompleteInfo(c) {
 function syncExistingPoliciesToLib() {
   try {
     var lib = getInsuranceTypeLib();
-    var libNames = lib.map(function(item) { return (item.insuranceName || '').trim(); });
+    var codeMap = {};
+
+    /* 第一遍：从现有库建立 codeMap，同名不同码的保留有名称的 */
+    lib.forEach(function(item) {
+      var name = (item.insuranceName || '').trim();
+      var code = (item.codeType || '').trim();
+      if (!code) return;
+      var isPlaceholder = name.indexOf('[待补充]') === 0 || !name;
+
+      if (!codeMap[code]) {
+        codeMap[code] = { insuranceName: name, codeType: code };
+      } else if (!isPlaceholder) {
+        var existIsPlaceholder = codeMap[code].insuranceName.indexOf('[待补充]') === 0 || !codeMap[code].insuranceName;
+        if (existIsPlaceholder) {
+          codeMap[code].insuranceName = name;
+        }
+      }
+    });
+
     var addedCount = 0;
+    var mergedCount = 0;
     var noNameCount = 0;
 
+    /* 第二遍：扫描所有保单，以代码为唯一键合并 */
     (clientData || []).forEach(function(c) {
       (c.policies || []).forEach(function(p) {
         var name = (p.insuranceName || '').trim();
         var code = (p.codeType || '').trim();
+        if (!code) return;
 
-        if (code) {
-          /* 有代码，不管有没有名称都加入 */
-          if (name && libNames.indexOf(name) === -1) {
-            lib.push({ insuranceName: name, codeType: code });
-            libNames.push(name);
+        if (codeMap[code]) {
+          /* 代码已存在，检查能否用保单名称补全 */
+          var exist = codeMap[code];
+          var existIsPlaceholder = exist.insuranceName.indexOf('[待补充]') === 0 || !exist.insuranceName;
+          if (name && existIsPlaceholder) {
+            exist.insuranceName = name;
+            mergedCount++;
+          }
+        } else {
+          /* 新代码 */
+          if (name) {
+            codeMap[code] = { insuranceName: name, codeType: code };
             addedCount++;
-          } else if (!name) {
-            /* 有代码但没有名称，用代码作为临时名称 */
-            var placeholderName = '[待补充] ' + code;
-            if (libNames.indexOf(placeholderName) === -1) {
-              lib.push({ insuranceName: placeholderName, codeType: code });
-              libNames.push(placeholderName);
-              noNameCount++;
-            }
-          } else if (name && libNames.indexOf(name) !== -1) {
-            /* 名称已存在但代码可能不同，更新代码 */
-            var existing = lib.find(function(item) { return (item.insuranceName || '').trim() === name; });
-            if (existing && existing.codeType !== code) {
-              existing.codeType = code;
-            }
+          } else {
+            codeMap[code] = { insuranceName: '[待补充] ' + code, codeType: code };
+            noNameCount++;
           }
         }
       });
     });
 
-    saveInsuranceTypeLib(lib);
+    /* 转换回数组 */
+    var newLib = [];
+    Object.keys(codeMap).forEach(function(code) {
+      newLib.push(codeMap[code]);
+    });
 
-    if (noNameCount > 0) {
-      showToast('已自动收录 ' + addedCount + ' 个险种，其中 ' + noNameCount + ' 个缺少名称（已标记为[待补充]），请在险种库管理中手动修改名称', 'warning');
-    } else if (addedCount > 0) {
-      showToast('已自动收录 ' + addedCount + ' 个新险种到险种库', 'success');
+    saveInsuranceTypeLib(newLib);
+
+    if (mergedCount > 0) {
+      showToast('已合并 ' + mergedCount + ' 个重复险种（按代码匹配），新增 ' + addedCount + ' 个，' + noNameCount + ' 个待补充名称', 'success');
     }
   } catch(e) {
     console.error('syncExistingPoliciesToLib error:', e);
