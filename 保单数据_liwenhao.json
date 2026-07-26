@@ -3126,5 +3126,230 @@
   "reminders": [],
   "_timestamp": "1785023935959",
   "_user": "liwenhao",
-  "insuranceTypes": []
+  "insuranceTypes": [
+    {
+      "insuranceName": "国寿福终身寿险（庆典版）",
+      "codeType": "SK5"
+    },
+    {
+      "insuranceName": "国寿附加国寿福提前给付重大疾病保险（庆典版）",
+      "codeType": "R41"
+    },
+    {
+      "insuranceName": "国寿附加国寿福豁免保险费疾病保险（庆典版）",
+      "codeType": "R42"
+    },
+    {
+      "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险（庆典版，B款）",
+      "codeType": "R44"
+    },
+    {
+      "insuranceName": "国寿千禧理财分红型",
+      "codeType": "S50"
+    },
+    {
+      "insuranceName": "国寿防癌疾病保险",
+      "codeType": "512"
+    },
+    {
+      "insuranceName": "国寿附加防癌两全保险",
+      "codeType": "769"
+    },
+    {
+      "insuranceName": "国寿如意随行两全保险",
+      "codeType": "522"
+    },
+    {
+      "insuranceName": "国寿附加如意随行意外伤害住院定额给付医疗保险",
+      "codeType": "778"
+    },
+    {
+      "insuranceName": "国寿鑫账户年金保险（万能型）（卓越版）",
+      "codeType": "287"
+    },
+    {
+      "insuranceName": "国寿鸿福至尊年金保险（分红型）",
+      "codeType": "553"
+    },
+    {
+      "insuranceName": "国寿鑫账户年金保险（万能型）（惠享版）",
+      "codeType": "286"
+    },
+    {
+      "insuranceName": "康宁终身保险",
+      "codeType": "S42"
+    },
+    {
+      "insuranceName": "国寿金账户两全保险(万能型)",
+      "codeType": "268"
+    },
+    {
+      "insuranceName": "国寿康宁嘉保疾病保险",
+      "codeType": "SD2"
+    },
+    {
+      "insuranceName": "国寿附加防癌两全保险(优享版)",
+      "codeType": "321"
+    },
+    {
+      "insuranceName": "国寿福终身寿险(至尊版)",
+      "codeType": "559"
+    },
+    {
+      "insuranceName": "国寿附加国寿福提前给付重大疾病保险(至尊版)",
+      "codeType": "315"
+    },
+    {
+      "insuranceName": "国寿附加国寿福豁免保险费疾病保险(至尊版)",
+      "codeType": "316"
+    },
+    {
+      "insuranceName": "国寿99鸿福两全保险",
+      "codeType": "S49"
+    },
+    {
+      "insuranceName": "国寿美满一生年金保险(分红型)",
+      "codeType": "S93"
+    },
+    {
+      "insuranceName": "重大疾病终身保险(98版利差返还型)",
+      "codeType": "S32"
+    },
+    {
+      "insuranceName": "国寿鑫享鸿福年金保险",
+      "codeType": "SD6"
+    },
+    {
+      "insuranceName": "国寿鑫尊宝终身寿险(万能型)(A款)",
+      "codeType": "291"
+    },
+    {
+      "insuranceName": "国寿鑫尊宝年金保险(万能型)(B款)",
+      "codeType": "290"
+    },
+    {
+      "insuranceName": "国寿康宁终身重大疾病保险",
+      "codeType": "432"
+    },
+    {
+      "insuranceName": "国寿少儿国寿福终身寿险(庆典版)",
+      "codeType": "SK6"
+    },
+    {
+      "insuranceName": "国寿附加少儿国寿福提前给付重大疾病保险(庆典版)",
+      "codeType": "R45"
+    },
+    {
+      "insuranceName": "国寿附加少儿国寿福豁免保险费疾病保险(庆典版)",
+      "codeType": "R46"
+    },
+    {
+      "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险(庆典版，B款)",
+      "codeType": "R44"
+    },
+    {
+      "insuranceName": "康宁定期保险",
+      "codeType": "S43"
+    },
+    {
+      "insuranceName": "国寿通泰无忧意外伤害保险(节假日版)",
+      "codeType": "D8N"
+    },
+    {
+      "insuranceName": "国寿千禧理财两全保险(分红型)",
+      "codeType": "S50"
+    },
+    {
+      "insuranceName": "国寿百万如意行两全保险",
+      "codeType": "564"
+    },
+    {
+      "insuranceName": "国寿附加百万如意行意外伤害住院定额给付医疗保险",
+      "codeType": "322"
+    },
+    {
+      "insuranceName": "国寿康宁终身重大疾病保险（2019版）",
+      "codeType": "SI6"
+    },
+    {
+      "insuranceName": "国寿附加康宁两全保险（2019版）",
+      "codeType": "R36"
+    },
+    {
+      "insuranceName": "国寿附加国寿福提前给付重大疾病保险(至尊版)",
+      "codeType": "R37"
+    },
+    {
+      "insuranceName": "国寿鸿福至尊年金保险（分红型）",
+      "codeType": "R38"
+    },
+    {
+      "insuranceName": "国寿鑫账户年金保险（万能型）（卓越版）",
+      "codeType": "R39"
+    },
+    {
+      "insuranceName": "国寿鑫账户年金保险（万能型）（惠享版）",
+      "codeType": "R40"
+    },
+    {
+      "insuranceName": "康宁终身保险",
+      "codeType": "R41"
+    },
+    {
+      "insuranceName": "99鸿福终身保险(97版)",
+      "codeType": "R42"
+    },
+    {
+      "insuranceName": "国寿千禧理财两全保险(分红型)",
+      "codeType": "R43"
+    },
+    {
+      "insuranceName": "鸿寿养老金保险(97版)",
+      "codeType": "R44"
+    },
+    {
+      "insuranceName": "鸿寿养老金保险(97版)",
+      "codeType": "R45"
+    },
+    {
+      "insuranceName": "66鸿运保险(B型)(97版)",
+      "codeType": "R46"
+    },
+    {
+      "insuranceName": "国寿千禧理财两全保险(分红型)",
+      "codeType": "R47"
+    },
+    {
+      "insuranceName": "国寿99鸿福两全保险",
+      "codeType": "R48"
+    },
+    {
+      "insuranceName": "国寿康宁终身重大疾病保险",
+      "codeType": "R49"
+    },
+    {
+      "insuranceName": "康宁终身保险",
+      "codeType": "R50"
+    },
+    {
+      "insuranceName": "国寿鸿运少儿两全保险（分红型）",
+      "codeType": "R51"
+    },
+    {
+      "insuranceName": "国寿康宁终身重大疾病保险",
+      "codeType": "R52"
+    },
+    {
+      "insuranceName": "康宁定期保险",
+      "codeType": "R53"
+    },
+    {
+      "insuranceName": "国寿康宁终身重大疾病保险",
+      "codeType": "R54"
+    },
+    {
+      "insuranceName": "国寿康宁终身重大疾病保险",
+      "codeType": "R55"
+    }
+  ]
 }

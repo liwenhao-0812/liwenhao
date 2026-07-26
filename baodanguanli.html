@@ -2054,17 +2054,18 @@ var autoPullFromCloud = function() {
     return r.json();
   })
   .then(function(fileInfo) {
-    if (!fileInfo) return;
-    var jsonStr = decodeURIComponent(escape(atob(fileInfo.content.replace(/\s/g, ''))));
-    var cloudData = JSON.parse(jsonStr);
-    var localTs = localStorage.getItem('policy_data_' + currentUser + '_timestamp') || '0';
-    if (!cloudData._timestamp || cloudData._timestamp > localTs) {
-      restoreFromCloudData(cloudData);
-      setSyncStatus('synced');
-      updateSettingSyncStatus(true);
-      refreshCurrentTab();
-    }
-  })
+     if (!fileInfo) return;
+     var jsonStr = decodeURIComponent(escape(atob(fileInfo.content.replace(/\s/g, ''))));
+     var cloudData = JSON.parse(jsonStr);
+     var localTs = localStorage.getItem('policy_data_' + currentUser + '_timestamp') || '0';
+     if (!cloudData._timestamp || cloudData._timestamp > localTs) {
+       restoreFromCloudData(cloudData);
+       syncExistingPoliciesToLib();
+       setSyncStatus('synced');
+       updateSettingSyncStatus(true);
+       refreshCurrentTab();
+     }
+   })
   .catch(function() {});
 };
 
@@ -2089,12 +2090,14 @@ function manualPull() {
     var localTs = localStorage.getItem('policy_data_' + currentUser + '_timestamp') || '0';
     if (cloudData._timestamp && cloudData._timestamp > localTs) {
       restoreFromCloudData(cloudData);
+      syncExistingPoliciesToLib();
       showToast('数据已从云端恢复', 'success');
       refreshCurrentTab();
     } else if (cloudData._timestamp && cloudData._timestamp <= localTs) {
       showToast('本地数据已是最新', 'info');
     } else {
       restoreFromCloudData(cloudData);
+      syncExistingPoliciesToLib();
       showToast('数据已从云端恢复', 'success');
       refreshCurrentTab();
     }
@@ -2151,6 +2154,7 @@ function startAutoPull() {
       var localTs = localStorage.getItem('policy_data_' + currentUser + '_timestamp') || '0';
       if (cloudData._timestamp && cloudData._timestamp > localTs) {
         restoreFromCloudData(cloudData);
+        syncExistingPoliciesToLib();
         console.log('自动同步：云端数据已更新到本地');
         refreshCurrentTab();
       }
