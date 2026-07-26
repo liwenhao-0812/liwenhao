@@ -1142,6 +1142,7 @@ button {
       <div class="auth-error" id="regError"></div>
     </form>
   </div>
+
 </div>
 
 <!-- ==================== 主界面 ==================== -->
@@ -1162,6 +1163,7 @@ button {
     <button class="nav-item" data-tab="reminders" onclick="switchTab('reminders')">提醒</button>
     <button class="nav-item" data-tab="tracking" onclick="switchTab('tracking')">追踪</button>
     <button class="nav-item" data-tab="settings" onclick="switchTab('settings')">设置</button>
+    <button class="nav-item" data-tab="inslib" onclick="switchTab('inslib')">险种库</button>
   </div>
 
   <!-- 内容区域 -->
@@ -1285,6 +1287,11 @@ button {
         <input type="file" id="importExcelInput" accept=".xlsx,.xls,.csv" style="display:none;" onchange="importExcelData(event)">
       </div>
       <div class="card">
+        <div class="card-title">险种库</div>
+        <p style="font-size:13px;color:#64748b;margin-bottom:8px;">管理所有险种名称和代码，编辑和删除操作请前往险种库页面。</p>
+        <button class="btn-primary" onclick="switchTab('inslib')">进入险种库管理</button>
+      </div>
+      <div class="card">
         <div class="card-title">修改密码</div>
         <div class="form-group">
           <label>当前密码</label>
@@ -1296,6 +1303,10 @@ button {
         </div>
         <button class="btn-primary" onclick="changePassword()">修改密码</button>
       </div>
+    </div>
+
+    <!-- ====== 险种库页 ====== -->
+    <div class="tab-content" id="tabInsLib">
       <div class="card">
         <div class="card-title">险种库管理</div>
         <div style="margin-bottom:12px;display:flex;gap:8px;">
@@ -2232,7 +2243,7 @@ function refreshCurrentTab() {
     case 'query': handleSearch(); break;
     case 'reminders': renderReminders(); break;
     case 'tracking': populateTrackClientSelect(); break;
-    case 'settings': renderInsuranceTypeLib(); break;
+    case 'inslib': renderInsuranceTypeLib(); break;
   }
   updateBottomStats();
 }
@@ -3429,21 +3440,22 @@ function addToInsuranceTypeLib(name, code) {
   return true;
 }
 
-/* 安全转义：用于生成 HTML 属性中的 JavaScript 字符串字面量（注意：& 必须最先转义，避免破坏后续实体） */
-function escapeForJsAttr(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/\\/g, '\\\\')
-    .replace(/'/g, "\\'")
-    .replace(/\n/g, '\\n')
-    .replace(/\r/g, '');
+/* 手动添加险种到库 */
+function addInsuranceTypeManually() {
+  var name = document.getElementById('newInsLibName').value.trim();
+  var code = document.getElementById('newInsLibCode').value.trim();
+  if (!name || !code) { showToast('请填写险种名称和代码', 'warning'); return; }
+  if (addToInsuranceTypeLib(name, code)) {
+    showToast('险种已添加', 'success');
+    document.getElementById('newInsLibName').value = '';
+    document.getElementById('newInsLibCode').value = '';
+    renderInsuranceTypeLib();
+  } else {
+    showToast('该险种已存在', 'warning');
+  }
 }
 
-/* 渲染险种库表格 */
+/* 渲染险种库表格 - 支持inline编辑 */
 function renderInsuranceTypeLib() {
   var lib = getInsuranceTypeLib();
   var table = document.getElementById('insuranceTypeLibTable');
@@ -3453,80 +3465,88 @@ function renderInsuranceTypeLib() {
     return;
   }
   var html = '<table class="policy-table"><thead><tr><th>险种名称</th><th>险种代码</th><th>操作</th></tr></thead><tbody>';
-  lib.forEach(function(item) {
-    var safeName = escapeForJsAttr(item.insuranceName);
-    var safeCode = escapeForJsAttr(item.codeType);
-    html += '<tr>' +
-      '<td>' + (item.insuranceName || '') + '</td>' +
-      '<td>' + (item.codeType || '') + '</td>' +
-      '<td>' +
-      '<button class="btn-sm btn-outline" onclick="editInsuranceType(\'' + safeName + '\', \'' + safeCode + '\')">编辑</button> ' +
-      '<button class="btn-sm btn-danger" onclick="deleteInsuranceTypeConfirm(\'' + safeName + '\')">删除</button>' +
+  lib.forEach(function(item, idx) {
+    html += '<tr id="inslib_row_' + idx + '">' +
+      '<td id="inslib_name_' + idx + '">' + (item.insuranceName || '') + '</td>' +
+      '<td id="inslib_code_' + idx + '">' + (item.codeType || '') + '</td>' +
+      '<td style="white-space:nowrap;">' +
+      '<button class="btn-sm btn-outline" onclick="startEditInsuranceType(' + idx + ')">编辑</button> ' +
+      '<button class="btn-sm btn-danger" onclick="deleteInsuranceTypeByIndex(' + idx + ')">删除</button>' +
       '</td></tr>';
   });
   html += '</tbody></table>';
   table.innerHTML = html;
-  /* 同时更新 datalist */
   updateInsuranceTypeDatalist();
 }
 
-/* 删除险种库条目（二次确认） */
-function deleteInsuranceTypeConfirm(insuranceName) {
-  insuranceName = (insuranceName || '').trim();
-  showConfirm('确定要删除险种 "' + insuranceName + '" 吗？', function() {
+/* 进入编辑模式 - inline替换 */
+function startEditInsuranceType(idx) {
+  var lib = getInsuranceTypeLib();
+  if (idx < 0 || idx >= lib.length) return;
+  var item = lib[idx];
+  var nameCell = document.getElementById('inslib_name_' + idx);
+  var codeCell = document.getElementById('inslib_code_' + idx);
+  var row = document.getElementById('inslib_row_' + idx);
+  if (!nameCell || !codeCell || !row) return;
+  nameCell.innerHTML = '<input type="text" id="inslib_edit_name_' + idx + '" value="' + htmlEscape(item.insuranceName) + '" style="width:100%;padding:4px 6px;font-size:12px;">';
+  codeCell.innerHTML = '<input type="text" id="inslib_edit_code_' + idx + '" value="' + htmlEscape(item.codeType) + '" style="width:100%;padding:4px 6px;font-size:12px;">';
+  /* 替换操作按钮 */
+  var td = row.querySelectorAll('td')[2];
+  td.innerHTML = '<button class="btn-sm btn-success" onclick="saveEditInsuranceType(' + idx + ')">保存</button> ' +
+    '<button class="btn-sm btn-outline" onclick="cancelEditInsuranceType(' + idx + ')">取消</button>';
+}
+
+/* HTML转义 */
+function htmlEscape(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/* 保存编辑 */
+function saveEditInsuranceType(idx) {
+  var lib = getInsuranceTypeLib();
+  if (idx < 0 || idx >= lib.length) return;
+  var newName = document.getElementById('inslib_edit_name_' + idx).value.trim();
+  var newCode = document.getElementById('inslib_edit_code_' + idx).value.trim();
+  if (!newName) { showToast('险种名称不能为空', 'warning'); return; }
+  if (!newCode) { showToast('险种代码不能为空', 'warning'); return; }
+  var oldName = lib[idx].insuranceName;
+  lib[idx].insuranceName = newName;
+  lib[idx].codeType = newCode;
+  saveInsuranceTypeLib(lib);
+  /* 同步更新保单 */
+  var syncCount = 0;
+  clientData.forEach(function(c) {
+    (c.policies || []).forEach(function(p) {
+      if ((p.insuranceName || '').trim() === oldName.trim()) {
+        p.insuranceName = newName;
+        p.codeType = newCode;
+        syncCount++;
+      }
+    });
+  });
+  if (syncCount > 0) savePolicyData();
+  renderInsuranceTypeLib();
+  showToast(syncCount > 0 ? '险种已更新，同步 ' + syncCount + ' 份保单' : '险种已更新', 'success');
+}
+
+/* 取消编辑 */
+function cancelEditInsuranceType(idx) {
+  renderInsuranceTypeLib();
+}
+
+/* 删除险种（按索引） */
+function deleteInsuranceTypeByIndex(idx) {
+  var lib = getInsuranceTypeLib();
+  if (idx < 0 || idx >= lib.length) return;
+  var name = lib[idx].insuranceName || '';
+  showConfirm('确定要删除险种 "' + name + '" 吗？', function() {
     var lib = getInsuranceTypeLib();
-    lib = lib.filter(function(item) { return (item.insuranceName || '').trim() !== insuranceName; });
+    lib.splice(idx, 1);
     saveInsuranceTypeLib(lib);
     renderInsuranceTypeLib();
     showToast('险种已删除', 'success');
   });
-}
-
-/* 编辑险种库条目 */
-function editInsuranceType(oldName, code) {
-  oldName = (oldName || '').trim();
-  var newName = prompt('修改险种名称：', oldName);
-  if (newName === null) return;
-  newName = newName.trim();
-  if (!newName) { showToast('险种名称不能为空', 'warning'); return; }
-  var newCode = prompt('修改险种代码：', code);
-  if (newCode === null) return;
-  newCode = newCode.trim();
-  if (!newCode) { showToast('险种代码不能为空', 'warning'); return; }
-  
-  var lib = getInsuranceTypeLib();
-  var found = false;
-  for (var i = 0; i < lib.length; i++) {
-    if ((lib[i].insuranceName || '').trim() === oldName) {
-      lib[i].insuranceName = newName;
-      lib[i].codeType = newCode;
-      found = true;
-      break;
-    }
-  }
-  if (found) {
-    saveInsuranceTypeLib(lib);
-    renderInsuranceTypeLib();
-    updateInsuranceTypeDatalist();
-    /* 同步更新所有保单中使用该险种名称的记录 */
-    var syncCount = 0;
-    clientData.forEach(function(c) {
-      (c.policies || []).forEach(function(p) {
-        var pName = (p.insuranceName || '').trim();
-        if (pName === oldName) {
-          p.insuranceName = newName;
-          p.codeType = newCode;
-          syncCount++;
-        }
-      });
-    });
-    if (syncCount > 0) {
-      savePolicyData();
-      showToast('险种已更新，已同步 ' + syncCount + ' 份保单', 'success');
-    } else {
-      showToast('险种已更新', 'success');
-    }
-  }
 }
 
 /* 自动填充险种代码 */
@@ -3638,24 +3658,6 @@ function updateInsuranceTypeDatalist() {
     opt.value = item.insuranceName;
     datalist.appendChild(opt);
   });
-}
-
-/* 手动添加险种 */
-function addInsuranceTypeManually() {
-  var name = document.getElementById('newInsLibName').value.trim();
-  var code = document.getElementById('newInsLibCode').value.trim();
-  if (!name || !code) {
-    showToast('请填写险种名称和险种代码', 'warning');
-    return;
-  }
-  if (addToInsuranceTypeLib(name, code)) {
-    document.getElementById('newInsLibName').value = '';
-    document.getElementById('newInsLibCode').value = '';
-    renderInsuranceTypeLib();
-    showToast('险种添加成功', 'success');
-  } else {
-    showToast('该险种已存在', 'warning');
-  }
 }
 
 /* ======== 联系记录 ======== */
