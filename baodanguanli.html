@@ -1479,7 +1479,7 @@ button {
       </div>
       <div class="form-group">
         <label>险种代码</label>
-        <input type="text" id="codeType" placeholder="险种代码">
+        <input type="text" id="codeType" placeholder="险种代码" onchange="syncInsuranceNameFromCode(this.value)">
       </div>
       <div class="form-group">
         <label>主险/附加险</label>
@@ -3662,7 +3662,7 @@ function deleteInsuranceTypeByIndex(idx) {
   });
 }
 
-/* 自动填充险种代码 */
+/* 自动填充险种代码（名称→代码）- 同时自动将新险种录入险种库 */
 function syncInsuranceTypeToForm(name) {
   if (!name) return;
   name = name.trim();
@@ -3670,12 +3670,59 @@ function syncInsuranceTypeToForm(name) {
   var match = lib.find(function(item) { return (item.insuranceName || '').trim() === name; });
   if (match) {
     document.getElementById('codeType').value = match.codeType || '';
+  } else {
+    /* 名称不在库中，检查当前代码是否在库中 */
+    var codeEl = document.getElementById('codeType');
+    var code = (codeEl && codeEl.value || '').trim();
+    if (code) {
+      var codeMatch = lib.find(function(item) { return (item.codeType || '').trim() === code; });
+      if (!codeMatch) {
+        /* 代码也不在库中，新增险种到险种库 */
+        lib.push({ insuranceName: name, codeType: code });
+        saveInsuranceTypeLib(lib);
+        showToast('已自动录入险种库：' + code + ' - ' + name, 'success');
+      } else {
+        /* 代码在库中但名称为待补充或不同，更新名称 */
+        var existName = (codeMatch.insuranceName || '').trim();
+        if (!existName || existName.indexOf('[待补充]') === 0) {
+          codeMatch.insuranceName = name;
+          saveInsuranceTypeLib(lib);
+          showToast('已补全险种名称：' + code + ' - ' + name, 'success');
+        }
+      }
+    }
   }
   /* 检测生存金类型 */
   if (checkSurvivalBenefitType(name)) {
     showSurvivalBenefitHint();
   } else {
     hideSurvivalBenefitHint();
+  }
+}
+
+/* 自动检索险种名称（代码→名称）- 填入险种代码后自动匹配险种库 */
+function syncInsuranceNameFromCode(code) {
+  if (!code) return;
+  code = code.trim();
+  var lib = getInsuranceTypeLib();
+  var match = lib.find(function(item) { return (item.codeType || '').trim() === code; });
+  if (match) {
+    var name = (match.insuranceName || '').trim();
+    if (name && name.indexOf('[待补充]') === -1) {
+      document.getElementById('insuranceName').value = name;
+      showToast('已匹配险种：' + name, 'success');
+      if (checkSurvivalBenefitType(name)) {
+        showSurvivalBenefitHint();
+      }
+    } else {
+      showToast('该代码对应险种名称待补充，请手动填写险种名称', 'warning');
+      document.getElementById('insuranceName').value = '';
+      document.getElementById('insuranceName').focus();
+    }
+  } else {
+    showToast('请输入保单险种名称', 'warning');
+    document.getElementById('insuranceName').value = '';
+    document.getElementById('insuranceName').focus();
   }
 }
 
