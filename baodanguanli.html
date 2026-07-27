@@ -1537,6 +1537,14 @@ button {
         <input type="text" id="paymentTerm" placeholder="如：20">
       </div>
       <div class="form-group">
+        <label>缴费银行</label>
+        <input type="text" id="paymentBank" placeholder="如：工商银行">
+      </div>
+      <div class="form-group">
+        <label>银行卡后四位</label>
+        <input type="text" id="paymentBankCard" placeholder="如：6789" maxlength="4" pattern="[0-9]{4}">
+      </div>
+      <div class="form-group">
         <label>被保人姓名</label>
         <input type="text" id="insuredName" placeholder="被保人姓名（默认同投保人）" onchange="autoFillInsuredRelation()">
       </div>
@@ -2917,6 +2925,28 @@ function renderDetailPanel(idx) {
         '<p><strong>缴费方式：</strong>' + (p.paymentMethod || '-') + '</p>' +
         '<p><strong>缴费期限：</strong>' + (p.paymentTerm || '-') + ' 年</p>' +
         (p.parentPolicyCode ? '<p><strong>关联主险：</strong>' + p.parentPolicyCode + '</p>' : '') +
+        '</div>' +
+        /* 缴费银行：仅当缴费期内显示 */
+        (function() {
+          if (!p.paymentBank || !p.paymentBankCard) return '';
+          var effDate = p.effectiveDate;
+          var term = parseInt(p.paymentTerm);
+          if (!effDate || !term || isNaN(term)) return '';
+          /* 计算缴费到期日: 生效日 + 缴费年限 */
+          var y = parseInt(effDate.substring(0,4));
+          var md = effDate.substring(4,8);
+          var endYear = y + term;
+          var endDateStr = endYear + md;
+          var today = new Date();
+          var todayStr = today.getFullYear() + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
+          if (todayStr > endDateStr) return ''; /* 已缴满，不显示 */
+          return '<div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:10px 14px;margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' +
+            '<span style="font-size:12px;color:#1e40af;font-weight:600;">缴费银行</span>' +
+            '<span style="font-size:15px;font-weight:800;color:#0f172a;">' + p.paymentBank + '</span>' +
+            '<span style="font-size:12px;color:#64748b;">尾号</span>' +
+            '<span style="font-size:17px;font-weight:900;color:#1d4ed8;letter-spacing:2px;">' + p.paymentBankCard + '</span>' +
+            '</div>';
+        })() +
         '</div></div>';
 
       /* 生存金信息 */
@@ -3275,6 +3305,8 @@ function editPolicy(clientIdx, policyIdx) {
   document.getElementById('annualPremium').value = p.annualPremium || '';
   document.getElementById('sumInsured').value = p.sumInsured || '';
   document.getElementById('paymentTerm').value = p.paymentTerm || '';
+  document.getElementById('paymentBank').value = p.paymentBank || '';
+  document.getElementById('paymentBankCard').value = p.paymentBankCard || '';
   document.getElementById('insuredName').value = p.insured || '';
   document.getElementById('insuredRelation').value = p.insuredRelation || '';
   /* 被保人身份证/手机/地址：优先保单级，为空则回退客户端级 */
@@ -3312,7 +3344,7 @@ function editPolicy(clientIdx, policyIdx) {
 /* 清空保单表单 */
 function clearPolicyForm() {
   ['policyCode','insuranceName','codeType','annualPremium',
-   'sumInsured','paymentTerm','insuredName','insuredId',
+   'sumInsured','paymentTerm','paymentBank','paymentBankCard','insuredName','insuredId',
    'insuredPhone','insuredAddress','policyRemark','survivalBenefitAmount','survivalLastDate',
    'survivalNextDate','survivalBenefitNote','survivalStartDate'].forEach(function(id) { document.getElementById(id).value = ''; });
   document.getElementById('mainType').value = '主险';
@@ -3401,6 +3433,8 @@ function savePolicy() {
     annualPremium: document.getElementById('annualPremium').value,
     sumInsured: document.getElementById('sumInsured').value,
     paymentTerm: document.getElementById('paymentTerm').value,
+    paymentBank: document.getElementById('paymentBank').value.trim(),
+    paymentBankCard: document.getElementById('paymentBankCard').value.trim(),
     insured: insuredName,
     insuredRelation: insuredRelation,
     insuredId: insuredId,
@@ -4458,6 +4492,8 @@ function importData(e) {
               annualPremium: p.annualPremium || '',
               sumInsured: p.sumInsured || '',
               paymentTerm: p.paymentTerm || '',
+              paymentBank: p.paymentBank || '',
+              paymentBankCard: p.paymentBankCard || '',
               insured: p.insured || '',
               insuredRelation: p.insuredRelation || '',
               insuredId: p.insuredId || '',
@@ -4565,6 +4601,8 @@ function importExcelData(e) {
           annualPremium: (row['年缴保费（元）'] || '').toString().trim(),
           sumInsured: (row['保额（元）'] || '').toString().trim(),
           paymentTerm: (row['缴费期限（年）'] || '').toString().trim(),
+          paymentBank: (row['缴费银行'] || '').toString().trim(),
+          paymentBankCard: (row['银行卡后四位'] || '').toString().trim(),
           insured: (row['被保险人'] || '').toString().trim(),
           insuredRelation: (row['与被保人关系'] || '').toString().trim(),
           insuredId: (row['被保人身份证'] || '').toString().trim(),
@@ -4598,7 +4636,7 @@ function exportExcelTemplate() {
   var headers = [
     '投保人姓名', '投保人身份证号', '联系电话', '通信地址', '工作单位', '工作地址',
     '险种名称', '保单代码', '险种代码', '主险/附加险', '关联主险代码', '保单状态',
-    '生效日', '缴费方式', '年缴保费（元）', '保额（元）', '缴费期限（年）',
+    '生效日', '缴费方式', '年缴保费（元）', '保额（元）', '缴费期限（年）', '缴费银行', '银行卡后四位',
     '被保险人', '与被保人关系', '被保人身份证', '被保人手机号码', '受益人', '备注'
   ];
   var exampleData = [
@@ -4608,7 +4646,7 @@ function exportExcelTemplate() {
       '险种名称': '国寿防癌疾病保险', '保单代码': '2017442001522015000001', '险种代码': '522',
       '主险/附加险': '主险', '关联主险代码': '', '保单状态': '有效',
       '生效日': '20170112', '缴费方式': '年缴', '年缴保费（元）': '780',
-      '保额（元）': '100000', '缴费期限（年）': '20', '被保险人': '李四', '与被保人关系': '配偶',
+      '保额（元）': '100000', '缴费期限（年）': '20', '缴费银行': '工商银行', '银行卡后四位': '6789', '被保险人': '李四', '与被保人关系': '配偶',
       '被保人身份证': '', '被保人手机号码': '', '受益人': '张三', '备注': ''
     },
     {
@@ -4617,7 +4655,7 @@ function exportExcelTemplate() {
       '险种名称': '国寿附加意外伤害保险', '保单代码': '2017442001778300000001', '险种代码': '778',
       '主险/附加险': '附加险', '关联主险代码': '2017442001522015000001', '保单状态': '有效',
       '生效日': '20170112', '缴费方式': '年缴', '年缴保费（元）': '82',
-      '保额（元）': '50000', '缴费期限（年）': '20', '被保险人': '李四', '与被保人关系': '配偶',
+      '保额（元）': '50000', '缴费期限（年）': '20', '缴费银行': '工商银行', '银行卡后四位': '6789', '被保险人': '李四', '与被保人关系': '配偶',
       '被保人身份证': '', '被保人手机号码': '', '受益人': '张三', '备注': '附加险示例'
     }
   ];
@@ -4711,6 +4749,17 @@ function exportClientToWord(idx) {
       }
       htmlContent += '<tr><th>生效日期</th><td>' + formatDate(p.effectiveDate) + '</td><th>缴费方式</th><td>' + (p.paymentMethod || '-') + '</td></tr>';
       htmlContent += '<tr><th>年缴保费</th><td><b>' + formatMoney(p.annualPremium) + ' 元</b></td><th>缴费期限</th><td>' + (p.paymentTerm ? p.paymentTerm + ' 年' : '-') + '</td></tr>';
+      /* 缴费银行：仅当缴费期内显示 */
+      if (p.paymentBank && p.paymentBankCard && p.effectiveDate && p.paymentTerm) {
+        var effY = parseInt(p.effectiveDate.substring(0,4));
+        var md = p.effectiveDate.substring(4,8);
+        var endStr = (effY + parseInt(p.paymentTerm)) + md;
+        var today = new Date();
+        var todayStr = today.getFullYear() + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
+        if (todayStr <= endStr) {
+          htmlContent += '<tr><th>缴费银行</th><td>' + p.paymentBank + '（尾号' + p.paymentBankCard + '）</td><th></th><td></td></tr>';
+        }
+      }
       if (p.sumInsured) {
         htmlContent += '<tr><th>保额</th><td colspan="3"><b>' + formatMoney(p.sumInsured) + ' 元</b></td></tr>';
       }
