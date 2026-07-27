@@ -384,26 +384,34 @@
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20060912",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "1310",
-          "sumInsured": "",
+          "sumInsured": "10000",
           "paymentTerm": "10",
           "insured": "欧烨振",
-          "insuredRelation": "",
+          "insuredRelation": "儿子",
           "insuredId": "441802200201041155",
           "insuredPhone": "13376679173",
+          "insuredAddress": "东城街道澜水村委会中心村增强西街南一巷 15 号 201",
           "beneficiaries": [
             {
               "name": "邓杏群",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "2026.07.19操作投保人变成为 欧烨振",
-          "extraFields": {
-            "返还开始年": "2006",
-            "返还金额": "每三年 500元"
+          "survivalBenefit": {
+            "type": "triennial",
+            "amount": "500",
+            "startDate": "20090912",
+            "lastDate": "",
+            "nextDate": "20270912",
+            "note": "满3个保单年度起领"
           },
+          "extraFields": {},
           "serviceRecords": [
             {
               "date": "2026-07-17",
@@ -417,7 +425,8 @@
               "date": "2026-07-19",
               "content": "协助投保人变成被保人（欧烨振）成为新的投保人，补全被保人资料，告知领取生存金银行账户"
             }
-          ]
+          ],
+          "_idx": 0
         }
       ],
       "familyMembers": [
@@ -3547,7 +3556,7 @@
       "codeType": "S43"
     }
   ],
-  "_timestamp": "1785042183175",
+  "_timestamp": "1785112012662",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
