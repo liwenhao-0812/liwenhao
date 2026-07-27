@@ -425,8 +425,7 @@
               "date": "2026-07-19",
               "content": "协助投保人变成被保人（欧烨振）成为新的投保人，补全被保人资料，告知领取生存金银行账户"
             }
-          ],
-          "_idx": 0
+          ]
         }
       ],
       "familyMembers": [
@@ -997,7 +996,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 0
         },
         {
           "policyCode": "2015442001518015047268",
@@ -1018,7 +1018,8 @@
           "beneficiaries": [],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 1
         }
       ],
       "familyMembers": [],
@@ -1033,7 +1034,8 @@
           "date": "2026-07-25",
           "note": "拒接见面，要求不再需要跟进服务"
         }
-      ]
+      ],
+      "doNotContact": true
     },
     {
       "name": "陈桂添",
@@ -3556,7 +3558,7 @@
       "codeType": "S43"
     }
   ],
-  "_timestamp": "1785112012662",
+  "_timestamp": "1785115271884",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
