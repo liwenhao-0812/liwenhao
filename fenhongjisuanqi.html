@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分红型保险收益计算器</title>
+<script src="https://cdn.jsdelivr.net/npm/decimal.js@10.4.3/decimal.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --blue-50: #eff6ff; --blue-100: #dbeafe; --blue-500: #3b82f6; --blue-600: #2563eb; --blue-700: #1d4ed8;
+  --green-50: #f0fdf4; --green-500: #22c55e; --green-600: #16a34a;
+  --teal-50: #f0fdfa; --teal-500: #14b8a6; --teal-600: #0d9488;
+  --amber-50: #fffbeb; --amber-500: #f59e0b;
+  --red-50: #fef2f2; --red-500: #ef4444;
+  --cyan-50: #ecfeff; --cyan-500: #06b6d4;
+  --purple-50: #faf5ff; --purple-500: #a855f7;
+  --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb; --gray-300: #d1d5db; --gray-400: #9ca3af;
+  --gray-500: #6b7280; --gray-600: #4b5563; --gray-700: #374151; --gray-800: #1f2937; --gray-900: #111827;
+  --white: #ffffff;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
+  --shadow: 0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: linear-gradient(135deg, #eff6ff 0%, #ffffff 30%, #f0fdf4 70%, #eff6ff 100%);
+  min-height: 100vh;
+  color: var(--gray-800);
+}
+/* Header */
+.header {
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #2563eb 100%);
+  color: #fff;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  box-shadow: 0 2px 12px rgba(37,99,235,.25);
+}
+.header h1 {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.header .back-btn {
+  background: rgba(255,255,255,.15);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.25);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all .2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.header .back-btn:hover { background: rgba(255,255,255,.25); }
+/* Layout */
+.container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 20px;
+  min-height: calc(100vh - 70px);
+}
+@media (max-width: 1024px) {
+  .container { grid-template-columns: 1fr; }
+}
+/* Cards */
+.card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.card-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--gray-100);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-header .icon-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+/* Form */
+.form-group { margin-bottom: 14px; }
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-600);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--gray-800);
+  background: var(--white);
+  transition: all .2s;
+  font-family: inherit;
+}
+.form-group input:focus, .form-group select:focus {
+  outline: none;
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+}
+.form-group .input-suffix {
+  position: relative;
+}
+.form-group .input-suffix input { padding-right: 36px; }
+.form-group .input-suffix .suffix {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: var(--gray-500);
+  font-weight: 600;
+  pointer-events: none;
+}
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.form-hint {
+  font-size: 11px;
+  color: var(--gray-500);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+/* Radio group */
+.radio-group {
+  display: flex;
+  gap: 4px;
+  background: var(--gray-100);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+}
+.radio-group label {
+  flex: 1;
+  text-align: center;
+  padding: 8px 4px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  color: var(--gray-600);
+  text-transform: none;
+  letter-spacing: 0;
+  margin: 0;
+}
+.radio-group input { display: none; }
+.radio-group input:checked + span {
+  background: var(--white);
+  color: var(--blue-600);
+  box-shadow: var(--shadow-sm);
+}
+.radio-group label span { display: block; padding: 4px 0; border-radius: 5px; }
+/* Buttons */
+.btn {
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: inherit;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(37,99,235,.3);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(37,99,235,.4); }
+.btn-outline {
+  background: var(--white);
+  color: var(--gray-600);
+  border: 1.5px solid var(--gray-300);
+}
+.btn-outline:hover { background: var(--gray-50); border-color: var(--gray-400); }
+.btn-group { display: flex; gap: 10px; margin-top: 16px; }
+.btn-group .btn { flex: 1; }
+/* Summary Cards */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.summary-card {
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  text-align: center;
+}
+.summary-card .sc-label {
+  font-size: 11px;
+  color: var(--gray-500);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 6px;
+}
+.summary-card .sc-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--gray-900);
+}
+.summary-card .sc-sub {
+  font-size: 11px;
+  color: var(--gray-400);
+  margin-top: 2px;
+}
+.summary-card.sc-blue { border-color: #bfdbfe; background: #eff6ff; }
+.summary-card.sc-blue .sc-value { color: #1d4ed8; }
+.summary-card.sc-green { border-color: #bbf7d0; background: #f0fdf4; }
+.summary-card.sc-green .sc-value { color: #16a34a; }
+.summary-card.sc-teal { border-color: #99f6e4; background: #f0fdfa; }
+.summary-card.sc-teal .sc-value { color: #0d9488; }
+.summary-card.sc-amber { border-color: #fde68a; background: #fffbeb; }
+.summary-card.sc-amber .sc-value { color: #d97706; }
+.summary-card.sc-red { border-color: #fecaca; background: #fef2f2; }
+.summary-card.sc-red .sc-value { color: #dc2626; }
+.summary-card.sc-cyan { border-color: #a5f3fc; background: #ecfeff; }
+.summary-card.sc-cyan .sc-value { color: #0891b2; }
+/* Scenario tabs */
+.scenario-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--gray-100);
+  border-radius: 8px;
+  padding: 3px;
+  margin-bottom: 14px;
+}
+.scenario-tab {
+  flex: 1;
+  text-align: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--gray-500);
+  transition: all .2s;
+  font-family: inherit;
+}
+.scenario-tab.active {
+  background: var(--white);
+  color: var(--blue-600);
+  box-shadow: var(--shadow-sm);
+}
+/* Charts */
+.chart-container {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  position: relative;
+}
+.chart-container h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-700);
+  margin-bottom: 12px;
+}
+.chart-wrap { position: relative; height: 320px; }
+.chart-wrap canvas { width: 100% !important; }
+/* Table */
+.table-wrap {
+  max-height: 500px;
+  overflow-y: auto;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+}
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.table-wrap thead { position: sticky; top: 0; z-index: 1; }
+.table-wrap th {
+  background: var(--gray-50);
+  padding: 10px 8px;
+  text-align: right;
+  font-weight: 700;
+  color: var(--gray-600);
+  border-bottom: 2px solid var(--gray-200);
+  white-space: nowrap;
+}
+.table-wrap th:first-child { text-align: center; }
+.table-wrap td {
+  padding: 8px;
+  text-align: right;
+  border-bottom: 1px solid var(--gray-100);
+  white-space: nowrap;
+}
+.table-wrap td:first-child { text-align: center; font-weight: 600; color: var(--gray-500); }
+.table-wrap tr:hover td { background: var(--blue-50); }
+/* Year slider */
+.year-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.year-slider-wrap input[type="range"] { flex: 1; accent-color: var(--blue-600); }
+.year-slider-wrap .year-label {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--blue-600);
+  min-width: 60px;
+  text-align: center;
+}
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--gray-400);
+}
+.empty-state svg { width: 80px; height: 80px; margin-bottom: 16px; opacity: .3; }
+.empty-state h3 { font-size: 18px; color: var(--gray-500); margin-bottom: 8px; }
+.empty-state p { font-size: 13px; }
+/* Toast */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  animation: slideIn .3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.toast.success { background: #16a34a; }
+.toast.warning { background: #d97706; }
+.toast.error { background: #dc2626; }
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
+/* Section accent borders */
+.section-blue { border-left: 3px solid var(--blue-500); }
+.section-green { border-left: 3px solid var(--green-500); }
+.section-teal { border-left: 3px solid var(--teal-500); }
+.section-amber { border-left: 3px solid var(--amber-500); }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+    分红型保险收益计算器
+  </h1>
+  <a href="baodanguanli.html" class="back-btn">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    返回保单系统
+  </a>
+</div>
+
+<div class="container">
+  <!-- 左侧表单 -->
+  <div class="left-panel">
+    <!-- 产品信息 -->
+    <div class="card section-blue">
+      <div class="card-header"><span class="icon-dot" style="background:#3b82f6;"></span>产品信息</div>
+      <div class="form-group">
+        <label>产品名称</label>
+        <input type="text" id="productName" placeholder="如：国寿鑫福年年分红型" value="分红型年金保险">
+      </div>
+      <div class="form-group">
+        <label>保险公司</label>
+        <select id="company">
+          <option value="平安">平安人寿</option>
+          <option value="国寿" selected>中国人寿</option>
+          <option value="泰康">泰康人寿</option>
+          <option value="太平洋">太平洋保险</option>
+          <option value="人寿">人民人寿</option>
+          <option value="新华">新华保险</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 投保参数 -->
+    <div class="card section-green">
+      <div class="card-header"><span class="icon-dot" style="background:#22c55e;"></span>投保参数</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>投保年龄</label>
+          <div class="input-suffix"><input type="number" id="insuredAge" value="30" min="18" max="65"><span class="suffix">岁</span></div>
+        </div>
+        <div class="form-group">
+          <label>性别</label>
+          <div class="radio-group" id="genderGroup">
+            <label><input type="radio" name="gender" value="male" checked><span>男</span></label>
+            <label><input type="radio" name="gender" value="female"><span>女</span></label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>年缴保费</label>
+        <div class="input-suffix"><input type="number" id="annualPremium" value="10000" min="1000" max="10000000" step="1000"><span class="suffix">元</span></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>缴费方式</label>
+          <div class="radio-group" id="payMethodGroup">
+            <label><input type="radio" name="payMethod" value="annual" checked><span>年交</span></label>
+            <label><input type="radio" name="payMethod" value="monthly"><span>月交</span></label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>缴费年限</label>
+          <select id="paymentYears">
+            <option value="1">趸交（1年）</option>
+            <option value="3">3年</option>
+            <option value="5">5年</option>
+            <option value="10">10年</option>
+            <option value="15">15年</option>
+            <option value="20" selected>20年</option>
+            <option value="30">30年</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>保障期限</label>
+        <div class="input-suffix"><input type="number" id="guaranteePeriod" value="30" min="1" max="100"><span class="suffix">年</span></div>
+      </div>
+      <div class="form-group">
+        <label>每年生存金</label>
+        <div class="input-suffix"><input type="number" id="annualSurvivalBenefit" value="2000" min="0" max="1000000" step="100"><span class="suffix">元</span></div>
+      </div>
+      <div class="form-group">
+        <label>生存金发放年龄</label>
+        <div class="input-suffix"><input type="number" id="survivalBenefitStartAge" value="60" min="18" max="120"><span class="suffix">岁</span></div>
+        <div class="form-hint" id="survivalHint"></div>
+      </div>
+      <div class="form-group">
+        <label>额外派息比例</label>
+        <div class="input-suffix"><input type="number" id="extraDividendRate" value="5" min="0" max="20" step="0.5"><span class="suffix">%</span></div>
+        <div class="form-hint" id="extraDividendHint"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>二次生息利率</label>
+          <div class="input-suffix"><input type="number" id="secondaryInterestRate" value="3.0" min="0" max="10" step="0.1"><span class="suffix">%</span></div>
+        </div>
+        <div class="form-group">
+          <label>每年提取金额</label>
+          <div class="input-suffix"><input type="number" id="annualWithdrawal" value="0" min="0" max="1000000" step="100"><span class="suffix">元</span></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>银行存款对比利率</label>
+        <div class="input-suffix"><input type="number" id="bankRate" value="2.0" min="0" max="10" step="0.01"><span class="suffix">%</span></div>
+      </div>
+    </div>
+
+    <!-- 分红参数 -->
+    <div class="card section-amber">
+      <div class="card-header"><span class="icon-dot" style="background:#f59e0b;"></span>分红参数</div>
+      <div class="form-group">
+        <label>保障利率</label>
+        <div class="input-suffix"><input type="number" id="guaranteedRate" value="2.5" min="1.5" max="3.0" step="0.1"><span class="suffix">%</span></div>
+      </div>
+      <div class="form-group">
+        <label>低档演示利率 <span style="color:#6b7280;font-weight:400;">— 保底收益情景</span></label>
+        <div class="input-suffix"><input type="number" id="dividendRateLow" value="2.5" min="0" max="10" step="0.1"><span class="suffix">%</span></div>
+      </div>
+      <div class="form-group">
+        <label>中档演示利率 <span style="color:#6b7280;font-weight:400;">— 历史平均水平</span></label>
+        <div class="input-suffix"><input type="number" id="dividendRateMedium" value="3.5" min="0" max="10" step="0.1"><span class="suffix">%</span></div>
+      </div>
+      <div class="form-group">
+        <label>高档演示利率 <span style="color:#6b7280;font-weight:400;">— 理想收益情景</span></label>
+        <div class="input-suffix"><input type="number" id="dividendRateHigh" value="4.5" min="0" max="10" step="0.1"><span class="suffix">%</span></div>
+      </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="calculate()">开始计算</button>
+      <button class="btn btn-outline" onclick="resetAll()">重置</button>
+    </div>
+  </div>
+
+  <!-- 右侧结果 -->
+  <div class="right-panel" id="resultPanel">
+    <div class="empty-state" id="emptyState">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      <h3>填写左侧参数后点击「开始计算」</h3>
+      <p>系统将自动生成完整的收益对比分析报告</p>
+    </div>
+    <div id="resultContent" style="display:none;">
+      <!-- 汇总卡片 -->
+      <div class="summary-grid" id="summaryCards"></div>
+
+      <!-- 情景切换 -->
+      <div class="scenario-tabs" id="scenarioTabs">
+        <button class="scenario-tab active" data-scenario="low">低档（保底）</button>
+        <button class="scenario-tab" data-scenario="medium">中档（平均）</button>
+        <button class="scenario-tab" data-scenario="high">高档（理想）</button>
+      </div>
+
+      <!-- 年度收益趋势图 -->
+      <div class="chart-container">
+        <h3>年度收益趋势</h3>
+        <div class="chart-wrap"><canvas id="earningsChart"></canvas></div>
+      </div>
+
+      <!-- 保单 vs 银行对比图 -->
+      <div class="chart-container">
+        <h3>保单收益 vs 银行储蓄</h3>
+        <div class="chart-wrap"><canvas id="compareChart"></canvas></div>
+      </div>
+
+      <!-- 情景对比柱状图 + 年份滑块 -->
+      <div class="chart-container">
+        <h3>三档情景对比（选择年份）</h3>
+        <div class="year-slider-wrap">
+          <span style="font-size:12px;color:var(--gray-500);">第1年</span>
+          <input type="range" id="yearSlider" min="1" value="30" step="1" oninput="updateBarChart()">
+          <span style="font-size:12px;color:var(--gray-500);" id="yearSliderEnd">第30年</span>
+          <span class="year-label" id="yearSliderLabel">第30年</span>
+        </div>
+        <div class="chart-wrap"><canvas id="scenarioBarChart"></canvas></div>
+      </div>
+
+      <!-- 历年数据表格 -->
+      <div class="chart-container">
+        <h3>历年收益明细表</h3>
+        <div class="table-wrap" id="dataTableWrap"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ======== 全局状态 ========
+var calcResult = null;
+var currentScenario = 'medium';
+var charts = {};
+
+// ======== 工具函数 ========
+function formatCurrency(amount) {
+  return new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
+}
+function formatLargeNumber(amount) {
+  if (Math.abs(amount) >= 100000000) return (amount / 100000000).toFixed(2) + '亿';
+  if (Math.abs(amount) >= 10000) return (amount / 10000).toFixed(2) + '万';
+  return amount.toFixed(2);
+}
+function formatMoney(amount) {
+  if (amount == null || isNaN(amount)) return '-';
+  var abs = Math.abs(amount);
+  if (abs >= 100000000) return (amount / 100000000).toFixed(2) + ' 亿';
+  if (abs >= 10000) return (amount / 10000).toFixed(2) + ' 万';
+  return Number(amount).toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+function getVal(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function getRadioVal(name) {
+  var radios = document.getElementsByName(name);
+  for (var i = 0; i < radios.length; i++) { if (radios[i].checked) return radios[i].value; }
+  return '';
+}
+
+// ======== 实时提示更新 ========
+function updateHints() {
+  var age = getVal('insuredAge');
+  var startAge = getVal('survivalBenefitStartAge');
+  var survivalHint = document.getElementById('survivalHint');
+  if (startAge > age) {
+    survivalHint.textContent = '当前投保年龄' + age + '岁，预计' + (startAge - age) + '年后（' + startAge + '岁）开始领取';
+  } else {
+    survivalHint.textContent = '投保时已满' + startAge + '岁，首年即开始领取';
+  }
+
+  var premium = getVal('annualPremium');
+  var extraRate = getVal('extraDividendRate');
+  document.getElementById('extraDividendHint').textContent = '每笔额外派发保费 × ' + extraRate + '% = ' + formatCurrency(premium * extraRate / 100) + '元';
+}
+
+// 绑定实时更新
+['insuredAge','survivalBenefitStartAge','annualPremium','extraDividendRate'].forEach(function(id) {
+  document.getElementById(id).addEventListener('input', updateHints);
+});
+updateHints();
+
+// ======== Toast ========
+function showToast(msg, type) {
+  var t = document.createElement('div');
+  t.className = 'toast ' + (type || 'success');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function() { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; }, 2000);
+  setTimeout(function() { t.remove(); }, 2500);
+}
+
+// ======== 核心计算 ========
+function calculate() {
+  var params = {
+    insuredAge: getVal('insuredAge'),
+    insuredGender: getRadioVal('gender'),
+    annualPremium: getVal('annualPremium'),
+    paymentYears: parseInt(document.getElementById('paymentYears').value),
+    paymentMethod: getRadioVal('payMethod'),
+    guaranteePeriod: getVal('guaranteePeriod'),
+    guaranteedRate: getVal('guaranteedRate'),
+    dividendRateLow: getVal('dividendRateLow'),
+    dividendRateMedium: getVal('dividendRateMedium'),
+    dividendRateHigh: getVal('dividendRateHigh'),
+    annualSurvivalBenefit: getVal('annualSurvivalBenefit'),
+    survivalBenefitStartAge: getVal('survivalBenefitStartAge'),
+    extraDividendRate: getVal('extraDividendRate'),
+    secondaryInterestRate: getVal('secondaryInterestRate'),
+    annualWithdrawal: getVal('annualWithdrawal'),
+    bankRate: getVal('bankRate')
+  };
+
+  // 校验
+  if (params.insuredAge < 18 || params.insuredAge > 65) { showToast('投保年龄需在18-65岁之间', 'warning'); return; }
+  if (params.annualPremium < 1000) { showToast('年缴保费不能低于1000元', 'warning'); return; }
+  if (params.guaranteePeriod < 1 || params.guaranteePeriod > 100) { showToast('保障期限需在1-100年之间', 'warning'); return; }
+
+  Decimal.set({ precision: 20, rounding: Decimal.ROUND_HALF_UP });
+
+  var scenarios = {
+    low: params.dividendRateLow,
+    medium: params.dividendRateMedium,
+    high: params.dividendRateHigh
+  };
+
+  var result = { scenarios: {}, params: params };
+
+  Object.keys(scenarios).forEach(function(key) {
+    var divRate = scenarios[key];
+    result.scenarios[key] = computeScenario(params, divRate);
+  });
+
+  calcResult = result;
+  currentScenario = 'medium';
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('resultContent').style.display = 'block';
+
+  renderSummaryCards();
+  updateScenarioTabs();
+  renderAllCharts();
+  renderDataTable();
+
+  // 滚动到结果区
+  document.getElementById('resultContent').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  showToast('计算完成', 'success');
+}
+
+function computeScenario(params, dividendRate) {
+  var D = Decimal;
+  var years = params.guaranteePeriod;
+  var data = [];
+
+  var cumPremium = new D(0);
+  var secondaryAccount = new D(0);
+  var bankAccount = new D(0);
+  var totalSurvivalBenefit = new D(0);
+  var totalExtraDividend = new D(0);
+  var totalDividend = new D(0);
+  var totalWithdrawal = new D(0);
+
+  for (var y = 1; y <= years; y++) {
+    var currentAge = params.insuredAge + y - 1;
+
+    // 1. 当年保费
+    var annualPremium = new D(params.annualPremium);
+    var premium = y <= params.paymentYears ? annualPremium : new D(0);
+
+    // 2. 累计保费
+    cumPremium = cumPremium.plus(premium);
+
+    // 3. 当年生存金
+    var survivalBenefit = new D(0);
+    if (currentAge >= params.survivalBenefitStartAge) {
+      survivalBenefit = new D(params.annualSurvivalBenefit);
+    }
+
+    // 4. 当年分红
+    var cashValueBase = cumPremium.times(0.85);
+    var dividend = cashValueBase.times(dividendRate).div(100).times(0.70);
+
+    // 5. 当年额外派息
+    var extraDividend = new D(0);
+    if (currentAge >= params.survivalBenefitStartAge) {
+      extraDividend = annualPremium.times(params.extraDividendRate).div(100);
+    }
+
+    // 6. 当年总返还
+    var totalReturn = survivalBenefit.plus(extraDividend).plus(dividend);
+
+    // 7. 二次生息账户
+    var interestBase = secondaryAccount.plus(totalReturn);
+    var interest = interestBase.times(params.secondaryInterestRate).div(100);
+    var withdrawal = new D(params.annualWithdrawal);
+    secondaryAccount = interestBase.plus(interest).minus(withdrawal);
+    if (secondaryAccount.lt(0)) secondaryAccount = new D(0);
+
+    // 8. 银行存款对比
+    var bankDeposit = y <= params.paymentYears ? annualPremium : new D(0);
+    var bankBase = bankAccount.plus(bankDeposit);
+    var bankInterest = bankBase.times(params.bankRate).div(100);
+    bankAccount = bankBase.plus(bankInterest);
+
+    // 9. 现金价值
+    var cashValue = cumPremium.times(0.85);
+
+    // 10. 身故保障金
+    var deathBenefit = D.max(cumPremium.times(5), cashValue, cumPremium.times(1.05));
+
+    totalSurvivalBenefit = totalSurvivalBenefit.plus(survivalBenefit);
+    totalExtraDividend = totalExtraDividend.plus(extraDividend);
+    totalDividend = totalDividend.plus(dividend);
+    totalWithdrawal = totalWithdrawal.plus(withdrawal);
+
+    data.push({
+      year: y,
+      currentAge: currentAge,
+      premium: premium.toNumber(),
+      cumPremium: cumPremium.toNumber(),
+      survivalBenefit: survivalBenefit.toNumber(),
+      extraDividend: extraDividend.toNumber(),
+      dividend: dividend.toNumber(),
+      totalReturn: totalReturn.toNumber(),
+      secondaryAccount: secondaryAccount.toNumber(),
+      bankAccount: bankAccount.toNumber(),
+      bankInterest: bankAccount.minus(cumPremium).toNumber(),
+      cashValue: cashValue.toNumber(),
+      deathBenefit: deathBenefit.toNumber(),
+      withdrawal: withdrawal.toNumber()
+    });
+  }
+
+  return {
+    data: data,
+    totalPremium: cumPremium.toNumber(),
+    totalSurvivalBenefit: totalSurvivalBenefit.toNumber(),
+    totalExtraDividend: totalExtraDividend.toNumber(),
+    totalDividend: totalDividend.toNumber(),
+    finalSecondaryAccount: secondaryAccount.toNumber(),
+    totalWithdrawal: totalWithdrawal.toNumber(),
+    finalBankAccount: bankAccount.toNumber(),
+    totalBankInterest: bankAccount.minus(cumPremium).toNumber()
+  };
+}
+
+// ======== 汇总卡片 ========
+function renderSummaryCards() {
+  var s = calcResult.scenarios.medium;
+  var p = calcResult.params;
+  var html = '';
+
+  var cards = [
+    { cls: 'sc-blue', label: '总投入保费', value: formatMoney(s.totalPremium), sub: '' },
+    { cls: 'sc-green', label: '累计生存金', value: formatMoney(s.totalSurvivalBenefit), sub: '' },
+    { cls: 'sc-teal', label: '累计额外派息', value: formatMoney(s.totalExtraDividend), sub: '保费×' + p.extraDividendRate + '%' },
+    { cls: 'sc-amber', label: '累计分红', value: formatMoney(s.totalDividend), sub: '' },
+    { cls: 'sc-red', label: '二次生息账户', value: formatMoney(s.finalSecondaryAccount), sub: '含复利滚存' },
+    { cls: 'sc-cyan', label: '银行存款对比', value: formatMoney(s.finalBankAccount), sub: '本息合计' }
+  ];
+
+  cards.forEach(function(c) {
+    html += '<div class="summary-card ' + c.cls + '"><div class="sc-label">' + c.label + '</div><div class="sc-value">' + c.value + '</div><div class="sc-sub">' + c.sub + '</div></div>';
+  });
+
+  // 保单 vs 银行收益差
+  var diff = s.finalSecondaryAccount - s.finalBankAccount;
+  var diffCls = diff >= 0 ? 'sc-green' : 'sc-red';
+  var diffLabel = diff >= 0 ? '保单多赚' : '保单少赚';
+  html += '<div class="summary-card ' + diffCls + '"><div class="sc-label">' + diffLabel + '</div><div class="sc-value">' + formatMoney(Math.abs(diff)) + '</div><div class="sc-sub">对比银行存款</div></div>';
+
+  document.getElementById('summaryCards').innerHTML = html;
+}
+
+// ======== 情景切换 ========
+function updateScenarioTabs() {
+  var tabs = document.querySelectorAll('#scenarioTabs .scenario-tab');
+  tabs.forEach(function(t) {
+    t.classList.toggle('active', t.dataset.scenario === currentScenario);
+  });
+}
+
+document.getElementById('scenarioTabs').addEventListener('click', function(e) {
+  if (e.target.classList.contains('scenario-tab')) {
+    currentScenario = e.target.dataset.scenario;
+    updateScenarioTabs();
+    renderAllCharts();
+    renderDataTable();
+  }
+});
+
+// ======== 图表渲染 ========
+function destroyChart(key) {
+  if (charts[key]) { charts[key].destroy(); charts[key] = null; }
+}
+
+function renderAllCharts() {
+  renderEarningsChart();
+  renderCompareChart();
+  updateBarChart();
+}
+
+function getScenarioData() {
+  return calcResult.scenarios[currentScenario].data;
+}
+
+function getYearLabels() {
+  return getScenarioData().map(function(d) { return '第' + d.year + '年'; });
+}
+
+// 图表1: 年度收益趋势
+function renderEarningsChart() {
+  destroyChart('earnings');
+  var data = getScenarioData();
+  var ctx = document.getElementById('earningsChart').getContext('2d');
+
+  charts.earnings = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: getYearLabels(),
+      datasets: [
+        { label: '累计保费', data: data.map(function(d) { return d.cumPremium; }), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.1)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2 },
+        { label: '生存金', data: data.map(function(d) { return d.survivalBenefit; }), borderColor: '#22c55e', borderWidth: 2, tension: .3, pointRadius: 0 },
+        { label: '额外派息', data: data.map(function(d) { return d.extraDividend; }), borderColor: '#14b8a6', borderWidth: 2, tension: .3, pointRadius: 0 },
+        { label: '分红', data: data.map(function(d) { return d.dividend; }), borderColor: '#f59e0b', borderWidth: 2, tension: .3, pointRadius: 0 },
+        { label: '二次生息账户', data: data.map(function(d) { return d.secondaryAccount; }), borderColor: '#ef4444', borderWidth: 2.5, tension: .3, pointRadius: 0, borderDash: [5,3] },
+        { label: '银行存款', data: data.map(function(d) { return d.bankAccount; }), borderColor: '#06b6d4', borderWidth: 2, tension: .3, pointRadius: 0, borderDash: [5,3] }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16, font: { size: 11 }, usePointStyle: true } },
+        tooltip: { callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + formatCurrency(ctx.parsed.y); } } }
+      },
+      scales: {
+        y: { ticks: { callback: function(v) { return formatMoney(v); } }, grid: { color: '#f3f4f6' } },
+        x: { ticks: { maxTicksLimit: 15, font: { size: 10 } }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+// 图表2: 保单 vs 银行
+function renderCompareChart() {
+  destroyChart('compare');
+  var data = getScenarioData();
+  var ctx = document.getElementById('compareChart').getContext('2d');
+
+  charts.compare = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: getYearLabels(),
+      datasets: [
+        { label: '保单总收益（二次生息账户）', data: data.map(function(d) { return d.secondaryAccount; }), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2.5 },
+        { label: '银行储蓄本息', data: data.map(function(d) { return d.bankAccount; }), borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,.06)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2.5 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16, font: { size: 11 }, usePointStyle: true } },
+        tooltip: { callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + formatCurrency(ctx.parsed.y); } } }
+      },
+      scales: {
+        y: { ticks: { callback: function(v) { return formatMoney(v); } }, grid: { color: '#f3f4f6' } },
+        x: { ticks: { maxTicksLimit: 15, font: { size: 10 } }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+// 图表3: 三档情景对比柱状图
+function updateBarChart() {
+  destroyChart('bar');
+  var slider = document.getElementById('yearSlider');
+  var yearIdx = parseInt(slider.value) - 1;
+  var maxYear = calcResult.params.guaranteePeriod;
+  slider.max = maxYear;
+  document.getElementById('yearSliderEnd').textContent = '第' + maxYear + '年';
+  document.getElementById('yearSliderLabel').textContent = '第' + (yearIdx + 1) + '年';
+
+  var ctx = document.getElementById('scenarioBarChart').getContext('2d');
+  var metrics = ['生存金', '额外派息', '分红', '二次生息账户'];
+  var colors = ['#22c55e', '#14b8a6', '#f59e0b', '#ef4444'];
+  var bgColors = ['rgba(34,197,94,.7)', 'rgba(20,184,166,.7)', 'rgba(245,158,11,.7)', 'rgba(239,68,68,.7)'];
+
+  var datasets = [];
+  var scenarioLabels = { low: '低档（保底）', medium: '中档（平均）', high: '高档（理想）' };
+  var scenarioColors = { low: '#93c5fd', medium: '#3b82f6', high: '#1d4ed8' };
+
+  var scenarios = ['low', 'medium', 'high'];
+  scenarios.forEach(function(sc, si) {
+    var d = calcResult.scenarios[sc].data[yearIdx];
+    datasets.push({
+      label: scenarioLabels[sc],
+      data: [d.survivalBenefit, d.extraDividend, d.dividend, d.secondaryAccount],
+      backgroundColor: scenarioColors[sc],
+      borderColor: scenarioColors[sc],
+      borderWidth: 1,
+      borderRadius: 4
+    });
+  });
+
+  charts.bar = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: metrics, datasets: datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16, font: { size: 11 }, usePointStyle: true } },
+        tooltip: { callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + formatCurrency(ctx.parsed.y); } } }
+      },
+      scales: {
+        y: { ticks: { callback: function(v) { return formatMoney(v); } }, grid: { color: '#f3f4f6' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+// ======== 数据表格 ========
+function renderDataTable() {
+  var data = getScenarioData();
+  var html = '<table><thead><tr>';
+  var headers = ['年份', '当年保费', '累计保费', '生存金', '额外派息', '分红', '生息账户', '当年提取', '银行存款'];
+  headers.forEach(function(h) { html += '<th>' + h + '</th>'; });
+  html += '</tr></thead><tbody>';
+
+  data.forEach(function(d) {
+    html += '<tr>';
+    html += '<td>第' + d.year + '年</td>';
+    html += '<td>' + formatMoney(d.premium) + '</td>';
+    html += '<td>' + formatMoney(d.cumPremium) + '</td>';
+    html += '<td>' + formatMoney(d.survivalBenefit) + '</td>';
+    html += '<td>' + formatMoney(d.extraDividend) + '</td>';
+    html += '<td>' + formatMoney(d.dividend) + '</td>';
+    html += '<td style="font-weight:700;">' + formatMoney(d.secondaryAccount) + '</td>';
+    html += '<td>' + formatMoney(d.withdrawal) + '</td>';
+    html += '<td>' + formatMoney(d.bankAccount) + '</td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('dataTableWrap').innerHTML = html;
+}
+
+// ======== 重置 ========
+function resetAll() {
+  document.getElementById('insuredAge').value = 30;
+  document.getElementById('annualPremium').value = 10000;
+  document.getElementById('paymentYears').value = '20';
+  document.getElementById('guaranteePeriod').value = 30;
+  document.getElementById('guaranteedRate').value = 2.5;
+  document.getElementById('dividendRateLow').value = 2.5;
+  document.getElementById('dividendRateMedium').value = 3.5;
+  document.getElementById('dividendRateHigh').value = 4.5;
+  document.getElementById('annualSurvivalBenefit').value = 2000;
+  document.getElementById('survivalBenefitStartAge').value = 60;
+  document.getElementById('extraDividendRate').value = 5;
+  document.getElementById('secondaryInterestRate').value = 3.0;
+  document.getElementById('annualWithdrawal').value = 0;
+  document.getElementById('bankRate').value = 2.0;
+  document.getElementById('productName').value = '分红型年金保险';
+  document.getElementById('company').value = '国寿';
+  document.querySelector('input[name="gender"][value="male"]').checked = true;
+  document.querySelector('input[name="payMethod"][value="annual"]').checked = true;
+
+  calcResult = null;
+  document.getElementById('emptyState').style.display = '';
+  document.getElementById('resultContent').style.display = 'none';
+  Object.keys(charts).forEach(function(k) { destroyChart(k); });
+  updateHints();
+  showToast('已重置为默认值', 'success');
+}
+</script>
+</body>
+</html>
