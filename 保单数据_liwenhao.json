@@ -256,22 +256,35 @@
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20210101",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "4060",
           "sumInsured": "200000",
           "paymentTerm": "19",
+          "paymentBank": "",
+          "paymentBankCard": "",
           "insured": "江有辉",
-          "insuredRelation": "",
-          "insuredId": "",
-          "insuredPhone": "",
+          "insuredRelation": "丈夫",
+          "insuredId": "441881198812032827",
+          "insuredPhone": "15019342936",
+          "insuredAddress": "北江一路金海湾桃花圆 7 座 1201",
           "beneficiaries": [
             {
               "name": "陈婉琼",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
           "serviceRecords": [],
           "_idx": 0
@@ -283,22 +296,35 @@
           "mainType": "附加险",
           "parentPolicyCode": "2021442000SK5500002768",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20210101",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "1960",
           "sumInsured": "200000",
           "paymentTerm": "19",
+          "paymentBank": "",
+          "paymentBankCard": "",
           "insured": "江有辉",
-          "insuredRelation": "",
-          "insuredId": "",
-          "insuredPhone": "",
+          "insuredRelation": "丈夫",
+          "insuredId": "441881198812032827",
+          "insuredPhone": "15019342936",
+          "insuredAddress": "北江一路金海湾桃花圆 7 座 1201",
           "beneficiaries": [
             {
               "name": "陈婉琼",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
           "serviceRecords": [],
           "_idx": 1
@@ -310,22 +336,35 @@
           "mainType": "附加险",
           "parentPolicyCode": "2021442000SK5500002768",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20210101",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "137.86",
           "sumInsured": "6020",
           "paymentTerm": "19",
+          "paymentBank": "",
+          "paymentBankCard": "",
           "insured": "江有辉",
-          "insuredRelation": "",
-          "insuredId": "",
-          "insuredPhone": "",
+          "insuredRelation": "丈夫",
+          "insuredId": "441881198812032827",
+          "insuredPhone": "15019342936",
+          "insuredAddress": "北江一路金海湾桃花圆 7 座 1201",
           "beneficiaries": [
             {
               "name": "陈婉琼",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
           "serviceRecords": [],
           "_idx": 2
@@ -3558,7 +3597,7 @@
       "codeType": "S43"
     }
   ],
-  "_timestamp": "1785115271884",
+  "_timestamp": "1785249392403",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
