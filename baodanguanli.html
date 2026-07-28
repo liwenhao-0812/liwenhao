@@ -754,12 +754,10 @@ button {
   border-bottom: 2px solid #0f1a2e;
 }
 .policy-table tr:hover { background: var(--color-accent-pale); }
-.policy-table .col-code { width: 120px; font-size: 11px; font-family: 'SF Mono', 'Consolas', 'Monaco', monospace; color: #475569; }
 .policy-table .col-name { min-width: 0; }
 .policy-table .col-type { width: 50px; text-align: center; }
 .policy-table .col-status { width: 50px; text-align: center; }
-.policy-table .col-premium { width: 80px; font-size: 14px; font-weight: 800; color: #0f172a; text-align: right; }
-.policy-table .col-insured { width: 60px; }
+.policy-table .col-insured { font-size: 14px; font-weight: 700; color: #0f172a; }
 .policy-table .col-sum-insured { font-size: 20px; font-weight: 900; color: #1a2744; }
 
 /* ======== 模态框 ======== */
@@ -1085,11 +1083,9 @@ button {
   .policy-detail-body { padding: 10px; }
   .policy-group-main, .policy-group-addon, .policy-group-universal { font-size: 11px; padding: 6px 10px; }
   .policy-table th, .policy-table td { padding: 6px 6px; font-size: 11px; }
-  .policy-table .col-code { width: 90px; font-size: 10px; }
   .policy-table .col-type { width: 36px; }
   .policy-table .col-status { width: 36px; }
-  .policy-table .col-premium { width: 60px; font-size: 12px; }
-  .policy-table .col-insured { width: 44px; }
+  .policy-table .col-insured { font-size: 12px; }
 }
 
 /* ======== 险种库卡片布局 ======== */
@@ -2835,18 +2831,14 @@ function renderDetailPanel(idx) {
     html += '<div class="empty-state"><p>暂无保单</p></div>';
   } else {
     html += '<div class="table-responsive"><table class="policy-table" style="font-size:12px;">' +
-      '<thead><tr><th class="col-code">代码</th><th class="col-name">险种</th><th class="col-type">类型</th><th class="col-status">状态</th><th class="col-premium">保费</th><th class="col-insured">被保人</th></tr></thead><tbody>';
+      '<thead><tr><th class="col-name">险种</th><th class="col-type">类型</th><th class="col-status">状态</th><th class="col-insured">被保人</th></tr></thead><tbody>';
     c.policies.forEach(function(p, pIdx) {
       var statusClass = p.status === '有效' ? 'tag-green' : 'tag-red';
       var typeTag = p.mainType === '附加险' ? 'tag-yellow' : p.mainType === '万能险' ? 'tag-purple' : 'tag-blue';
-      var code = p.policyCode || '';
-      var codeDisplay = code.length > 16 ? code.substring(0, 8) + '...' + code.substring(code.length - 4) : code;
-      html += '<tr style="cursor:pointer;" onclick="scrollToPolicyDetail(\'policyDetail_' + pIdx + '\')" title="' + (p.policyCode || '') + '&#10;' + (p.insuranceName || '') + '">' +
-        '<td class="col-code">' + codeDisplay + '</td>' +
+      html += '<tr style="cursor:pointer;" onclick="scrollToPolicyDetail(\'policyDetail_' + pIdx + '\')" title="' + (p.insuranceName || '') + '">' +
         '<td class="col-name">' + (p.insuranceName || '') + '</td>' +
         '<td class="col-type"><span class="tag ' + typeTag + '" style="font-size:10px;padding:2px 4px;">' + (p.mainType || '主险') + '</span></td>' +
         '<td class="col-status"><span class="tag ' + statusClass + '" style="font-size:10px;padding:2px 4px;">' + (p.status || '有效') + '</span></td>' +
-        '<td class="col-premium">' + formatMoney(p.annualPremium) + '</td>' +
         '<td class="col-insured">' + (p.insured || c.name || '-') + '</td>' +
         '</tr>';
     });
