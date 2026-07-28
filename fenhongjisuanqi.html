@@ -486,7 +486,7 @@ body {
         <div class="form-hint" id="survivalHint"></div>
       </div>
       <div class="form-group">
-        <label>额外派息比例</label>
+        <label>额外派息比例（一次性）</label>
         <div class="input-suffix"><input type="number" id="extraDividendRate" value="5" min="0" max="20" step="0.5"><span class="suffix">%</span></div>
         <div class="form-hint" id="extraDividendHint"></div>
       </div>
@@ -514,16 +514,16 @@ body {
         <div class="input-suffix"><input type="number" id="guaranteedRate" value="2.5" min="1.5" max="3.0" step="0.1"><span class="suffix">%</span></div>
       </div>
       <div class="form-group">
-        <label>低档演示利率 <span style="color:#6b7280;font-weight:400;">— 保底收益情景</span></label>
-        <div class="input-suffix"><input type="number" id="dividendRateLow" value="2.5" min="0" max="10" step="0.1"><span class="suffix">%</span></div>
+        <label>低档红利 <span style="color:#6b7280;font-weight:400;">— 第一年红利（保底情景）</span></label>
+        <div class="input-suffix"><input type="number" id="dividendRateLow" value="0" min="0" max="1000000" step="100"><span class="suffix">元</span></div>
       </div>
       <div class="form-group">
-        <label>中档演示利率 <span style="color:#6b7280;font-weight:400;">— 历史平均水平</span></label>
-        <div class="input-suffix"><input type="number" id="dividendRateMedium" value="3.5" min="0" max="10" step="0.1"><span class="suffix">%</span></div>
+        <label>中档红利 <span style="color:#6b7280;font-weight:400;">— 第一年红利（历史平均）</span></label>
+        <div class="input-suffix"><input type="number" id="dividendRateMedium" value="500" min="0" max="1000000" step="100"><span class="suffix">元</span></div>
       </div>
       <div class="form-group">
-        <label>高档演示利率 <span style="color:#6b7280;font-weight:400;">— 理想收益情景</span></label>
-        <div class="input-suffix"><input type="number" id="dividendRateHigh" value="4.5" min="0" max="10" step="0.1"><span class="suffix">%</span></div>
+        <label>高档红利 <span style="color:#6b7280;font-weight:400;">— 第一年红利（理想情景）</span></label>
+        <div class="input-suffix"><input type="number" id="dividendRateHigh" value="800" min="0" max="1000000" step="100"><span class="suffix">元</span></div>
       </div>
     </div>
 
@@ -560,7 +560,7 @@ body {
 
       <!-- 保单 vs 银行对比图 -->
       <div class="chart-container">
-        <h3>保单收益 vs 银行储蓄</h3>
+        <h3>保单收益 vs 银行储蓄（含本金保障）</h3>
         <div class="chart-wrap"><canvas id="compareChart"></canvas></div>
       </div>
 
@@ -627,7 +627,7 @@ function updateHints() {
 
   var premium = getVal('annualPremium');
   var extraRate = getVal('extraDividendRate');
-  document.getElementById('extraDividendHint').textContent = '每笔额外派发保费 × ' + extraRate + '% = ' + formatCurrency(premium * extraRate / 100) + '元';
+  document.getElementById('extraDividendHint').textContent = '生存金起领首年一次性派发：保费 × ' + extraRate + '% = ' + formatCurrency(premium * extraRate / 100) + '元';
 }
 
 // 绑定实时更新
@@ -683,8 +683,8 @@ function calculate() {
   var result = { scenarios: {}, params: params };
 
   Object.keys(scenarios).forEach(function(key) {
-    var divRate = scenarios[key];
-    result.scenarios[key] = computeScenario(params, divRate);
+    var firstYearDiv = scenarios[key];
+    result.scenarios[key] = computeScenario(params, firstYearDiv);
   });
 
   calcResult = result;
@@ -703,7 +703,7 @@ function calculate() {
   showToast('计算完成', 'success');
 }
 
-function computeScenario(params, dividendRate) {
+function computeScenario(params, firstYearDividend) {
   var D = Decimal;
   var years = params.guaranteePeriod;
   var data = [];
@@ -715,6 +715,8 @@ function computeScenario(params, dividendRate) {
   var totalExtraDividend = new D(0);
   var totalDividend = new D(0);
   var totalWithdrawal = new D(0);
+  var firstYearCumPremium = new D(0);  // 第一年累计保费，用于后续红利比例计算
+  var extraDividendPaid = false;       // 额外派息是否已发放
 
   for (var y = 1; y <= years; y++) {
     var currentAge = params.insuredAge + y;
@@ -725,6 +727,7 @@ function computeScenario(params, dividendRate) {
 
     // 2. 累计保费
     cumPremium = cumPremium.plus(premium);
+    if (y === 1) firstYearCumPremium = cumPremium;
 
     // 3. 当年生存金
     var survivalBenefit = new D(0);
@@ -732,14 +735,18 @@ function computeScenario(params, dividendRate) {
       survivalBenefit = new D(params.annualSurvivalBenefit);
     }
 
-    // 4. 当年分红
-    var cashValueBase = cumPremium.times(0.85);
-    var dividend = cashValueBase.times(dividendRate).div(100).times(0.70);
+    // 4. 当年分红：第一年用输入值，后续按累计保费等比增长
+    var dividend = new D(0);
+    var fyDiv = new D(firstYearDividend);
+    if (!firstYearCumPremium.isZero()) {
+      dividend = fyDiv.times(cumPremium).div(firstYearCumPremium);
+    }
 
-    // 5. 当年额外派息
+    // 5. 当年额外派息：仅在生存金起领第一年发一次
     var extraDividend = new D(0);
-    if (currentAge >= params.survivalBenefitStartAge) {
+    if (currentAge >= params.survivalBenefitStartAge && !extraDividendPaid) {
       extraDividend = annualPremium.times(params.extraDividendRate).div(100);
+      extraDividendPaid = true;
     }
 
     // 6. 当年总返还
@@ -809,7 +816,7 @@ function renderSummaryCards() {
   var cards = [
     { cls: 'sc-blue', label: '总投入保费', value: formatMoney(s.totalPremium), sub: '' },
     { cls: 'sc-green', label: '累计生存金', value: formatMoney(s.totalSurvivalBenefit), sub: '' },
-    { cls: 'sc-teal', label: '累计额外派息', value: formatMoney(s.totalExtraDividend), sub: '保费×' + p.extraDividendRate + '%' },
+    { cls: 'sc-teal', label: '额外派息（一次性）', value: formatMoney(s.totalExtraDividend), sub: '起领首年发放' },
     { cls: 'sc-amber', label: '累计分红', value: formatMoney(s.totalDividend), sub: '' },
     { cls: 'sc-red', label: '二次生息账户', value: formatMoney(s.finalSecondaryAccount), sub: '含复利滚存' },
     { cls: 'sc-cyan', label: '银行存款对比', value: formatMoney(s.finalBankAccount), sub: '本息合计' }
@@ -875,7 +882,7 @@ function renderEarningsChart() {
     data: {
       labels: getYearLabels(),
       datasets: [
-        { label: '累计保费', data: data.map(function(d) { return d.cumPremium; }), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.1)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2 },
+        { label: '累计保费（本金保障）', data: data.map(function(d) { return d.cumPremium; }), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.1)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2 },
         { label: '生存金', data: data.map(function(d) { return d.survivalBenefit; }), borderColor: '#22c55e', borderWidth: 2, tension: .3, pointRadius: 0 },
         { label: '额外派息', data: data.map(function(d) { return d.extraDividend; }), borderColor: '#14b8a6', borderWidth: 2, tension: .3, pointRadius: 0 },
         { label: '分红', data: data.map(function(d) { return d.dividend; }), borderColor: '#f59e0b', borderWidth: 2, tension: .3, pointRadius: 0 },
@@ -911,7 +918,8 @@ function renderCompareChart() {
       labels: getYearLabels(),
       datasets: [
         { label: '保单总收益（二次生息账户）', data: data.map(function(d) { return d.secondaryAccount; }), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2.5 },
-        { label: '银行储蓄本息', data: data.map(function(d) { return d.bankAccount; }), borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,.06)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2.5 }
+        { label: '本金保障（累计保费）', data: data.map(function(d) { return d.cumPremium; }), borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,.06)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2.5, borderDash: [3,3] },
+        { label: '银行储蓄本息', data: data.map(function(d) { return d.bankAccount; }), borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,.04)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2 }
       ]
     },
     options: {
@@ -941,7 +949,7 @@ function updateBarChart() {
   document.getElementById('yearSliderLabel').textContent = '第' + (yearIdx + 1) + '年';
 
   var ctx = document.getElementById('scenarioBarChart').getContext('2d');
-  var metrics = ['生存金', '额外派息', '分红', '二次生息账户'];
+  var metrics = ['本金保障', '生存金', '额外派息', '分红', '二次生息账户'];
   var colors = ['#22c55e', '#14b8a6', '#f59e0b', '#ef4444'];
   var bgColors = ['rgba(34,197,94,.7)', 'rgba(20,184,166,.7)', 'rgba(245,158,11,.7)', 'rgba(239,68,68,.7)'];
 
@@ -954,7 +962,7 @@ function updateBarChart() {
     var d = calcResult.scenarios[sc].data[yearIdx];
     datasets.push({
       label: scenarioLabels[sc],
-      data: [d.survivalBenefit, d.extraDividend, d.dividend, d.secondaryAccount],
+      data: [d.cumPremium, d.survivalBenefit, d.extraDividend, d.dividend, d.secondaryAccount],
       backgroundColor: scenarioColors[sc],
       borderColor: scenarioColors[sc],
       borderWidth: 1,
@@ -984,7 +992,7 @@ function updateBarChart() {
 function renderDataTable() {
   var data = getScenarioData();
   var html = '<table><thead><tr>';
-  var headers = ['年份', '当年保费', '累计保费', '生存金', '额外派息', '分红', '生息账户', '当年提取', '银行存款'];
+  var headers = ['年份', '当年保费', '本金保障', '生存金', '额外派息', '分红', '生息账户', '当年提取', '银行存款'];
   headers.forEach(function(h) { html += '<th>' + h + '</th>'; });
   html += '</tr></thead><tbody>';
 
@@ -1013,9 +1021,9 @@ function resetAll() {
   document.getElementById('paymentYears').value = '20';
   document.getElementById('guaranteePeriod').value = 30;
   document.getElementById('guaranteedRate').value = 2.5;
-  document.getElementById('dividendRateLow').value = 2.5;
-  document.getElementById('dividendRateMedium').value = 3.5;
-  document.getElementById('dividendRateHigh').value = 4.5;
+  document.getElementById('dividendRateLow').value = 0;
+  document.getElementById('dividendRateMedium').value = 500;
+  document.getElementById('dividendRateHigh').value = 800;
   document.getElementById('annualSurvivalBenefit').value = 2000;
   document.getElementById('survivalBenefitStartAge').value = 60;
   document.getElementById('extraDividendRate').value = 5;
