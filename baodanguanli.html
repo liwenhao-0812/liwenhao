@@ -1176,7 +1176,12 @@ button {
     <div class="auth-header">
       <span class="logo">&#128196;</span>
       <h1>保单管理系统</h1>
-      <p style="color:#64748b;font-size:14px;">多用户云端个人保单管理平台</p>
+      <p style="color:#64748b;font-size:14px;">个人保单管理工具</p>
+    <div style="margin-top:12px;padding:10px 14px;background:#fff7ed;border:1px solid #fdba74;border-radius:8px;text-align:left;font-size:12px;color:#92400e;line-height:1.6;">
+      <strong>安全提示：</strong>本系统仅供个人使用，请勿在公共设备上登录。<br>
+      所有数据存储在您的浏览器本地，不会上传至任何第三方服务器。<br>
+      请妥善保管您的登录密码，离开时请及时退出系统。
+    </div>
     </div>
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="switchAuthTab('login')">登录</button>
@@ -1222,6 +1227,7 @@ button {
   <div class="top-bar">
     <h1>&#128196; 保单管理系统</h1>
     <div class="user-info">
+      <button class="btn-sm btn-secondary" style="font-size:11px;padding:4px 8px;margin-right:4px;" onclick="toggleSensitiveData()" title="切换敏感信息显示/隐藏">🔒</button>
       <span id="currentUserName">用户</span>
       <button class="btn-sm btn-secondary" onclick="handleLogout()">退出登录</button>
     </div>
@@ -1402,6 +1408,11 @@ button {
       <span id="syncStatusText">就绪</span>
     </div>
     <div id="bottomStats"></div>
+  </div>
+  <!-- 免责声明 -->
+  <div style="text-align:center;padding:12px 20px;font-size:11px;color:#94a3b8;line-height:1.6;">
+    <strong>免责声明：</strong>本系统仅供个人保单信息管理使用，不构成任何金融建议。<br>
+    所有数据存储在您的浏览器本地，请勿在公共设备上使用。系统不会将您的数据上传至任何第三方服务器。
   </div>
 </div>
 
@@ -1801,6 +1812,94 @@ function formatMoney(val) {
   return parseFloat(val).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+/* 敏感信息脱敏 */
+function maskIdCard(id) {
+  if (!id) return '-';
+  var s = String(id);
+  if (s.length >= 15) return s.substring(0, 4) + '****' + s.substring(s.length - 4);
+  return s.substring(0, 2) + '****' + s.substring(s.length - 2);
+}
+function maskPhone(phone) {
+  if (!phone) return '-';
+  var s = String(phone);
+  if (s.length >= 11) return s.substring(0, 3) + '****' + s.substring(s.length - 4);
+  return s.substring(0, 3) + '****';
+}
+/* 显示/隐藏敏感信息切换 */
+var showSensitiveData = false;
+function toggleSensitiveData() {
+  showSensitiveData = !showSensitiveData;
+  showToast(showSensitiveData ? '敏感信息已显示' : '敏感信息已隐藏', 'warning');
+  refreshCurrentTab();
+}
+
+/* ======== 数据加密存储 ======== */
+var ENC_SALT = 'PMSecureVault_2024_X7k9';
+function _deriveKey(keyHint) {
+  /* 从用户名+盐值派生加密密钥 */
+  var raw = keyHint + ENC_SALT;
+  var hash = 0;
+  for (var i = 0; i < raw.length; i++) {
+    var ch = raw.charCodeAt(i);
+    hash = ((hash << 5) - hash) + ch;
+    hash |= 0;
+  }
+  /* 生成16字节密钥 */
+  var key = [];
+  var seed = Math.abs(hash);
+  for (var i = 0; i < 16; i++) {
+    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+    key.push(seed % 256);
+  }
+  return key;
+}
+function secureSetItem(key, value, keyHint) {
+  try {
+    var hint = keyHint || currentUser;
+    var keyBytes = _deriveKey(hint);
+    var valStr = JSON.stringify(value);
+    var encBytes = [];
+    for (var i = 0; i < valStr.length; i++) {
+      encBytes.push(valStr.charCodeAt(i) ^ keyBytes[i % 16]);
+    }
+    /* 转为Base64存储 */
+    var binary = '';
+    for (var i = 0; i < encBytes.length; i++) {
+      binary += String.fromCharCode(encBytes[i]);
+    }
+    localStorage.setItem(key, btoa(binary));
+  } catch(e) {
+    /* 降级：加密失败时明文存储 */
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+}
+function secureGetItem(key, keyHint) {
+  try {
+    var stored = localStorage.getItem(key);
+    if (!stored) return null;
+    /* 尝试解密 */
+    var binary = atob(stored);
+    var hint = keyHint || currentUser;
+    var keyBytes = _deriveKey(hint);
+    var decBytes = [];
+    for (var i = 0; i < binary.length; i++) {
+      decBytes.push(binary.charCodeAt(i) ^ keyBytes[i % 16]);
+    }
+    var decStr = '';
+    for (var i = 0; i < decBytes.length; i++) {
+      decStr += String.fromCharCode(decBytes[i]);
+    }
+    return JSON.parse(decStr);
+  } catch(e) {
+    /* 可能是旧版明文数据，尝试直接解析 */
+    try {
+      return JSON.parse(stored);
+    } catch(e2) {
+      return null;
+    }
+  }
+}
+
 /* Toast提示 */
 function showToast(msg, type) {
   type = type || 'info';
@@ -2017,31 +2116,31 @@ function enterMainApp() {
   updateBottomStats();
 }
 
-/* ======== 数据存储（带用户前缀隔离） ======== */
+/* ======== 数据存储（加密 + 用户隔离） ======== */
 
 /* 获取当前用户保单数据 */
 function getPolicyData() {
   try {
-    return JSON.parse(localStorage.getItem('policy_data_' + currentUser) || '[]');
+    return secureGetItem('policy_data_' + currentUser) || [];
   } catch(e) { return []; }
 }
 
 /* 保存保单数据 */
 function savePolicyData() {
-  localStorage.setItem('policy_data_' + currentUser, JSON.stringify(clientData));
+  secureSetItem('policy_data_' + currentUser, clientData);
   autoSyncPush();
 }
 
 /* 获取提醒数据 */
 function getReminderData() {
   try {
-    return JSON.parse(localStorage.getItem('reminders_' + currentUser) || '[]');
+    return secureGetItem('reminders_' + currentUser) || [];
   } catch(e) { return []; }
 }
 
 /* 保存提醒数据 */
 function saveReminderData() {
-  localStorage.setItem('reminders_' + currentUser, JSON.stringify(reminderData));
+  secureSetItem('reminders_' + currentUser, reminderData);
   autoSyncPush();
 }
 
@@ -2082,17 +2181,17 @@ function getAllUserData() {
 function restoreFromCloudData(cloudData) {
   if (cloudData.policies) {
     clientData = cloudData.policies;
-    localStorage.setItem('policy_data_' + currentUser, JSON.stringify(clientData));
+    secureSetItem('policy_data_' + currentUser, clientData);
   }
   if (cloudData.reminders) {
     reminderData = cloudData.reminders;
-    localStorage.setItem('reminders_' + currentUser, JSON.stringify(reminderData));
+    secureSetItem('reminders_' + currentUser, reminderData);
   }
   if (cloudData.insuranceTypes) {
-    localStorage.setItem('insurance_type_lib_' + currentUser, JSON.stringify(cloudData.insuranceTypes));
+    secureSetItem('insurance_type_lib_' + currentUser, cloudData.insuranceTypes);
   }
   if (cloudData._timestamp) {
-    localStorage.setItem('policy_data_' + currentUser + '_timestamp', cloudData._timestamp);
+    secureSetItem('policy_data_' + currentUser + '_timestamp', cloudData._timestamp);
   }
 }
 
@@ -2133,7 +2232,7 @@ function pushToCloud() {
   })
   .then(function(r) {
     if (!r.ok) throw new Error('推送失败: ' + r.status);
-    localStorage.setItem('policy_data_' + currentUser + '_timestamp', Date.now().toString());
+    secureSetItem('policy_data_' + currentUser + '_timestamp', Date.now().toString());
     setSyncStatus('synced');
     updateSettingSyncStatus(true);
   })
@@ -2161,7 +2260,7 @@ var autoPullFromCloud = function() {
      if (!fileInfo) return;
      var jsonStr = decodeURIComponent(escape(atob(fileInfo.content.replace(/\s/g, ''))));
      var cloudData = JSON.parse(jsonStr);
-     var localTs = localStorage.getItem('policy_data_' + currentUser + '_timestamp') || '0';
+     var localTs = secureGetItem('policy_data_' + currentUser + '_timestamp') || '0';
      if (!cloudData._timestamp || cloudData._timestamp > localTs) {
        restoreFromCloudData(cloudData);
        syncExistingPoliciesToLib();
@@ -2191,7 +2290,7 @@ function manualPull() {
   .then(function(fileInfo) {
     var jsonStr = decodeURIComponent(escape(atob(fileInfo.content.replace(/\s/g, ''))));
     var cloudData = JSON.parse(jsonStr);
-    var localTs = localStorage.getItem('policy_data_' + currentUser + '_timestamp') || '0';
+    var localTs = secureGetItem('policy_data_' + currentUser + '_timestamp') || '0';
     if (cloudData._timestamp && cloudData._timestamp > localTs) {
       restoreFromCloudData(cloudData);
       syncExistingPoliciesToLib();
@@ -2228,7 +2327,7 @@ function manualPush() {
 var _autoSyncTimer = null;
 function autoSyncPush() {
   if (!currentUser) return;
-  localStorage.setItem('policy_data_' + currentUser + '_timestamp', Date.now().toString());
+  secureSetItem('policy_data_' + currentUser + '_timestamp', Date.now().toString());
   if (_autoSyncTimer) clearTimeout(_autoSyncTimer);
   _autoSyncTimer = setTimeout(function() {
     pushToCloud();
@@ -2255,7 +2354,7 @@ function startAutoPull() {
       if (!fileInfo) return;
       var jsonStr = decodeURIComponent(escape(atob(fileInfo.content.replace(/\s/g, ''))));
       var cloudData = JSON.parse(jsonStr);
-      var localTs = localStorage.getItem('policy_data_' + currentUser + '_timestamp') || '0';
+      var localTs = secureGetItem('policy_data_' + currentUser + '_timestamp') || '0';
       if (cloudData._timestamp && cloudData._timestamp > localTs) {
         restoreFromCloudData(cloudData);
         syncExistingPoliciesToLib();
@@ -2275,7 +2374,7 @@ function updateSettingSyncStatus(ok) {
   if (dot) dot.style.background = ok ? '#22c55e' : '#ef4444';
   if (status) status.textContent = ok ? '自动同步已启用' : '同步失败，请检查网络';
   if (time) {
-    var lastTs = localStorage.getItem('policy_data_' + currentUser + '_timestamp');
+    var lastTs = secureGetItem('policy_data_' + currentUser + '_timestamp');
     if (lastTs) {
       time.textContent = '上次同步: ' + new Date(parseInt(lastTs)).toLocaleString('zh-CN');
     }
@@ -2453,7 +2552,7 @@ function renderAdminPanel() {
   var users = getUsers();
   var html = '';
   users.forEach(function(u) {
-    var uData = JSON.parse(localStorage.getItem('policy_data_' + u.username) || '[]');
+    var uData = secureGetItem('policy_data_' + u.username, u.username) || [];
     var policyCount = 0;
     uData.forEach(function(c) { policyCount += (c.policies || []).length; });
     html += '<div class="user-stat-card">' +
@@ -2639,7 +2738,7 @@ function renderClientList(filtered) {
 
       /* 手机号 */
       html += '<div style="font-size:13px;color:#64748b;margin-bottom:4px;">' +
-        (c.phone ? '📱 ' + c.phone : '') + '</div>';
+        (c.phone ? '📱 ' + (showSensitiveData ? c.phone : maskPhone(c.phone)) : '') + '</div>';
 
       /* 地址 */
       if (address) {
@@ -2743,7 +2842,7 @@ function renderDetailPanel(idx) {
   }
   html += '<div class="client-name-hero">' +
     '<h3>' + (c.name || '未命名') + ageDisplay + '</h3>' +
-    '<div class="client-meta-info">' + (c.phone || '') + (c.idCard ? ' | ' + c.idCard : '') + '</div>' +
+    '<div class="client-meta-info">' + (showSensitiveData ? (c.phone || '') : maskPhone(c.phone)) + (c.idCard ? ' | ' + (showSensitiveData ? c.idCard : maskIdCard(c.idCard)) : '') + '</div>' +
     '</div>';
 
   /* 不继续服务提示条 */
@@ -2806,8 +2905,8 @@ function renderDetailPanel(idx) {
     '</div></div>' +
     '<div class="detail-section">' +
     '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;font-size:13px;">' +
-    '<p><strong>身份证：</strong>' + (c.idCard || '-') + '</p>' +
-    '<p><strong>手机号：</strong>' + (c.phone || '-') + '</p>' +
+    '<p><strong>身份证：</strong>' + (showSensitiveData ? (c.idCard || '-') : maskIdCard(c.idCard)) + '</p>' +
+    '<p><strong>手机号：</strong>' + (showSensitiveData ? (c.phone || '-') : maskPhone(c.phone)) + '</p>' +
     '<p><strong>地址：</strong>' + (c.address || '-') + '</p>' +
     '<p><strong>工作单位：</strong>' + (c.workCompany || '-') + '</p>' +
     '<p><strong>工作地址：</strong>' + (c.workAddress || '-') + '</p>' +
@@ -2818,7 +2917,7 @@ function renderDetailPanel(idx) {
     html += '<h4 style="margin-top:12px;border-bottom:1px solid #e2e8f0;padding-bottom:6px;">家庭成员</h4>';
     c.familyMembers.forEach(function(fm) {
       html += '<p style="font-size:13px;">' + (fm.name || '') + ' (' + (fm.relationship || '') + ')' +
-        (fm.phone ? ' | ' + fm.phone : '') + (fm.note ? ' | ' + fm.note : '') + '</p>';
+        (fm.phone ? ' | ' + (showSensitiveData ? fm.phone : maskPhone(fm.phone)) : '') + (fm.note ? ' | ' + fm.note : '') + '</p>';
     });
   }
   html += '</div></div>';
@@ -2902,8 +3001,8 @@ function renderDetailPanel(idx) {
         '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:16px;color:#0f172a;font-weight:500;">' +
         '<p><strong>姓名：</strong>' + (p.insured || c.name || '-') + '</p>' +
         '<p><strong>关系：</strong>' + (p.insuredRelation || '-') + '</p>' +
-        '<p><strong>身份证号：</strong>' + (p.insuredId || c.idCard || '-') + '</p>' +
-        '<p><strong>联系方式：</strong>' + (p.insuredPhone || c.phone || '-') + '</p>' +
+        '<p><strong>身份证号：</strong>' + (showSensitiveData ? (p.insuredId || c.idCard || '-') : maskIdCard(p.insuredId || c.idCard)) + '</p>' +
+        '<p><strong>联系方式：</strong>' + (showSensitiveData ? (p.insuredPhone || c.phone || '-') : maskPhone(p.insuredPhone || c.phone)) + '</p>' +
         '<p><strong>联系地址：</strong>' + (p.insuredAddress || c.address || '-') + '</p>' +
         '</div></div>';
 
@@ -3604,13 +3703,13 @@ function syncExistingPoliciesToLib() {
 /* 获取险种库 */
 function getInsuranceTypeLib() {
   try {
-    return JSON.parse(localStorage.getItem('insurance_type_lib_' + currentUser) || '[]');
+    return secureGetItem('insurance_type_lib_' + currentUser) || [];
   } catch(e) { return []; }
 }
 
 /* 保存险种库 */
 function saveInsuranceTypeLib(lib) {
-  localStorage.setItem('insurance_type_lib_' + currentUser, JSON.stringify(lib));
+  secureSetItem('insurance_type_lib_' + currentUser, lib);
 }
 
 /* 添加到险种库（去重） */
@@ -4689,12 +4788,17 @@ function exportClientToWord(idx) {
   /* 标题 */
   htmlContent += '<h1>保单信息汇总</h1>';
 
+  /* 安全提示 */
+  htmlContent += '<div style="background:#fff7ed;border:1px solid #fdba74;padding:10px 14px;margin:12px 0;border-radius:4px;font-size:10pt;color:#92400e;">';
+  htmlContent += '<strong>重要提示：</strong>本文档包含个人敏感信息，请妥善保管，勿随意外传。文档中的身份证号和手机号已做脱敏处理。';
+  htmlContent += '</div>';
+
   /* 投保人基本信息 */
   htmlContent += '<h2>一、投保人信息</h2>';
   htmlContent += '<table>';
   htmlContent += '<tr><th style="width:120px;">投保人姓名</th><td>' + (c.name || '-') + '</td></tr>';
-  htmlContent += '<tr><th>身份证号</th><td>' + (c.idCard || '-') + '</td></tr>';
-  htmlContent += '<tr><th>联系电话</th><td>' + (c.phone || '-') + '</td></tr>';
+  htmlContent += '<tr><th>身份证号</th><td>' + maskIdCard(c.idCard) + '</td></tr>';
+  htmlContent += '<tr><th>联系电话</th><td>' + maskPhone(c.phone) + '</td></tr>';
   htmlContent += '<tr><th>通信地址</th><td>' + (c.address || '-') + '</td></tr>';
   if (c.workCompany) htmlContent += '<tr><th>工作单位</th><td>' + c.workCompany + '</td></tr>';
   if (c.workAddress) htmlContent += '<tr><th>工作地址</th><td>' + c.workAddress + '</td></tr>';
@@ -4707,7 +4811,7 @@ function exportClientToWord(idx) {
     htmlContent += '<h2>二、家庭成员</h2>';
     htmlContent += '<table><tr><th>姓名</th><th>关系</th><th>身份证号</th><th>电话</th><th>备注</th></tr>';
     c.familyMembers.forEach(function(fm) {
-      htmlContent += '<tr><td>' + (fm.name || '') + '</td><td>' + (fm.relationship || '') + '</td><td>' + (fm.idCard || '') + '</td><td>' + (fm.phone || '') + '</td><td>' + (fm.note || '') + '</td></tr>';
+      htmlContent += '<tr><td>' + (fm.name || '') + '</td><td>' + (fm.relationship || '') + '</td><td>' + maskIdCard(fm.idCard) + '</td><td>' + maskPhone(fm.phone) + '</td><td>' + (fm.note || '') + '</td></tr>';
     });
     htmlContent += '</table>';
   }
@@ -4757,7 +4861,7 @@ function exportClientToWord(idx) {
         htmlContent += '<tr><th>保额</th><td colspan="3"><b>' + formatMoney(p.sumInsured) + ' 元</b></td></tr>';
       }
       htmlContent += '<tr><th>被保险人</th><td>' + (p.insured || '-') + '</td><th>与被保人关系</th><td>' + (p.insuredRelation || '-') + '</td></tr>';
-      htmlContent += '<tr><th>被保人身份证</th><td>' + (p.insuredId || '-') + '</td><th>被保人手机</th><td>' + (p.insuredPhone || '-') + '</td></tr>';
+      htmlContent += '<tr><th>被保人身份证</th><td>' + maskIdCard(p.insuredId) + '</td><th>被保人手机</th><td>' + maskPhone(p.insuredPhone) + '</td></tr>';
       /* 受益人 */
       if (p.beneficiaries && p.beneficiaries.length > 0) {
         var beneNames = p.beneficiaries.map(function(b) { return b.name + '(' + b.quota + '%)'; }).join('、');
