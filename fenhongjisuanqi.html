@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>分红型保险收益计算器</title>
+<title>收益试算计算器</title>
 <script src="https://cdn.jsdelivr.net/npm/decimal.js@10.4.3/decimal.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
@@ -400,7 +400,7 @@ body {
 <div class="header">
   <h1>
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-    分红型保险收益计算器
+    收益试算计算器
   </h1>
   <a href="baodanguanli.html" class="back-btn">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
@@ -506,9 +506,16 @@ body {
       </div>
     </div>
 
-    <!-- 分红参数 -->
+    <!-- 分红参数（可折叠） -->
     <div class="card section-amber">
-      <div class="card-header"><span class="icon-dot" style="background:#f59e0b;"></span>分红参数</div>
+      <div class="card-header" style="cursor:pointer;user-select:none;" onclick="toggleDividendSection()">
+        <span class="icon-dot" style="background:#f59e0b;"></span>红利试算
+        <label style="margin-left:auto;display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--gray-700);">
+          <input type="checkbox" id="enableDividend" checked onchange="toggleDividendSection()" style="width:18px;height:18px;accent-color:#f59e0b;">
+          启用红利试算
+        </label>
+      </div>
+      <div id="dividendSection">
       <div class="form-group">
         <label>保障利率</label>
         <div class="input-suffix"><input type="number" id="guaranteedRate" value="2.5" min="1.5" max="3.0" step="0.1"><span class="suffix">%</span></div>
@@ -524,6 +531,7 @@ body {
       <div class="form-group">
         <label>高档红利 <span style="color:#6b7280;font-weight:400;">— 第一年红利（理想情景）</span></label>
         <div class="input-suffix"><input type="number" id="dividendRateHigh" value="800" min="0" max="1000000" step="100"><span class="suffix">元</span></div>
+      </div>
       </div>
     </div>
 
@@ -565,8 +573,8 @@ body {
       </div>
 
       <!-- 情景对比柱状图 + 年份滑块 -->
-      <div class="chart-container">
-        <h3>三档情景对比（选择年份）</h3>
+      <div class="chart-container" id="barChartContainer">
+        <h3 id="barChartTitle">三档情景对比（选择年份）</h3>
         <div class="year-slider-wrap">
           <span style="font-size:12px;color:var(--gray-500);">第1年</span>
           <input type="range" id="yearSlider" min="1" value="30" step="1" oninput="updateBarChart()">
@@ -646,6 +654,19 @@ function showToast(msg, type) {
   setTimeout(function() { t.remove(); }, 2500);
 }
 
+// ======== 红利试算开关 ========
+function isDividendEnabled() {
+  var cb = document.getElementById('enableDividend');
+  return cb ? cb.checked : true;
+}
+function toggleDividendSection() {
+  var cb = document.getElementById('enableDividend');
+  var section = document.getElementById('dividendSection');
+  if (section) {
+    section.style.display = cb.checked ? '' : 'none';
+  }
+}
+
 // ======== 核心计算 ========
 function calculate() {
   var params = {
@@ -664,7 +685,8 @@ function calculate() {
     extraDividendRate: getVal('extraDividendRate'),
     secondaryInterestRate: getVal('secondaryInterestRate'),
     annualWithdrawal: getVal('annualWithdrawal'),
-    bankRate: getVal('bankRate')
+    bankRate: getVal('bankRate'),
+    enableDividend: isDividendEnabled()
   };
 
   // 校验
@@ -707,9 +729,10 @@ function computeScenario(params, firstYearDividend) {
   var D = Decimal;
   var years = params.guaranteePeriod;
   var data = [];
+  var enableDiv = params.enableDividend;
 
   var cumPremium = new D(0);
-  var secondaryAccount = new D(0);
+  var secondaryAccount = new D(0);  // 二次生息账户上年末余额
   var bankAccount = new D(0);
   var totalSurvivalBenefit = new D(0);
   var totalExtraDividend = new D(0);
@@ -735,11 +758,13 @@ function computeScenario(params, firstYearDividend) {
       survivalBenefit = new D(params.annualSurvivalBenefit);
     }
 
-    // 4. 当年分红：第一年用输入值，后续按累计保费等比增长
+    // 4. 当年分红（仅启用红利时计算）
     var dividend = new D(0);
-    var fyDiv = new D(firstYearDividend);
-    if (!firstYearCumPremium.isZero()) {
-      dividend = fyDiv.times(cumPremium).div(firstYearCumPremium);
+    if (enableDiv) {
+      var fyDiv = new D(firstYearDividend);
+      if (!firstYearCumPremium.isZero()) {
+        dividend = fyDiv.times(cumPremium).div(firstYearCumPremium);
+      }
     }
 
     // 5. 当年额外派息：仅在生存金起领第一年发一次
@@ -749,14 +774,16 @@ function computeScenario(params, firstYearDividend) {
       extraDividendPaid = true;
     }
 
-    // 6. 当年总返还
+    // 6. 当年总返还（新存入）
     var totalReturn = survivalBenefit.plus(extraDividend).plus(dividend);
 
-    // 7. 二次生息账户
-    var interestBase = secondaryAccount.plus(totalReturn);
-    var interest = interestBase.times(params.secondaryInterestRate).div(100);
+    // 7. 二次生息账户（修正：利息仅基于上年末余额，当年新存入不结息）
+    //    上年末余额 = secondaryAccount（即上一年结算后的余额）
+    //    本年利息 = 上年末余额 × 利率  （第1年无利息，因为上年末余额为0）
+    //    本年末余额 = 上年末余额 + 本年利息 + 本年新存入 - 本年提取
+    var interest = secondaryAccount.times(params.secondaryInterestRate).div(100);
     var withdrawal = new D(params.annualWithdrawal);
-    secondaryAccount = interestBase.plus(interest).minus(withdrawal);
+    secondaryAccount = secondaryAccount.plus(interest).plus(totalReturn).minus(withdrawal);
     if (secondaryAccount.lt(0)) secondaryAccount = new D(0);
 
     // 8. 银行存款对比
@@ -816,11 +843,17 @@ function renderSummaryCards() {
   var cards = [
     { cls: 'sc-blue', label: '总投入保费', value: formatMoney(s.totalPremium), sub: '' },
     { cls: 'sc-green', label: '累计生存金', value: formatMoney(s.totalSurvivalBenefit), sub: '' },
-    { cls: 'sc-teal', label: '额外派息（一次性）', value: formatMoney(s.totalExtraDividend), sub: '起领首年发放' },
-    { cls: 'sc-amber', label: '累计分红', value: formatMoney(s.totalDividend), sub: '' },
+    { cls: 'sc-teal', label: '额外派息（一次性）', value: formatMoney(s.totalExtraDividend), sub: '起领首年发放' }
+  ];
+
+  if (p.enableDividend) {
+    cards.push({ cls: 'sc-amber', label: '累计分红', value: formatMoney(s.totalDividend), sub: '' });
+  }
+
+  cards.push(
     { cls: 'sc-red', label: '二次生息账户', value: formatMoney(s.finalSecondaryAccount), sub: '含复利滚存' },
     { cls: 'sc-cyan', label: '银行存款对比', value: formatMoney(s.finalBankAccount), sub: '本息合计' }
-  ];
+  );
 
   cards.forEach(function(c) {
     html += '<div class="summary-card ' + c.cls + '"><div class="sc-label">' + c.label + '</div><div class="sc-value">' + c.value + '</div><div class="sc-sub">' + c.sub + '</div></div>';
@@ -838,9 +871,14 @@ function renderSummaryCards() {
 // ======== 情景切换 ========
 function updateScenarioTabs() {
   var tabs = document.querySelectorAll('#scenarioTabs .scenario-tab');
+  var enableDiv = calcResult.params.enableDividend;
+  var container = document.getElementById('scenarioTabs');
+  container.style.display = enableDiv ? '' : 'none';
   tabs.forEach(function(t) {
     t.classList.toggle('active', t.dataset.scenario === currentScenario);
   });
+  // 不启用红利时固定使用中档
+  if (!enableDiv) currentScenario = 'medium';
 }
 
 document.getElementById('scenarioTabs').addEventListener('click', function(e) {
@@ -861,6 +899,16 @@ function renderAllCharts() {
   renderEarningsChart();
   renderCompareChart();
   updateBarChart();
+  // 不启用红利时隐藏三档对比柱状图
+  var barContainer = document.getElementById('barChartContainer');
+  if (barContainer) {
+    barContainer.style.display = calcResult.params.enableDividend ? '' : 'none';
+  }
+  // 更新柱状图标题
+  var barTitle = document.getElementById('barChartTitle');
+  if (barTitle) {
+    barTitle.textContent = calcResult.params.enableDividend ? '三档情景对比（选择年份）' : '年度累计概况（选择年份）';
+  }
 }
 
 function getScenarioData() {
@@ -881,14 +929,21 @@ function renderEarningsChart() {
     type: 'line',
     data: {
       labels: getYearLabels(),
-      datasets: [
-        { label: '累计保费（本金保障）', data: data.map(function(d) { return d.cumPremium; }), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.1)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2 },
-        { label: '生存金', data: data.map(function(d) { return d.survivalBenefit; }), borderColor: '#22c55e', borderWidth: 2, tension: .3, pointRadius: 0 },
-        { label: '额外派息', data: data.map(function(d) { return d.extraDividend; }), borderColor: '#14b8a6', borderWidth: 2, tension: .3, pointRadius: 0 },
-        { label: '分红', data: data.map(function(d) { return d.dividend; }), borderColor: '#f59e0b', borderWidth: 2, tension: .3, pointRadius: 0 },
-        { label: '二次生息账户', data: data.map(function(d) { return d.secondaryAccount; }), borderColor: '#ef4444', borderWidth: 2.5, tension: .3, pointRadius: 0, borderDash: [5,3] },
-        { label: '银行存款', data: data.map(function(d) { return d.bankAccount; }), borderColor: '#06b6d4', borderWidth: 2, tension: .3, pointRadius: 0, borderDash: [5,3] }
-      ]
+      datasets: (function() {
+        var ds = [
+          { label: '累计保费（本金保障）', data: data.map(function(d) { return d.cumPremium; }), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.1)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2 },
+          { label: '生存金', data: data.map(function(d) { return d.survivalBenefit; }), borderColor: '#22c55e', borderWidth: 2, tension: .3, pointRadius: 0 },
+          { label: '额外派息', data: data.map(function(d) { return d.extraDividend; }), borderColor: '#14b8a6', borderWidth: 2, tension: .3, pointRadius: 0 }
+        ];
+        if (calcResult.params.enableDividend) {
+          ds.push({ label: '分红', data: data.map(function(d) { return d.dividend; }), borderColor: '#f59e0b', borderWidth: 2, tension: .3, pointRadius: 0 });
+        }
+        ds.push(
+          { label: '二次生息账户', data: data.map(function(d) { return d.secondaryAccount; }), borderColor: '#ef4444', borderWidth: 2.5, tension: .3, pointRadius: 0, borderDash: [5,3] },
+          { label: '银行存款', data: data.map(function(d) { return d.bankAccount; }), borderColor: '#06b6d4', borderWidth: 2, tension: .3, pointRadius: 0, borderDash: [5,3] }
+        );
+        return ds;
+      })()
     },
     options: {
       responsive: true,
@@ -949,7 +1004,8 @@ function updateBarChart() {
   document.getElementById('yearSliderLabel').textContent = '第' + (yearIdx + 1) + '年';
 
   var ctx = document.getElementById('scenarioBarChart').getContext('2d');
-  var metrics = ['本金保障', '生存金', '额外派息', '分红', '二次生息账户'];
+  var enableDiv = calcResult.params.enableDividend;
+  var metrics = enableDiv ? ['本金保障', '生存金', '额外派息', '分红', '二次生息账户'] : ['本金保障', '生存金', '额外派息', '二次生息账户'];
   var colors = ['#22c55e', '#14b8a6', '#f59e0b', '#ef4444'];
   var bgColors = ['rgba(34,197,94,.7)', 'rgba(20,184,166,.7)', 'rgba(245,158,11,.7)', 'rgba(239,68,68,.7)'];
 
@@ -960,9 +1016,12 @@ function updateBarChart() {
   var scenarios = ['low', 'medium', 'high'];
   scenarios.forEach(function(sc, si) {
     var d = calcResult.scenarios[sc].data[yearIdx];
+    var vals = enableDiv
+      ? [d.cumPremium, d.survivalBenefit, d.extraDividend, d.dividend, d.secondaryAccount]
+      : [d.cumPremium, d.survivalBenefit, d.extraDividend, d.secondaryAccount];
     datasets.push({
       label: scenarioLabels[sc],
-      data: [d.cumPremium, d.survivalBenefit, d.extraDividend, d.dividend, d.secondaryAccount],
+      data: vals,
       backgroundColor: scenarioColors[sc],
       borderColor: scenarioColors[sc],
       borderWidth: 1,
@@ -991,8 +1050,11 @@ function updateBarChart() {
 // ======== 数据表格 ========
 function renderDataTable() {
   var data = getScenarioData();
+  var enableDiv = calcResult.params.enableDividend;
   var html = '<table><thead><tr>';
-  var headers = ['年份', '当年保费', '本金保障', '生存金', '额外派息', '分红', '生息账户', '当年提取', '银行存款'];
+  var headers = enableDiv
+    ? ['年份', '当年保费', '本金保障', '生存金', '额外派息', '分红', '生息账户', '当年提取', '银行存款']
+    : ['年份', '当年保费', '本金保障', '生存金', '额外派息', '生息账户', '当年提取', '银行存款'];
   headers.forEach(function(h) { html += '<th>' + h + '</th>'; });
   html += '</tr></thead><tbody>';
 
@@ -1003,7 +1065,9 @@ function renderDataTable() {
     html += '<td>' + formatMoney(d.cumPremium) + '</td>';
     html += '<td>' + formatMoney(d.survivalBenefit) + '</td>';
     html += '<td>' + formatMoney(d.extraDividend) + '</td>';
-    html += '<td>' + formatMoney(d.dividend) + '</td>';
+    if (enableDiv) {
+      html += '<td>' + formatMoney(d.dividend) + '</td>';
+    }
     html += '<td style="font-weight:700;">' + formatMoney(d.secondaryAccount) + '</td>';
     html += '<td>' + formatMoney(d.withdrawal) + '</td>';
     html += '<td>' + formatMoney(d.bankAccount) + '</td>';
