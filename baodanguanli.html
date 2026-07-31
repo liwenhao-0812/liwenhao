@@ -1353,6 +1353,23 @@ button {
         </div>
       </div>
       <div class="card">
+        <div class="card-title">&#128273; GitHub Token 配置</div>
+        <p style="font-size:12px;color:#64748b;margin-bottom:8px;line-height:1.5;">
+          为实现数据云端同步，需要配置您的 GitHub Personal Access Token。<br>
+          请前往 <a href="https://github.com/settings/tokens" target="_blank" style="color:#2563eb;">GitHub Token设置页</a> 创建一个 <strong>Tokens (classic)</strong>，勾选 <code>repo</code> 权限后粘贴到下方。<br>
+          Token 将加密存储在您的浏览器本地，不会上传到任何第三方。
+        </p>
+        <div style="display:flex;gap:8px;align-items:flex-end;">
+          <div class="form-group" style="flex:1;margin-bottom:0;">
+            <label>Token</label>
+            <input type="password" id="githubTokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="font-family:monospace;font-size:13px;">
+          </div>
+          <button class="btn-primary" onclick="saveGitHubTokenConfig()" style="white-space:nowrap;">保存</button>
+          <button class="btn-outline btn-sm" onclick="toggleTokenVisibility()" style="white-space:nowrap;" id="toggleTokenBtn">显示</button>
+        </div>
+        <div id="tokenStatus" style="margin-top:8px;font-size:12px;"></div>
+      </div>
+      <div class="card">
         <div class="card-title">数据管理</div>
         <div class="btn-group" style="flex-wrap:wrap;gap:8px;">
           <button class="btn-warning" onclick="exportData()">导出数据（JSON）</button>
@@ -1990,9 +2007,13 @@ function handleLogin(e) {
 
 /* 从云端验证登录（跨浏览器支持） */
 function tryLoginFromCloud(username, password, errEl) {
+  if (!hasGitHubToken()) { /* 未配置Token，无法云端验证 */
+    errEl.textContent = '用户不存在，请先注册。如需跨设备同步，请在设置页配置GitHub Token。';
+    return;
+  }
   var fileName = '保单数据_' + username + '.json';
   fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName) + '?ref=' + GITHUB_BRANCH, {
-    headers: { 'Authorization': 'token ' + GITHUB_TOKEN },
+    headers: { 'Authorization': 'token ' + getGitHubToken() },
     cache: 'no-store'
   })
   .then(function(r) {
@@ -2105,7 +2126,7 @@ function enterMainApp() {
   document.getElementById('currentUserName').textContent = currentUser;
   loadUserData();
   startAutoPull();
-  updateSettingSyncStatus(true);
+  updateSettingSyncStatus(hasGitHubToken());
   /* 如果本地没有数据，自动从云端拉取 */
   if (clientData.length === 0 && reminderData.length === 0) {
     autoPullFromCloud();
@@ -2155,8 +2176,62 @@ function loadUserData() {
 /* GitHub 配置 */
 var GITHUB_OWNER = 'liwenhao-0812';
 var GITHUB_REPO = 'liwenhao';
-var GITHUB_TOKEN = (function() { var p=['ghu_qY','HIYj8r6H','s0rV9nRyFf','EYcHUK8tTe','323MCA']; return p.join(''); })();
 var GITHUB_BRANCH = 'master';
+
+/* 获取用户配置的 GitHub Token（加密存储） */
+function getGitHubToken() {
+  try {
+    return secureGetItem('gh_token_' + currentUser, 'gh_token_salt') || '';
+  } catch(e) { return ''; }
+}
+function setGitHubToken(tok) {
+  secureSetItem('gh_token_' + currentUser, tok, 'gh_token_salt');
+}
+function hasGitHubToken() {
+  var t = getGitHubToken();
+  return t && t.length > 10;
+}
+
+/* Token 配置 UI 函数 */
+function saveGitHubTokenConfig() {
+  var input = document.getElementById('githubTokenInput');
+  var tok = input.value.trim();
+  if (!tok) {
+    showToast('请输入 GitHub Token', 'warning');
+    return;
+  }
+  if (tok.length < 20 || (!tok.startsWith('ghp_') && !tok.startsWith('github_pat_'))) {
+    showToast('Token格式不正确，请检查', 'error');
+    return;
+  }
+  setGitHubToken(tok);
+  input.value = '';
+  document.getElementById('tokenStatus').innerHTML = '<span style="color:#16a34a;font-weight:600;">Token 已保存生效</span>';
+  updateSettingSyncStatus(true);
+  showToast('Token 已保存，云同步已启用', 'success');
+  /* 触发一次同步 */
+  setTimeout(function() { pushToCloud(); }, 500);
+}
+function toggleTokenVisibility() {
+  var input = document.getElementById('githubTokenInput');
+  var btn = document.getElementById('toggleTokenBtn');
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '隐藏';
+  } else {
+    input.type = 'password';
+    btn.textContent = '显示';
+  }
+}
+function initTokenStatus() {
+  var statusEl = document.getElementById('tokenStatus');
+  if (!statusEl) return;
+  if (hasGitHubToken()) {
+    statusEl.innerHTML = '<span style="color:#16a34a;font-weight:600;">已配置 (当前长度: ' + getGitHubToken().length + ')</span>';
+  } else {
+    statusEl.innerHTML = '<span style="color:#dc2626;">未配置，云同步功能暂不可用</span>';
+  }
+}
 
 /* 获取当前用户的数据文件名 */
 function getDataFileName() {
@@ -2198,6 +2273,11 @@ function restoreFromCloudData(cloudData) {
 /* 推送到 GitHub */
 function pushToCloud() {
   if (!currentUser) return Promise.resolve();
+  if (!hasGitHubToken()) {
+    setSyncStatus('offline');
+    updateSettingSyncStatus(false, '未配置Token');
+    return Promise.resolve();
+  }
   setSyncStatus('syncing');
   var fileName = getDataFileName();
   var data = getAllUserData();
@@ -2205,7 +2285,7 @@ function pushToCloud() {
 
   /* 先获取当前文件 SHA（如果存在） */
   return fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName) + '?ref=' + GITHUB_BRANCH, {
-    headers: { 'Authorization': 'token ' + GITHUB_TOKEN }
+    headers: { 'Authorization': 'token ' + getGitHubToken() }
   })
   .then(function(r) {
     if (r.status === 404) return null; /* 文件不存在 */
@@ -2224,7 +2304,7 @@ function pushToCloud() {
     return fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName), {
       method: 'PUT',
       headers: {
-        'Authorization': 'token ' + GITHUB_TOKEN,
+        'Authorization': 'token ' + getGitHubToken(),
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(body)
@@ -2246,9 +2326,10 @@ function pushToCloud() {
 /* 静默自动拉取（首次登录时调用，无提示） */
 var autoPullFromCloud = function() {
   if (!currentUser) return;
+  if (!hasGitHubToken()) return;
   var fileName = getDataFileName();
   fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName) + '?ref=' + GITHUB_BRANCH, {
-    headers: { 'Authorization': 'token ' + GITHUB_TOKEN },
+    headers: { 'Authorization': 'token ' + getGitHubToken() },
     cache: 'no-store'
   })
   .then(function(r) {
@@ -2275,12 +2356,13 @@ var autoPullFromCloud = function() {
 /* 从 GitHub 拉取 */
 function manualPull() {
   if (!currentUser) { showToast('请先登录', 'warning'); return; }
+  if (!hasGitHubToken()) { showToast('请先在设置页配置GitHub Token', 'warning'); return; }
   setSyncStatus('syncing');
   showToast('正在从云端恢复数据...', 'info');
   var fileName = getDataFileName();
 
   fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName) + '?ref=' + GITHUB_BRANCH, {
-    headers: { 'Authorization': 'token ' + GITHUB_TOKEN }
+    headers: { 'Authorization': 'token ' + getGitHubToken() }
   })
   .then(function(r) {
     if (r.status === 404) throw new Error('云端暂无备份数据');
@@ -2327,6 +2409,7 @@ function manualPush() {
 var _autoSyncTimer = null;
 function autoSyncPush() {
   if (!currentUser) return;
+  if (!hasGitHubToken()) return;
   secureSetItem('policy_data_' + currentUser + '_timestamp', Date.now().toString());
   if (_autoSyncTimer) clearTimeout(_autoSyncTimer);
   _autoSyncTimer = setTimeout(function() {
@@ -2340,9 +2423,10 @@ function startAutoPull() {
   if (_autoPullTimer) clearInterval(_autoPullTimer);
   _autoPullTimer = setInterval(function() {
     if (!currentUser) return;
+    if (!hasGitHubToken()) return;
     var fileName = getDataFileName();
     fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName) + '?ref=' + GITHUB_BRANCH, {
-      headers: { 'Authorization': 'token ' + GITHUB_TOKEN },
+      headers: { 'Authorization': 'token ' + getGitHubToken() },
       cache: 'no-store'
     })
     .then(function(r) {
@@ -2367,16 +2451,32 @@ function startAutoPull() {
 }
 
 /* 更新设置页的同步状态 */
-function updateSettingSyncStatus(ok) {
+function updateSettingSyncStatus(ok, customMsg) {
   var dot = document.getElementById('settingSyncDot');
   var status = document.getElementById('settingSyncStatus');
   var time = document.getElementById('settingSyncTime');
-  if (dot) dot.style.background = ok ? '#22c55e' : '#ef4444';
-  if (status) status.textContent = ok ? '自动同步已启用' : '同步失败，请检查网络';
+  if (dot) {
+    if (!hasGitHubToken()) {
+      dot.style.background = '#f59e0b'; /* 橙色：未配置Token */
+    } else {
+      dot.style.background = ok ? '#22c55e' : '#ef4444';
+    }
+  }
+  if (status) {
+    if (customMsg) {
+      status.textContent = customMsg;
+    } else if (!hasGitHubToken()) {
+      status.textContent = '请配置GitHub Token';
+    } else {
+      status.textContent = ok ? '自动同步已启用' : '同步失败，请检查网络';
+    }
+  }
   if (time) {
-    var lastTs = secureGetItem('policy_data_' + currentUser + '_timestamp');
-    if (lastTs) {
-      time.textContent = '上次同步: ' + new Date(parseInt(lastTs)).toLocaleString('zh-CN');
+    if (!hasGitHubToken()) {
+      time.textContent = '请前往下方「GitHub Token 配置」创建设置Token以启用云同步';
+    } else {
+      var lastTs = secureGetItem('policy_data_' + currentUser + '_timestamp');
+      time.textContent = lastTs ? '上次同步: ' + new Date(parseInt(lastTs)).toLocaleString('zh-CN') : '数据变更时自动保存到云端';
     }
   }
 }
@@ -2385,8 +2485,12 @@ function updateSettingSyncStatus(ok) {
 function setSyncStatus(status) {
   const dot = document.getElementById('syncDot');
   const text = document.getElementById('syncStatusText');
+  if (!dot || !text) return;
   dot.className = 'sync-dot';
-  if (status === 'synced') {
+  if (!hasGitHubToken()) {
+    dot.classList.add('offline');
+    text.textContent = '未配置Token';
+  } else if (status === 'synced') {
     text.textContent = '已同步';
   } else if (status === 'syncing') {
     dot.classList.add('syncing');
@@ -2429,6 +2533,7 @@ function refreshCurrentTab() {
     case 'reminders': renderReminders(); break;
     case 'tracking': populateTrackClientSelect(); break;
     case 'inslib': renderInsuranceTypeLib(); break;
+    case 'settings': updateSettingSyncStatus(hasGitHubToken()); initTokenStatus(); break;
   }
   updateBottomStats();
 }
