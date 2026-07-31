@@ -492,7 +492,7 @@ body {
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>二次生息利率</label>
+          <label>万能账户利率</label>
           <div class="input-suffix"><input type="number" id="secondaryInterestRate" value="3.0" min="0" max="10" step="0.1"><span class="suffix">%</span></div>
         </div>
         <div class="form-group">
@@ -732,7 +732,7 @@ function computeScenario(params, firstYearDividend) {
   var enableDiv = params.enableDividend;
 
   var cumPremium = new D(0);
-  var secondaryAccount = new D(0);  // 二次生息账户上年末余额
+  var secondaryAccount = new D(0);  // 万能账户上年末余额
   var bankAccount = new D(0);
   var totalSurvivalBenefit = new D(0);
   var totalExtraDividend = new D(0);
@@ -777,7 +777,7 @@ function computeScenario(params, firstYearDividend) {
     // 6. 当年总返还（新存入）
     var totalReturn = survivalBenefit.plus(extraDividend).plus(dividend);
 
-    // 7. 二次生息账户（修正：利息仅基于上年末余额，当年新存入不结息）
+    // 7. 万能账户（修正：利息仅基于上年末余额，当年新存入不结息）
     //    上年末余额 = secondaryAccount（即上一年结算后的余额）
     //    本年利息 = 上年末余额 × 利率  （第1年无利息，因为上年末余额为0）
     //    本年末余额 = 上年末余额 + 本年利息 + 本年新存入 - 本年提取
@@ -851,7 +851,7 @@ function renderSummaryCards() {
   }
 
   cards.push(
-    { cls: 'sc-red', label: '二次生息账户', value: formatMoney(s.finalSecondaryAccount), sub: '含复利滚存' },
+    { cls: 'sc-red', label: '万能账户', value: formatMoney(s.finalSecondaryAccount), sub: '含复利滚存' },
     { cls: 'sc-cyan', label: '银行存款对比', value: formatMoney(s.finalBankAccount), sub: '本息合计' }
   );
 
@@ -859,8 +859,8 @@ function renderSummaryCards() {
     html += '<div class="summary-card ' + c.cls + '"><div class="sc-label">' + c.label + '</div><div class="sc-value">' + c.value + '</div><div class="sc-sub">' + c.sub + '</div></div>';
   });
 
-  // 保单 vs 银行收益差
-  var diff = s.finalSecondaryAccount - s.finalBankAccount;
+  // 保单 vs 银行收益差（保单 = 万能账户 + 累计保费）
+  var diff = (s.finalSecondaryAccount + s.totalPremium) - s.finalBankAccount;
   var diffCls = diff >= 0 ? 'sc-green' : 'sc-red';
   var diffLabel = diff >= 0 ? '保单多赚' : '保单少赚';
   html += '<div class="summary-card ' + diffCls + '"><div class="sc-label">' + diffLabel + '</div><div class="sc-value">' + formatMoney(Math.abs(diff)) + '</div><div class="sc-sub">对比银行存款</div></div>';
@@ -939,7 +939,7 @@ function renderEarningsChart() {
           ds.push({ label: '分红', data: data.map(function(d) { return d.dividend; }), borderColor: '#f59e0b', borderWidth: 2, tension: .3, pointRadius: 0 });
         }
         ds.push(
-          { label: '二次生息账户', data: data.map(function(d) { return d.secondaryAccount; }), borderColor: '#ef4444', borderWidth: 2.5, tension: .3, pointRadius: 0, borderDash: [5,3] },
+          { label: '万能账户', data: data.map(function(d) { return d.secondaryAccount; }), borderColor: '#ef4444', borderWidth: 2.5, tension: .3, pointRadius: 0, borderDash: [5,3] },
           { label: '银行存款', data: data.map(function(d) { return d.bankAccount; }), borderColor: '#06b6d4', borderWidth: 2, tension: .3, pointRadius: 0, borderDash: [5,3] }
         );
         return ds;
@@ -972,9 +972,9 @@ function renderCompareChart() {
     data: {
       labels: getYearLabels(),
       datasets: [
-        { label: '保单总收益（二次生息账户）', data: data.map(function(d) { return d.secondaryAccount; }), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2.5 },
+        { label: '保单总收益（万能账户+保费）', data: data.map(function(d) { return d.secondaryAccount + d.cumPremium; }), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2.5 },
         { label: '本金保障（累计保费）', data: data.map(function(d) { return d.cumPremium; }), borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,.06)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2.5, borderDash: [3,3] },
-        { label: '银行储蓄本息', data: data.map(function(d) { return d.bankAccount; }), borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,.04)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2 }
+        { label: '银行储蓄利息', data: data.map(function(d) { return d.bankInterest; }), borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,.04)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2 }
       ]
     },
     options: {
@@ -1005,7 +1005,7 @@ function updateBarChart() {
 
   var ctx = document.getElementById('scenarioBarChart').getContext('2d');
   var enableDiv = calcResult.params.enableDividend;
-  var metrics = enableDiv ? ['本金保障', '生存金', '额外派息', '分红', '二次生息账户'] : ['本金保障', '生存金', '额外派息', '二次生息账户'];
+  var metrics = enableDiv ? ['本金保障', '生存金', '额外派息', '分红', '万能账户'] : ['本金保障', '生存金', '额外派息', '万能账户'];
   var colors = ['#22c55e', '#14b8a6', '#f59e0b', '#ef4444'];
   var bgColors = ['rgba(34,197,94,.7)', 'rgba(20,184,166,.7)', 'rgba(245,158,11,.7)', 'rgba(239,68,68,.7)'];
 
@@ -1053,8 +1053,8 @@ function renderDataTable() {
   var enableDiv = calcResult.params.enableDividend;
   var html = '<table><thead><tr>';
   var headers = enableDiv
-    ? ['年份', '当年保费', '本金保障', '生存金', '额外派息', '分红', '生息账户', '当年提取', '银行存款']
-    : ['年份', '当年保费', '本金保障', '生存金', '额外派息', '生息账户', '当年提取', '银行存款'];
+    ? ['年份', '当年保费', '本金保障', '生存金', '额外派息', '分红', '万能账户', '当年提取', '银行存款']
+    : ['年份', '当年保费', '本金保障', '生存金', '额外派息', '万能账户', '当年提取', '银行存款'];
   headers.forEach(function(h) { html += '<th>' + h + '</th>'; });
   html += '</tr></thead><tbody>';
 
