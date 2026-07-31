@@ -1843,7 +1843,7 @@ function maskPhone(phone) {
   return s.substring(0, 3) + '****';
 }
 /* 显示/隐藏敏感信息切换 */
-var showSensitiveData = false;
+var showSensitiveData = true;
 function toggleSensitiveData() {
   showSensitiveData = !showSensitiveData;
   showToast(showSensitiveData ? '敏感信息已显示' : '敏感信息已隐藏', 'warning');
