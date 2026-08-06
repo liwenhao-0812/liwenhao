@@ -254,6 +254,8 @@ body {
 .summary-card.sc-red .sc-value { color: #dc2626; }
 .summary-card.sc-cyan { border-color: #a5f3fc; background: #ecfeff; }
 .summary-card.sc-cyan .sc-value { color: #0891b2; }
+.summary-card.sc-purple { border-color: #d8b4fe; background: #faf5ff; }
+.summary-card.sc-purple .sc-value { color: #7c3aed; }
 /* Scenario tabs */
 .scenario-tabs {
   display: flex;
@@ -383,6 +385,7 @@ body {
 .section-green { border-left: 3px solid var(--green-500); }
 .section-teal { border-left: 3px solid var(--teal-500); }
 .section-amber { border-left: 3px solid var(--amber-500); }
+.section-purple { border-left: 3px solid var(--purple-500); }
 /* Mobile responsive */
 @media (max-width: 768px) {
   .summary-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
@@ -503,6 +506,16 @@ body {
       <div class="form-group">
         <label>银行存款对比利率</label>
         <div class="input-suffix"><input type="number" id="bankRate" value="2.0" min="0" max="10" step="0.01"><span class="suffix">%</span></div>
+      </div>
+    </div>
+
+    <!-- 万能账户追加 -->
+    <div class="card section-purple">
+      <div class="card-header"><span class="icon-dot" style="background:#a855f7;"></span>万能账户追加</div>
+      <div class="form-group">
+        <label>追加金额 <span style="color:#6b7280;font-weight:400;">— 额外资金一次性存入万能账户，独立于保费</span></label>
+        <div class="input-suffix"><input type="number" id="universalAdditional" value="0" min="0" max="100000000" step="1000"><span class="suffix">元</span></div>
+        <div class="form-hint">该笔资金存入后即计入万能账户，按万能账户利率滚动计息，仅可追加一次</div>
       </div>
     </div>
 
@@ -686,6 +699,7 @@ function calculate() {
     secondaryInterestRate: getVal('secondaryInterestRate'),
     annualWithdrawal: getVal('annualWithdrawal'),
     bankRate: getVal('bankRate'),
+    universalAdditional: getVal('universalAdditional'),
     enableDividend: isDividendEnabled()
   };
 
@@ -732,7 +746,8 @@ function computeScenario(params, firstYearDividend) {
   var enableDiv = params.enableDividend;
 
   var cumPremium = new D(0);
-  var secondaryAccount = new D(0);  // 万能账户上年末余额
+  var secondaryAccount = new D(params.universalAdditional || 0);  // 万能账户上年末余额（含追加金额）
+  var universalAdditional = new D(params.universalAdditional || 0);  // 万能账户追加金额（一次性）
   var bankAccount = new D(0);
   var totalSurvivalBenefit = new D(0);
   var totalExtraDividend = new D(0);
@@ -812,6 +827,7 @@ function computeScenario(params, firstYearDividend) {
       extraDividend: extraDividend.toNumber(),
       dividend: dividend.toNumber(),
       totalReturn: totalReturn.toNumber(),
+      universalAdditional: universalAdditional.toNumber(),
       secondaryAccount: secondaryAccount.toNumber(),
       bankAccount: bankAccount.toNumber(),
       bankInterest: bankAccount.minus(cumPremium).toNumber(),
@@ -827,6 +843,7 @@ function computeScenario(params, firstYearDividend) {
     totalSurvivalBenefit: totalSurvivalBenefit.toNumber(),
     totalExtraDividend: totalExtraDividend.toNumber(),
     totalDividend: totalDividend.toNumber(),
+    universalAdditional: universalAdditional.toNumber(),
     finalSecondaryAccount: secondaryAccount.toNumber(),
     totalWithdrawal: totalWithdrawal.toNumber(),
     finalBankAccount: bankAccount.toNumber(),
@@ -850,8 +867,12 @@ function renderSummaryCards() {
     cards.push({ cls: 'sc-amber', label: '累计分红', value: formatMoney(s.totalDividend), sub: '' });
   }
 
+  if (s.universalAdditional > 0) {
+    cards.push({ cls: 'sc-purple', label: '万能账户追加金额', value: formatMoney(s.universalAdditional), sub: '一次性存入，独立计息' });
+  }
+
   cards.push(
-    { cls: 'sc-red', label: '万能账户', value: formatMoney(s.finalSecondaryAccount), sub: '含复利滚存' },
+    { cls: 'sc-red', label: '万能账户', value: formatMoney(s.finalSecondaryAccount), sub: '含复利滚存' + (s.universalAdditional > 0 ? '（含追加）' : '') },
     { cls: 'sc-cyan', label: '银行存款对比', value: formatMoney(s.finalBankAccount), sub: '本息合计' }
   );
 
@@ -937,6 +958,9 @@ function renderEarningsChart() {
         ];
         if (calcResult.params.enableDividend) {
           ds.push({ label: '分红', data: data.map(function(d) { return d.dividend; }), borderColor: '#f59e0b', borderWidth: 2, tension: .3, pointRadius: 0 });
+        }
+        if (calcResult.params.universalAdditional > 0) {
+          ds.push({ label: '万能账户追加金额', data: data.map(function(d) { return d.universalAdditional; }), borderColor: '#a855f7', backgroundColor: 'rgba(168,85,247,.06)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2, borderDash: [2,2] });
         }
         ds.push(
           { label: '万能账户', data: data.map(function(d) { return d.secondaryAccount; }), borderColor: '#ef4444', borderWidth: 2.5, tension: .3, pointRadius: 0, borderDash: [5,3] },
@@ -1051,10 +1075,13 @@ function updateBarChart() {
 function renderDataTable() {
   var data = getScenarioData();
   var enableDiv = calcResult.params.enableDividend;
+  var hasUniversalAdd = calcResult.params.universalAdditional > 0;
   var html = '<table><thead><tr>';
-  var headers = enableDiv
-    ? ['年份', '当年保费', '本金保障', '生存金', '额外派息', '分红', '万能账户', '当年提取', '银行存款']
-    : ['年份', '当年保费', '本金保障', '生存金', '额外派息', '万能账户', '当年提取', '银行存款'];
+  var headers = ['年份', '当年保费', '本金保障'];
+  if (hasUniversalAdd) headers.push('追加金额');
+  headers.push('生存金', '额外派息');
+  if (enableDiv) headers.push('分红');
+  headers.push('万能账户', '当年提取', '银行存款');
   headers.forEach(function(h) { html += '<th>' + h + '</th>'; });
   html += '</tr></thead><tbody>';
 
@@ -1063,6 +1090,9 @@ function renderDataTable() {
     html += '<td>第' + d.year + '年</td>';
     html += '<td>' + formatMoney(d.premium) + '</td>';
     html += '<td>' + formatMoney(d.cumPremium) + '</td>';
+    if (hasUniversalAdd) {
+      html += '<td style="color:#7c3aed;font-weight:600;">' + formatMoney(d.universalAdditional) + '</td>';
+    }
     html += '<td>' + formatMoney(d.survivalBenefit) + '</td>';
     html += '<td>' + formatMoney(d.extraDividend) + '</td>';
     if (enableDiv) {
@@ -1094,6 +1124,7 @@ function resetAll() {
   document.getElementById('secondaryInterestRate').value = 3.0;
   document.getElementById('annualWithdrawal').value = 0;
   document.getElementById('bankRate').value = 2.0;
+  document.getElementById('universalAdditional').value = 0;
   document.getElementById('productName').value = '分红型年金保险';
   document.getElementById('company').value = '国寿';
   document.querySelector('input[name="gender"][value="male"]').checked = true;
