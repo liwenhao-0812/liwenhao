@@ -513,9 +513,21 @@ body {
     <div class="card section-purple">
       <div class="card-header"><span class="icon-dot" style="background:#a855f7;"></span>万能账户追加</div>
       <div class="form-group">
-        <label>追加金额 <span style="color:#6b7280;font-weight:400;">— 额外资金一次性存入万能账户，独立于保费</span></label>
-        <div class="input-suffix"><input type="number" id="universalAdditional" value="0" min="0" max="100000000" step="1000"><span class="suffix">元</span></div>
-        <div class="form-hint">该笔资金存入后即计入万能账户，按万能账户利率滚动计息，仅可追加一次</div>
+        <label>追加方式</label>
+        <div class="radio-group" id="addMethodGroup">
+          <label><input type="radio" name="addMethod" value="none" checked><span>不追加</span></label>
+          <label><input type="radio" name="addMethod" value="annual"><span>按年追加</span></label>
+          <label><input type="radio" name="addMethod" value="monthly"><span>按月追加</span></label>
+        </div>
+      </div>
+      <div class="form-group" id="addAmountGroup" style="display:none;">
+        <label id="addAmountLabel">每次追加金额</label>
+        <div class="input-suffix"><input type="number" id="universalAddAmount" value="10000" min="0" max="100000000" step="1000"><span class="suffix">元</span></div>
+      </div>
+      <div class="form-group" id="addCapGroup" style="display:none;">
+        <label>追加上限（占年交保费比例）</label>
+        <div class="input-suffix"><input type="number" id="universalAddCapRatio" value="300" min="0" max="10000" step="10"><span class="suffix">%</span></div>
+        <div class="form-hint" id="addCapHint">达到上限后将停止追加</div>
       </div>
     </div>
 
@@ -680,6 +692,38 @@ function toggleDividendSection() {
   }
 }
 
+// ======== 万能账户追加方式切换 ========
+function toggleAddMethod() {
+  var method = getRadioVal('addMethod');
+  var showAmount = (method === 'annual' || method === 'monthly');
+  document.getElementById('addAmountGroup').style.display = showAmount ? '' : 'none';
+  document.getElementById('addCapGroup').style.display = showAmount ? '' : 'none';
+  if (method === 'monthly') {
+    document.getElementById('addAmountLabel').textContent = '每月追加金额';
+  } else {
+    document.getElementById('addAmountLabel').textContent = '每年追加金额';
+  }
+  updateAddCapHint();
+}
+
+function updateAddCapHint() {
+  var premium = getVal('annualPremium');
+  var ratio = getVal('universalAddCapRatio');
+  var cap = premium * ratio / 100;
+  document.getElementById('addCapHint').textContent = '总追加上限 = ' + formatCurrency(premium) + ' × ' + ratio + '% = ' + formatCurrency(cap) + '，达到上限后将停止追加';
+}
+
+// 绑定追加方式切换
+(function() {
+  var radios = document.getElementsByName('addMethod');
+  for (var i = 0; i < radios.length; i++) {
+    radios[i].addEventListener('change', toggleAddMethod);
+  }
+  document.getElementById('universalAddCapRatio').addEventListener('input', updateAddCapHint);
+  document.getElementById('annualPremium').addEventListener('input', updateAddCapHint);
+  toggleAddMethod();
+})();
+
 // ======== 核心计算 ========
 function calculate() {
   var params = {
@@ -699,7 +743,9 @@ function calculate() {
     secondaryInterestRate: getVal('secondaryInterestRate'),
     annualWithdrawal: getVal('annualWithdrawal'),
     bankRate: getVal('bankRate'),
-    universalAdditional: getVal('universalAdditional'),
+    addMethod: getRadioVal('addMethod'),
+    universalAddAmount: getVal('universalAddAmount'),
+    universalAddCapRatio: getVal('universalAddCapRatio'),
     enableDividend: isDividendEnabled()
   };
 
@@ -746,21 +792,33 @@ function computeScenario(params, firstYearDividend) {
   var enableDiv = params.enableDividend;
 
   var cumPremium = new D(0);
-  var secondaryAccount = new D(params.universalAdditional || 0);  // 万能账户上年末余额（含追加金额）
-  var universalAdditional = new D(params.universalAdditional || 0);  // 万能账户追加金额（一次性）
+  // 原有万能账户：生存金/分红/派息滚存
+  var universalBaseAccount = new D(0);
+  // 追加账户：累计追加金额+利息（上年末余额）
+  var universalAddAccount = new D(0);
+  // 累计追加总金额（用于判断上限）
+  var universalAddCumulative = new D(0);
+  // 当年追加金额
+  var universalAddThisYear = new D(0);
+  // 追加方式
+  var addMethod = params.addMethod || 'none';
+  var addAmount = new D(params.universalAddAmount || 0);
+  var annualPremium = new D(params.annualPremium);
+  var addCap = annualPremium.times(params.universalAddCapRatio || 300).div(100);
+
   var bankAccount = new D(0);
   var totalSurvivalBenefit = new D(0);
   var totalExtraDividend = new D(0);
   var totalDividend = new D(0);
   var totalWithdrawal = new D(0);
-  var firstYearCumPremium = new D(0);  // 第一年累计保费，用于后续红利比例计算
-  var extraDividendPaid = false;       // 额外派息是否已发放
+  var totalAddAmount = new D(0);
+  var firstYearCumPremium = new D(0);
+  var extraDividendPaid = false;
 
   for (var y = 1; y <= years; y++) {
     var currentAge = params.insuredAge + y;
 
     // 1. 当年保费
-    var annualPremium = new D(params.annualPremium);
     var premium = y <= params.paymentYears ? annualPremium : new D(0);
 
     // 2. 累计保费
@@ -773,7 +831,7 @@ function computeScenario(params, firstYearDividend) {
       survivalBenefit = new D(params.annualSurvivalBenefit);
     }
 
-    // 4. 当年分红（仅启用红利时计算）
+    // 4. 当年分红
     var dividend = new D(0);
     if (enableDiv) {
       var fyDiv = new D(firstYearDividend);
@@ -782,26 +840,56 @@ function computeScenario(params, firstYearDividend) {
       }
     }
 
-    // 5. 当年额外派息：仅在生存金起领第一年发一次
+    // 5. 当年额外派息
     var extraDividend = new D(0);
     if (currentAge >= params.survivalBenefitStartAge && !extraDividendPaid) {
       extraDividend = annualPremium.times(params.extraDividendRate).div(100);
       extraDividendPaid = true;
     }
 
-    // 6. 当年总返还（新存入）
+    // 6. 当年总返还（新存入原有账户）
     var totalReturn = survivalBenefit.plus(extraDividend).plus(dividend);
 
-    // 7. 万能账户（修正：利息仅基于上年末余额，当年新存入不结息）
-    //    上年末余额 = secondaryAccount（即上一年结算后的余额）
-    //    本年利息 = 上年末余额 × 利率  （第1年无利息，因为上年末余额为0）
-    //    本年末余额 = 上年末余额 + 本年利息 + 本年新存入 - 本年提取
-    var interest = secondaryAccount.times(params.secondaryInterestRate).div(100);
-    var withdrawal = new D(params.annualWithdrawal);
-    secondaryAccount = secondaryAccount.plus(interest).plus(totalReturn).minus(withdrawal);
-    if (secondaryAccount.lt(0)) secondaryAccount = new D(0);
+    // 7. 万能账户计息（拆分：原有账户 + 追加账户）
+    //    利息仅基于上年末余额，当年新存入/追加不结息
+    var baseInterest = universalBaseAccount.times(params.secondaryInterestRate).div(100);
+    var addInterest = universalAddAccount.times(params.secondaryInterestRate).div(100);
 
-    // 8. 银行存款对比
+    // 原有账户：上年末余额 + 利息 + 新存入 - 提取
+    var withdrawal = new D(params.annualWithdrawal);
+    universalBaseAccount = universalBaseAccount.plus(baseInterest).plus(totalReturn).minus(withdrawal);
+    if (universalBaseAccount.lt(0)) universalBaseAccount = new D(0);
+
+    // 计算当年追加金额（不超过上限）
+    universalAddThisYear = new D(0);
+    if (addMethod === 'monthly') {
+      // 按月追加：每月追加一次
+      universalAddThisYear = addAmount.times(12);
+    } else if (addMethod === 'annual') {
+      // 按年追加：每年追加一次
+      universalAddThisYear = addAmount;
+    }
+    // 检查上限：累计追加不能超过上限
+    var remaining = addCap.minus(universalAddCumulative);
+    if (remaining.lt(0)) remaining = new D(0);
+    if (universalAddThisYear.gt(remaining)) {
+      universalAddThisYear = remaining;
+    }
+    universalAddCumulative = universalAddCumulative.plus(universalAddThisYear);
+
+    // 追加账户：上年末余额 + 利息 + 当年追加金额（当年追加不计息）
+    universalAddAccount = universalAddAccount.plus(addInterest).plus(universalAddThisYear);
+
+    // 总万能账户 = 原有账户 + 追加账户
+    var totalUniversalAccount = universalBaseAccount.plus(universalAddAccount);
+
+    totalSurvivalBenefit = totalSurvivalBenefit.plus(survivalBenefit);
+    totalExtraDividend = totalExtraDividend.plus(extraDividend);
+    totalDividend = totalDividend.plus(dividend);
+    totalWithdrawal = totalWithdrawal.plus(withdrawal);
+    totalAddAmount = totalAddAmount.plus(universalAddThisYear);
+
+    // 8. 银行存款
     var bankDeposit = y <= params.paymentYears ? annualPremium : new D(0);
     var bankBase = bankAccount.plus(bankDeposit);
     var bankInterest = bankBase.times(params.bankRate).div(100);
@@ -813,11 +901,6 @@ function computeScenario(params, firstYearDividend) {
     // 10. 身故保障金
     var deathBenefit = D.max(cumPremium.times(5), cashValue, cumPremium.times(1.05));
 
-    totalSurvivalBenefit = totalSurvivalBenefit.plus(survivalBenefit);
-    totalExtraDividend = totalExtraDividend.plus(extraDividend);
-    totalDividend = totalDividend.plus(dividend);
-    totalWithdrawal = totalWithdrawal.plus(withdrawal);
-
     data.push({
       year: y,
       currentAge: currentAge,
@@ -827,8 +910,11 @@ function computeScenario(params, firstYearDividend) {
       extraDividend: extraDividend.toNumber(),
       dividend: dividend.toNumber(),
       totalReturn: totalReturn.toNumber(),
-      universalAdditional: universalAdditional.toNumber(),
-      secondaryAccount: secondaryAccount.toNumber(),
+      universalBaseAccount: universalBaseAccount.toNumber(),
+      universalAddAccount: universalAddAccount.toNumber(),
+      universalAddThisYear: universalAddThisYear.toNumber(),
+      universalAddCumulative: universalAddCumulative.toNumber(),
+      secondaryAccount: totalUniversalAccount.toNumber(),
       bankAccount: bankAccount.toNumber(),
       bankInterest: bankAccount.minus(cumPremium).toNumber(),
       cashValue: cashValue.toNumber(),
@@ -843,11 +929,16 @@ function computeScenario(params, firstYearDividend) {
     totalSurvivalBenefit: totalSurvivalBenefit.toNumber(),
     totalExtraDividend: totalExtraDividend.toNumber(),
     totalDividend: totalDividend.toNumber(),
-    universalAdditional: universalAdditional.toNumber(),
-    finalSecondaryAccount: secondaryAccount.toNumber(),
+    universalAddCumulative: universalAddCumulative.toNumber(),
+    universalAddThisYear: universalAddThisYear.toNumber(),
+    universalBaseAccount: universalBaseAccount.toNumber(),
+    universalAddAccount: universalAddAccount.toNumber(),
+    finalSecondaryAccount: universalBaseAccount.plus(universalAddAccount).toNumber(),
     totalWithdrawal: totalWithdrawal.toNumber(),
     finalBankAccount: bankAccount.toNumber(),
-    totalBankInterest: bankAccount.minus(cumPremium).toNumber()
+    totalBankInterest: bankAccount.minus(cumPremium).toNumber(),
+    totalAddAmount: totalAddAmount.toNumber(),
+    addCap: addCap.toNumber()
   };
 }
 
@@ -867,17 +958,19 @@ function renderSummaryCards() {
     cards.push({ cls: 'sc-amber', label: '累计分红', value: formatMoney(s.totalDividend), sub: '' });
   }
 
-  if (s.universalAdditional > 0) {
-    cards.push({ cls: 'sc-purple', label: '万能账户追加金额', value: formatMoney(s.universalAdditional), sub: '一次性存入，独立计息' });
+  if (p.addMethod !== 'none' && s.universalAddCumulative > 0) {
+    cards.push({ cls: 'sc-purple', label: '累计追加金额', value: formatMoney(s.universalAddCumulative), sub: '上限：' + formatMoney(s.addCap) });
   }
 
   cards.push(
-    { cls: 'sc-red', label: '万能账户', value: formatMoney(s.finalSecondaryAccount), sub: '含复利滚存' + (s.universalAdditional > 0 ? '（含追加）' : '') },
+    { cls: 'sc-red', label: '万能账户（原账户）', value: formatMoney(s.universalBaseAccount), sub: '含复利滚存' },
+    { cls: 'sc-purple', label: '万能账户（追加部分）', value: formatMoney(s.universalAddAccount), sub: '追加资金+利息', style: 'display:' + (p.addMethod !== 'none' ? '' : 'none') },
+    { cls: 'sc-cyan', label: '万能账户总计', value: formatMoney(s.finalSecondaryAccount), sub: '原账户+追加' },
     { cls: 'sc-cyan', label: '银行存款对比', value: formatMoney(s.finalBankAccount), sub: '本息合计' }
   );
 
   cards.forEach(function(c) {
-    html += '<div class="summary-card ' + c.cls + '"><div class="sc-label">' + c.label + '</div><div class="sc-value">' + c.value + '</div><div class="sc-sub">' + c.sub + '</div></div>';
+    html += '<div class="summary-card ' + c.cls + '"' + (c.style ? ' style="' + c.style + '"' : '') + '><div class="sc-label">' + c.label + '</div><div class="sc-value">' + c.value + '</div><div class="sc-sub">' + c.sub + '</div></div>';
   });
 
   // 保单 vs 银行收益差（保单 = 万能账户 + 累计保费）
@@ -959,11 +1052,13 @@ function renderEarningsChart() {
         if (calcResult.params.enableDividend) {
           ds.push({ label: '分红', data: data.map(function(d) { return d.dividend; }), borderColor: '#f59e0b', borderWidth: 2, tension: .3, pointRadius: 0 });
         }
-        if (calcResult.params.universalAdditional > 0) {
-          ds.push({ label: '万能账户追加金额', data: data.map(function(d) { return d.universalAdditional; }), borderColor: '#a855f7', backgroundColor: 'rgba(168,85,247,.06)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2, borderDash: [2,2] });
+        ds.push(
+          { label: '万能账户（原账户）', data: data.map(function(d) { return d.universalBaseAccount; }), borderColor: '#ef4444', borderWidth: 2.5, tension: .3, pointRadius: 0, borderDash: [5,3] }
+        );
+        if (calcResult.params.addMethod !== 'none') {
+          ds.push({ label: '万能账户（追加部分）', data: data.map(function(d) { return d.universalAddAccount; }), borderColor: '#a855f7', backgroundColor: 'rgba(168,85,247,.06)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2, borderDash: [2,2] });
         }
         ds.push(
-          { label: '万能账户', data: data.map(function(d) { return d.secondaryAccount; }), borderColor: '#ef4444', borderWidth: 2.5, tension: .3, pointRadius: 0, borderDash: [5,3] },
           { label: '银行存款', data: data.map(function(d) { return d.bankAccount; }), borderColor: '#06b6d4', borderWidth: 2, tension: .3, pointRadius: 0, borderDash: [5,3] }
         );
         return ds;
@@ -995,11 +1090,17 @@ function renderCompareChart() {
     type: 'line',
     data: {
       labels: getYearLabels(),
-      datasets: [
-        { label: '保单总收益（万能账户+保费）', data: data.map(function(d) { return d.secondaryAccount + d.cumPremium; }), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2.5 },
-        { label: '本金保障（累计保费）', data: data.map(function(d) { return d.cumPremium; }), borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,.06)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2.5, borderDash: [3,3] },
-        { label: '银行储蓄利息', data: data.map(function(d) { return d.bankInterest; }), borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,.04)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2 }
-      ]
+      datasets: (function() {
+        var ds = [
+          { label: '保单总收益（万能账户+保费）', data: data.map(function(d) { return d.secondaryAccount + d.cumPremium; }), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2.5 },
+          { label: '本金保障（累计保费）', data: data.map(function(d) { return d.cumPremium; }), borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,.06)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2.5, borderDash: [3,3] }
+        ];
+        if (calcResult.params.addMethod !== 'none') {
+          ds.push({ label: '保单收益（不含追加）', data: data.map(function(d) { return d.universalBaseAccount + d.cumPremium; }), borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,.04)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2, borderDash: [4,2] });
+        }
+        ds.push({ label: '银行储蓄利息', data: data.map(function(d) { return d.bankInterest; }), borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,.04)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2 });
+        return ds;
+      })()
     },
     options: {
       responsive: true,
@@ -1029,7 +1130,14 @@ function updateBarChart() {
 
   var ctx = document.getElementById('scenarioBarChart').getContext('2d');
   var enableDiv = calcResult.params.enableDividend;
-  var metrics = enableDiv ? ['本金保障', '生存金', '额外派息', '分红', '万能账户'] : ['本金保障', '生存金', '额外派息', '万能账户'];
+  var hasAdd = calcResult.params.addMethod !== 'none';
+  var metrics = ['本金保障', '生存金', '额外派息'];
+  if (enableDiv) metrics.push('分红');
+  if (hasAdd) {
+    metrics.push('万能账户（原）', '万能账户（追加）');
+  } else {
+    metrics.push('万能账户');
+  }
   var colors = ['#22c55e', '#14b8a6', '#f59e0b', '#ef4444'];
   var bgColors = ['rgba(34,197,94,.7)', 'rgba(20,184,166,.7)', 'rgba(245,158,11,.7)', 'rgba(239,68,68,.7)'];
 
@@ -1040,9 +1148,14 @@ function updateBarChart() {
   var scenarios = ['low', 'medium', 'high'];
   scenarios.forEach(function(sc, si) {
     var d = calcResult.scenarios[sc].data[yearIdx];
-    var vals = enableDiv
-      ? [d.cumPremium, d.survivalBenefit, d.extraDividend, d.dividend, d.secondaryAccount]
-      : [d.cumPremium, d.survivalBenefit, d.extraDividend, d.secondaryAccount];
+    var vals = [d.cumPremium, d.survivalBenefit, d.extraDividend];
+    if (enableDiv) vals.push(d.dividend);
+    if (hasAdd) {
+      vals.push(d.universalBaseAccount);
+      vals.push(d.universalAddAccount);
+    } else {
+      vals.push(d.secondaryAccount);
+    }
     datasets.push({
       label: scenarioLabels[sc],
       data: vals,
@@ -1075,13 +1188,14 @@ function updateBarChart() {
 function renderDataTable() {
   var data = getScenarioData();
   var enableDiv = calcResult.params.enableDividend;
-  var hasUniversalAdd = calcResult.params.universalAdditional > 0;
+  var hasAdd = calcResult.params.addMethod !== 'none';
   var html = '<table><thead><tr>';
   var headers = ['年份', '当年保费', '本金保障'];
-  if (hasUniversalAdd) headers.push('追加金额');
   headers.push('生存金', '额外派息');
   if (enableDiv) headers.push('分红');
-  headers.push('万能账户', '当年提取', '银行存款');
+  headers.push('原账户', '当年提取');
+  if (hasAdd) headers.push('追加账户', '当年追加');
+  headers.push('万能账户总计', '银行存款');
   headers.forEach(function(h) { html += '<th>' + h + '</th>'; });
   html += '</tr></thead><tbody>';
 
@@ -1090,16 +1204,18 @@ function renderDataTable() {
     html += '<td>第' + d.year + '年</td>';
     html += '<td>' + formatMoney(d.premium) + '</td>';
     html += '<td>' + formatMoney(d.cumPremium) + '</td>';
-    if (hasUniversalAdd) {
-      html += '<td style="color:#7c3aed;font-weight:600;">' + formatMoney(d.universalAdditional) + '</td>';
-    }
     html += '<td>' + formatMoney(d.survivalBenefit) + '</td>';
     html += '<td>' + formatMoney(d.extraDividend) + '</td>';
     if (enableDiv) {
       html += '<td>' + formatMoney(d.dividend) + '</td>';
     }
-    html += '<td style="font-weight:700;">' + formatMoney(d.secondaryAccount) + '</td>';
+    html += '<td>' + formatMoney(d.universalBaseAccount) + '</td>';
     html += '<td>' + formatMoney(d.withdrawal) + '</td>';
+    if (hasAdd) {
+      html += '<td style="color:#7c3aed;">' + formatMoney(d.universalAddAccount) + '</td>';
+      html += '<td style="color:#7c3aed;font-weight:600;">' + formatMoney(d.universalAddThisYear) + '</td>';
+    }
+    html += '<td style="font-weight:700;">' + formatMoney(d.secondaryAccount) + '</td>';
     html += '<td>' + formatMoney(d.bankAccount) + '</td>';
     html += '</tr>';
   });
@@ -1124,7 +1240,9 @@ function resetAll() {
   document.getElementById('secondaryInterestRate').value = 3.0;
   document.getElementById('annualWithdrawal').value = 0;
   document.getElementById('bankRate').value = 2.0;
-  document.getElementById('universalAdditional').value = 0;
+  document.getElementById('universalAddAmount').value = 10000;
+  document.getElementById('universalAddCapRatio').value = 300;
+  document.querySelector('input[name="addMethod"][value="none"]').checked = true;
   document.getElementById('productName').value = '分红型年金保险';
   document.getElementById('company').value = '国寿';
   document.querySelector('input[name="gender"][value="male"]').checked = true;
@@ -1134,6 +1252,7 @@ function resetAll() {
   document.getElementById('emptyState').style.display = '';
   document.getElementById('resultContent').style.display = 'none';
   Object.keys(charts).forEach(function(k) { destroyChart(k); });
+  toggleAddMethod();
   updateHints();
   showToast('已重置为默认值', 'success');
 }
