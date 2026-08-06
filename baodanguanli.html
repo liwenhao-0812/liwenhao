@@ -1266,7 +1266,6 @@ button {
           <button class="btn-primary" onclick="openAddClientModal()">添加客户</button>
           <button class="btn-success" onclick="switchTab('query')">查询保单</button>
           <button class="btn-warning" onclick="switchTab('reminders')">查看提醒</button>
-          <button class="btn-outline" onclick="batchGenerateReminders()">批量生成提醒</button>
         </div>
       </div>
     </div>
@@ -1307,7 +1306,6 @@ button {
       <div class="stats-grid" id="reminderStats"></div>
       <div class="btn-group" style="margin-bottom:16px;">
         <button class="btn-primary" onclick="openAddReminderModal()">添加提醒</button>
-        <button class="btn-success" onclick="batchGenerateReminders()">批量生成提醒</button>
         <button class="btn-outline" onclick="dismissAllProcessed()">清除已处理</button>
       </div>
       <!-- 筛选 -->
@@ -2125,6 +2123,7 @@ function enterMainApp() {
   document.getElementById('mainApp').style.display = 'block';
   document.getElementById('currentUserName').textContent = currentUser;
   loadUserData();
+  autoSyncReminders();
   startAutoPull();
   updateSettingSyncStatus(hasGitHubToken());
   /* 如果本地没有数据，自动从云端拉取 */
@@ -2268,6 +2267,7 @@ function restoreFromCloudData(cloudData) {
   if (cloudData._timestamp) {
     secureSetItem('policy_data_' + currentUser + '_timestamp', cloudData._timestamp);
   }
+  autoSyncReminders();
 }
 
 /* 推送到 GitHub */
@@ -3666,6 +3666,7 @@ function savePolicy() {
 
   savePolicyData();
   updateInsuranceTypeDatalist();
+  autoSyncReminders();
   closeModal('policyModal');
   refreshCurrentTab();
   if (selectedClientIdx === clientIdx && currentTab === 'query' && document.getElementById('clientDetailView').style.display !== 'none') {
@@ -3677,8 +3678,13 @@ function savePolicy() {
 function deletePolicy(clientIdx, policyIdx) {
   var p = clientData[clientIdx].policies[policyIdx];
   showConfirm('确定要删除保单 "' + (p.policyCode || '') + '" 吗？', function() {
+    var deletedCode = p.policyCode;
     clientData[clientIdx].policies.splice(policyIdx, 1);
     savePolicyData();
+    /* 清理该保单关联的提醒 */
+    reminderData = reminderData.filter(function(r) { return r.policyCode !== deletedCode; });
+    saveReminderData();
+    autoSyncReminders();
     refreshCurrentTab();
     if (selectedClientIdx === clientIdx && currentTab === 'query' && document.getElementById('clientDetailView').style.display !== 'none') {
       renderDetailPanel(clientIdx);
@@ -4193,6 +4199,7 @@ function renderReminderStats() {
 
 /* 渲染提醒列表 */
 function renderReminders() {
+  autoSyncReminders();
   renderReminderStats();
   var today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   var sevenDaysLater = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10).replace(/-/g, '');
@@ -4369,12 +4376,9 @@ function deleteReminder(id) {
   });
 }
 
-/* 批量生成提醒 */
-function batchGenerateReminders() {
-  if (clientData.length === 0) {
-    showToast('暂无客户数据', 'warning');
-    return;
-  }
+/* 自动同步保单提醒（根据保单数据自动生成缴费/续保/周年提醒） */
+function autoSyncReminders() {
+  if (clientData.length === 0) return;
 
   var count = 0;
   clientData.forEach(function(c) {
@@ -4483,8 +4487,6 @@ function batchGenerateReminders() {
   });
 
   saveReminderData();
-  showToast('批量生成完成，共新增 ' + count + ' 条提醒', 'success');
-  if (currentTab === 'reminders') renderReminders();
 }
 
 /* 清除已处理提醒 */
