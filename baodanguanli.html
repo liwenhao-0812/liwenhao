@@ -1238,8 +1238,6 @@ button {
   <div class="nav-bar">
     <button class="nav-item active" data-tab="home" onclick="switchTab('home')">首页</button>
     <button class="nav-item" data-tab="query" onclick="switchTab('query')">查询</button>
-    <button class="nav-item" data-tab="reminders" onclick="switchTab('reminders')">提醒</button>
-    <button class="nav-item" data-tab="tracking" onclick="switchTab('tracking')">追踪</button>
     <button class="nav-item" data-tab="settings" onclick="switchTab('settings')">设置</button>
     <button class="nav-item" data-tab="inslib" onclick="switchTab('inslib')">险种库</button>
     <a href="fenhongjisuanqi.html" class="nav-item" style="background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff !important;border-radius:8px;font-weight:700;margin-left:4px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">收益试算</a>
@@ -1309,39 +1307,6 @@ button {
       <div id="clientDetailView" style="display:none;">
         <div class="detail-panel" id="detailPanel"></div>
       </div><!-- /clientDetailView -->
-    </div>
-
-    <!-- ====== 提醒页 ====== -->
-    <div class="tab-content" id="tabReminders">
-      <div class="stats-grid" id="reminderStats"></div>
-      <div class="btn-group" style="margin-bottom:16px;">
-        <button class="btn-primary" onclick="openAddReminderModal()">添加提醒</button>
-        <button class="btn-outline" onclick="dismissAllProcessed()">清除已处理</button>
-      </div>
-      <!-- 筛选 -->
-      <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn-sm btn-primary" onclick="filterReminders('all')">全部</button>
-        <button class="btn-sm btn-danger" onclick="filterReminders('overdue')">已过期</button>
-        <button class="btn-sm btn-warning" onclick="filterReminders('urgent')">7天内到期</button>
-        <button class="btn-sm btn-outline" onclick="filterReminders('dismissed')">已处理</button>
-      </div>
-      <div id="reminderList"></div>
-    </div>
-
-    <!-- ====== 追踪页 ====== -->
-    <div class="tab-content" id="tabTracking">
-      <div class="stats-grid" id="trackingStats"></div>
-      <div style="margin-bottom:16px;">
-        <select id="trackClientSelect" onchange="loadTrackingData()" style="width:auto;min-width:200px;">
-          <option value="">选择客户查看追踪信息</option>
-        </select>
-      </div>
-      <div id="trackingContent">
-        <div class="empty-state">
-          <div class="empty-icon">&#128269;</div>
-          <p>请选择一个客户查看追踪详情</p>
-        </div>
-      </div>
     </div>
 
     <!-- ====== 设置页 ====== -->
@@ -1676,58 +1641,6 @@ button {
   </div>
 </div>
 
-<!-- 添加提醒模态框 -->
-<div class="modal-overlay" id="reminderModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 id="reminderModalTitle">添加提醒</h2>
-      <button class="modal-close" onclick="closeModal('reminderModal')">&times;</button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="reminderEditId" value="">
-      <div class="form-group">
-        <label>关联客户</label>
-        <select id="reminderClient"></select>
-      </div>
-      <div class="form-group">
-        <label>关联保单</label>
-        <select id="reminderPolicy"></select>
-      </div>
-      <div class="form-group">
-        <label>提醒类型</label>
-        <select id="reminderType">
-          <option value="缴费提醒">缴费提醒</option>
-          <option value="续保提醒">续保提醒</option>
-          <option value="保单周年">保单周年</option>
-          <option value="自定义">自定义</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>提醒标题</label>
-        <input type="text" id="reminderTitle" placeholder="提醒标题" required>
-      </div>
-      <div class="form-group">
-        <label>到期日期</label>
-        <input type="date" id="reminderDueDate" required>
-      </div>
-      <div class="form-group">
-        <label>提前提醒天数</label>
-        <input type="number" id="reminderDaysBefore" value="30" min="0">
-      </div>
-      <div class="form-group">
-        <label class="checkbox-wrap">
-          <input type="checkbox" id="reminderEnabled" checked>
-          <span>启用此提醒</span>
-        </label>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal('reminderModal')">取消</button>
-      <button class="btn-primary" onclick="saveReminder()">保存</button>
-    </div>
-  </div>
-</div>
-
 <!-- 添加联系记录模态框 -->
 <div class="modal-overlay" id="contactModal">
   <div class="modal" style="max-width:450px;">
@@ -1813,11 +1726,8 @@ button {
 /* ======== 全局状态 ======== */
 let currentUser = null;         // 当前登录用户名
 let clientData = [];            // 当前用户的保单数据
-let reminderData = [];          // 当前用户的提醒数据
 let currentTab = 'home';        // 当前Tab页
 let selectedClientIdx = -1;     // 当前选中客户索引（查询页）
-let reminderFilter = 'all';     // 提醒筛选条件
-let currentTrackClient = '';     // 追踪页选中的客户名
 let confirmCallback = null;     // 确认对话框回调
 
 /* ======== Supabase 配置 ======== */
@@ -1894,7 +1804,7 @@ async function testSupabaseConnection() {
     results.push('读取: OK');
 
     /* 2. 测试写入权限（POST 插入） */
-    var testPayload = { username: currentUser + '_test', data: [], reminders: [], insurance_types: [] };
+    var testPayload = { username: currentUser + '_test', data: [], insurance_types: [] };
     var writeResp = await fetch(info.restUrl + '/user_data', {
       method: 'POST',
       headers: {
@@ -1958,7 +1868,6 @@ async function supabaseSaveData() {
     var payload = {
       username: currentUser,
       data: clientData,
-      reminders: reminderData,
       insurance_types: getInsuranceTypeLib()
     };
 
@@ -2030,10 +1939,6 @@ function supabaseSubscribeRealtime() {
               clientData = payload.new.data;
               secureSetItem('policy_data_' + currentUser, clientData);
             }
-            if (payload.new.reminders) {
-              reminderData = payload.new.reminders;
-              secureSetItem('reminders_' + currentUser, reminderData);
-            }
             if (payload.new.insurance_types) {
               secureSetItem('insurance_type_lib_' + currentUser, payload.new.insurance_types);
             }
@@ -2060,8 +1965,6 @@ function refreshCurrentView() {
   switch(currentTab) {
     case 'home': renderDashboard(); break;
     case 'query': handleSearch(); break;
-    case 'reminders': renderReminders(); break;
-    case 'tracking': populateTrackClientSelect(); break;
     case 'inslib': renderInsuranceTypeLib(); break;
   }
 }
@@ -2387,7 +2290,6 @@ function handleLogout() {
   currentUser = null;
   localStorage.removeItem('pms_currentUser');
   clientData = [];
-  reminderData = [];
   document.getElementById('mainApp').style.display = 'none';
   document.getElementById('authPage').style.display = 'flex';
   document.getElementById('loginUsername').value = '';
@@ -2406,10 +2308,9 @@ function enterMainApp() {
 
   /* 加载数据（异步） */
   loadUserData().then(function() {
-    autoSyncReminders();
     updateSettingSyncStatus(hasGitHubToken());
     /* 如果本地没有数据，自动从云端拉取 */
-    if (clientData.length === 0 && reminderData.length === 0) {
+    if (clientData.length === 0) {
       autoPullFromCloud();
     }
     syncExistingPoliciesToLib();
@@ -2438,24 +2339,9 @@ function savePolicyData() {
   autoSyncPush();
 }
 
-/* 获取提醒数据 */
-function getReminderData() {
-  try {
-    return secureGetItem('reminders_' + currentUser) || [];
-  } catch(e) { return []; }
-}
-
-/* 保存提醒数据 */
-function saveReminderData() {
-  secureSetItem('reminders_' + currentUser, reminderData);
-  supabaseSaveData();
-  autoSyncPush();
-}
-
 /* 加载当前用户所有数据 */
 async function loadUserData() {
   clientData = getPolicyData();
-  reminderData = getReminderData();
 
   console.log('[Supabase] loadUserData: hasConfig=' + hasSupabaseConfig() + ', connected=' + isSupabaseConnected());
 
@@ -2476,10 +2362,6 @@ async function loadUserData() {
           if (cloudData.data) {
             clientData = cloudData.data;
             secureSetItem('policy_data_' + currentUser, clientData);
-          }
-          if (cloudData.reminders) {
-            reminderData = cloudData.reminders;
-            secureSetItem('reminders_' + currentUser, reminderData);
           }
           if (cloudData.insurance_types) {
             secureSetItem('insurance_type_lib_' + currentUser, cloudData.insurance_types);
@@ -2686,7 +2568,6 @@ function getAllUserData() {
   var me = users.find(function(u) { return u.username === currentUser; });
   return {
     policies: clientData,
-    reminders: reminderData,
     insuranceTypes: getInsuranceTypeLib(),
     _timestamp: Date.now().toString(),
     _user: currentUser,
@@ -2700,17 +2581,12 @@ function restoreFromCloudData(cloudData) {
     clientData = cloudData.policies;
     secureSetItem('policy_data_' + currentUser, clientData);
   }
-  if (cloudData.reminders) {
-    reminderData = cloudData.reminders;
-    secureSetItem('reminders_' + currentUser, reminderData);
-  }
   if (cloudData.insuranceTypes) {
     secureSetItem('insurance_type_lib_' + currentUser, cloudData.insuranceTypes);
   }
   if (cloudData._timestamp) {
     secureSetItem('policy_data_' + currentUser + '_timestamp', cloudData._timestamp);
   }
-  autoSyncReminders();
 }
 
 /* 推送到 GitHub */
@@ -2973,8 +2849,6 @@ function refreshCurrentTab() {
   switch(currentTab) {
     case 'home': renderDashboard(); break;
     case 'query': handleSearch(); break;
-    case 'reminders': renderReminders(); break;
-    case 'tracking': populateTrackClientSelect(); break;
     case 'inslib': renderInsuranceTypeLib(); break;
     case 'settings': updateSettingSyncStatus(hasGitHubToken()); initTokenStatus(); initSupabaseStatus(); break;
   }
@@ -4176,7 +4050,6 @@ function savePolicy() {
 
   savePolicyData();
   updateInsuranceTypeDatalist();
-  autoSyncReminders();
   closeModal('policyModal');
   refreshCurrentTab();
   if (selectedClientIdx === clientIdx && currentTab === 'query' && document.getElementById('clientDetailView').style.display !== 'none') {
@@ -4191,10 +4064,6 @@ function deletePolicy(clientIdx, policyIdx) {
     var deletedCode = p.policyCode;
     clientData[clientIdx].policies.splice(policyIdx, 1);
     savePolicyData();
-    /* 清理该保单关联的提醒 */
-    reminderData = reminderData.filter(function(r) { return r.policyCode !== deletedCode; });
-    saveReminderData();
-    autoSyncReminders();
     refreshCurrentTab();
     if (selectedClientIdx === clientIdx && currentTab === 'query' && document.getElementById('clientDetailView').style.display !== 'none') {
       renderDetailPanel(clientIdx);
@@ -4642,9 +4511,7 @@ function saveContactRecord() {
   clientData[selectedClientIdx].contactHistory.unshift(record);
   savePolicyData();
   closeModal('contactModal');
-  if (currentTab === 'tracking') {
-    loadTrackingData();
-  } else if (currentTab === 'query' && document.getElementById('clientDetailView').style.display !== 'none') {
+  if (currentTab === 'query' && document.getElementById('clientDetailView').style.display !== 'none') {
     renderDetailPanel(selectedClientIdx);
   }
   showToast('联系记录已保存', 'success');
@@ -4689,461 +4556,12 @@ function saveServiceRecord() {
   showToast('服务记录已保存', 'success');
 }
 
-/* ======== 提醒功能 ======== */
-
-/* 渲染提醒统计 */
-function renderReminderStats() {
-  var total = reminderData.length;
-  var pending = reminderData.filter(function(r) { return !r.dismissed && r.enabled; }).length;
-  var processed = reminderData.filter(function(r) { return r.dismissed; }).length;
-  var today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-  var todayCount = reminderData.filter(function(r) {
-    return !r.dismissed && r.enabled && r.dueDate <= today;
-  }).length;
-
-  document.getElementById('reminderStats').innerHTML = '' +
-    '<div class="stat-card"><div class="stat-value">' + total + '</div><div class="stat-label">总提醒数</div></div>' +
-    '<div class="stat-card yellow"><div class="stat-value">' + todayCount + '</div><div class="stat-label">今日待办</div></div>' +
-    '<div class="stat-card green"><div class="stat-value">' + pending + '</div><div class="stat-label">待处理</div></div>' +
-    '<div class="stat-card"><div class="stat-value">' + processed + '</div><div class="stat-label">已处理</div></div>';
-}
-
-/* 渲染提醒列表 */
-function renderReminders() {
-  autoSyncReminders();
-  renderReminderStats();
-  var today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-  var sevenDaysLater = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10).replace(/-/g, '');
-
-  var filtered = reminderData.filter(function(r) {
-    if (reminderFilter === 'all') return true;
-    if (reminderFilter === 'overdue') return !r.dismissed && r.enabled && r.dueDate < today;
-    if (reminderFilter === 'urgent') return !r.dismissed && r.enabled && r.dueDate >= today && r.dueDate <= sevenDaysLater;
-    if (reminderFilter === 'dismissed') return r.dismissed;
-    return true;
-  });
-
-  filtered.sort(function(a, b) {
-    if (a.dismissed !== b.dismissed) return a.dismissed ? 1 : -1;
-    return a.dueDate.localeCompare(b.dueDate);
-  });
-
-  if (filtered.length === 0) {
-    document.getElementById('reminderList').innerHTML = '<div class="empty-state"><div class="empty-icon">&#128276;</div><p>暂无提醒</p></div>';
-    return;
-  }
-
-  var html = '<div class="reminder-list">';
-  filtered.forEach(function(r) {
-    var cls = 'normal';
-    if (r.dismissed) cls = 'dismissed';
-    else if (r.dueDate < today) cls = 'overdue';
-    else if (r.dueDate <= sevenDaysLater) cls = 'urgent';
-
-    html += '<div class="reminder-item ' + cls + '">' +
-      '<div class="reminder-info">' +
-      '<h4>' + (r.title || '') +
-      ' <span class="tag tag-' + (r.type === '缴费提醒' ? 'yellow' : r.type === '续保提醒' ? 'red' : r.type === '保单周年' ? 'blue' : 'gray') +
-      '">' + (r.type || '') + '</span>' +
-      (r.dismissed ? ' <span class="tag tag-gray">已处理</span>' : '') +
-      '</h4>' +
-      '<p>到期日期: ' + formatDate(r.dueDate) +
-      ' | 提前 ' + (r.daysBefore || 0) + ' 天' +
-      ' | 关联: ' + (r.clientName || '-') + ' - ' + (r.policyCode || '-') +
-      '</p></div>' +
-      '<div class="reminder-actions">';
-    if (!r.dismissed) {
-      html += '<button class="btn-sm btn-success" onclick="dismissReminder(\'' + r.id + '\')">已处理</button>' +
-        '<button class="btn-sm btn-outline" onclick="editReminder(\'' + r.id + '\')">编辑</button>';
-    }
-    html += '<button class="btn-sm btn-danger" onclick="deleteReminder(\'' + r.id + '\')">删除</button>' +
-      '</div></div>';
-  });
-  html += '</div>';
-  document.getElementById('reminderList').innerHTML = html;
-}
-
-/* 筛选提醒 */
-function filterReminders(filter) {
-  reminderFilter = filter;
-  renderReminders();
-}
-
-/* 打开添加提醒模态框 */
-function openAddReminderModal() {
-  document.getElementById('reminderModalTitle').textContent = '添加提醒';
-  document.getElementById('reminderEditId').value = '';
-  document.getElementById('reminderTitle').value = '';
-  document.getElementById('reminderType').value = '缴费提醒';
-  document.getElementById('reminderDueDate').value = '';
-  document.getElementById('reminderDaysBefore').value = '30';
-  document.getElementById('reminderEnabled').checked = true;
-
-  /* 填充客户和保单下拉 */
-  populateReminderSelects();
-  openModal('reminderModal');
-}
-
-/* 编辑提醒 */
-function editReminder(id) {
-  var r = reminderData.find(function(rm) { return rm.id === id; });
-  if (!r) return;
-  document.getElementById('reminderModalTitle').textContent = '编辑提醒';
-  document.getElementById('reminderEditId').value = id;
-  populateReminderSelects();
-  /* 选择关联客户 */
-  document.getElementById('reminderClient').value = r.clientName || '';
-  /* 触发保单列表更新 */
-  populateReminderPolicies(r.clientName || '');
-  document.getElementById('reminderPolicy').value = r.policyCode || '';
-  document.getElementById('reminderType').value = r.type || '缴费提醒';
-  document.getElementById('reminderTitle').value = r.title || '';
-  document.getElementById('reminderDueDate').value = formatDate(r.dueDate);
-  document.getElementById('reminderDaysBefore').value = r.daysBefore || 30;
-  document.getElementById('reminderEnabled').checked = r.enabled !== false;
-  openModal('reminderModal');
-}
-
-/* 填充提醒下拉 */
-function populateReminderSelects() {
-  var clientSel = document.getElementById('reminderClient');
-  clientSel.innerHTML = '<option value="">选择客户</option>';
-  clientData.forEach(function(c) {
-    clientSel.innerHTML += '<option value="' + c.name + '">' + c.name + '</option>';
-  });
-  clientSel.onchange = function() {
-    populateReminderPolicies(this.value);
-  };
-}
-
-function populateReminderPolicies(clientName) {
-  var policySel = document.getElementById('reminderPolicy');
-  policySel.innerHTML = '<option value="">选择保单</option>';
-  var client = clientData.find(function(c) { return c.name === clientName; });
-  if (client) {
-    (client.policies || []).forEach(function(p) {
-      policySel.innerHTML += '<option value="' + (p.policyCode || '') + '">' +
-        (p.policyCode || '') + ' - ' + (p.insuranceName || '') + '</option>';
-    });
-  }
-}
-
-/* 保存提醒 */
-function saveReminder() {
-  var title = document.getElementById('reminderTitle').value.trim();
-  var dueDate = toYMD(document.getElementById('reminderDueDate').value);
-  if (!title || !dueDate) {
-    showToast('请填写提醒标题和到期日期', 'warning');
-    return;
-  }
-
-  var editId = document.getElementById('reminderEditId').value;
-  var obj = {
-    id: editId || genId(),
-    type: document.getElementById('reminderType').value,
-    policyCode: document.getElementById('reminderPolicy').value,
-    clientName: document.getElementById('reminderClient').value,
-    title: title,
-    dueDate: dueDate,
-    daysBefore: parseInt(document.getElementById('reminderDaysBefore').value) || 30,
-    enabled: document.getElementById('reminderEnabled').checked,
-    dismissed: false,
-    createdAt: new Date().toISOString().slice(0, 10).replace(/-/g, '')
-  };
-
-  if (editId) {
-    var idx = reminderData.findIndex(function(r) { return r.id === editId; });
-    if (idx >= 0) {
-      obj.dismissed = reminderData[idx].dismissed;
-      obj.createdAt = reminderData[idx].createdAt;
-      reminderData[idx] = obj;
-    }
-  } else {
-    reminderData.push(obj);
-  }
-
-  saveReminderData();
-  closeModal('reminderModal');
-  renderReminders();
-  showToast('提醒已保存', 'success');
-}
-
-/* 标记提醒已处理 */
-function dismissReminder(id) {
-  var r = reminderData.find(function(rm) { return rm.id === id; });
-  if (r) { r.dismissed = true; }
-  saveReminderData();
-  renderReminders();
-  showToast('已标记为已处理', 'success');
-}
-
-/* 删除提醒 */
-function deleteReminder(id) {
-  showConfirm('确定要删除此提醒吗？', function() {
-    reminderData = reminderData.filter(function(r) { return r.id !== id; });
-    saveReminderData();
-    renderReminders();
-    showToast('提醒已删除', 'success');
-  });
-}
-
-/* 自动同步保单提醒（根据保单数据自动生成缴费/续保/周年提醒） */
-function autoSyncReminders() {
-  if (clientData.length === 0) return;
-
-  var count = 0;
-  clientData.forEach(function(c) {
-    (c.policies || []).forEach(function(p) {
-      if (p.status !== '有效' || !p.effectiveDate) return;
-      var effDate = p.effectiveDate;
-
-      /* 缴费提醒 */
-      if (p.paymentMethod === '年缴') {
-        /* 每年一个提醒 */
-        var nextPayDate = effDate.substr(0, 4) + String(new Date().getFullYear()).padStart(4, '0');
-        if (nextPayDate.length < 8) nextPayDate = effDate;
-        if (parseInt(nextPayDate) < parseInt(new Date().toISOString().slice(0, 10).replace(/-/g, ''))) {
-          var year = parseInt(nextPayDate.substr(0, 4)) + 1;
-          nextPayDate = String(year) + effDate.substr(4, 4);
-        }
-        /* 检查是否已存在 */
-        var exists = reminderData.some(function(r) {
-          return r.policyCode === p.policyCode && r.type === '缴费提醒' && r.dueDate === nextPayDate && r.clientName === c.name;
-        });
-        if (!exists) {
-          reminderData.push({
-            id: genId(),
-            type: '缴费提醒',
-            policyCode: p.policyCode,
-            clientName: c.name,
-            title: '缴费提醒 - ' + (p.insuranceName || '') + ' (' + (p.policyCode || '') + ')',
-            dueDate: nextPayDate,
-            daysBefore: 30,
-            enabled: true,
-            dismissed: false,
-            createdAt: new Date().toISOString().slice(0, 10).replace(/-/g, '')
-          });
-          count++;
-        }
-      } else if (p.paymentMethod === '月缴') {
-        /* 月缴：每月提醒 */
-        var thisMonth = new Date().toISOString().slice(0, 7).replace(/-/g, '');
-        var day = effDate.length >= 8 ? effDate.substr(6, 2) : '01';
-        var monthDue = thisMonth + day;
-        var exists = reminderData.some(function(r) {
-          return r.policyCode === p.policyCode && r.type === '缴费提醒' && r.dueDate === monthDue && r.clientName === c.name;
-        });
-        if (!exists) {
-          reminderData.push({
-            id: genId(),
-            type: '缴费提醒',
-            policyCode: p.policyCode,
-            clientName: c.name,
-            title: '月缴提醒 - ' + (p.insuranceName || '') + ' (' + (p.policyCode || '') + ')',
-            dueDate: monthDue,
-            daysBefore: 7,
-            enabled: true,
-            dismissed: false,
-            createdAt: new Date().toISOString().slice(0, 10).replace(/-/g, '')
-          });
-          count++;
-        }
-      }
-
-      /* 续保提醒 */
-      var renewDate = effDate;
-      if (renewDate.length === 8) {
-        var rYear = parseInt(renewDate.substr(0, 4)) + 1;
-        renewDate = String(rYear) + renewDate.substr(4, 4);
-      }
-      var existsRenew = reminderData.some(function(r) {
-        return r.policyCode === p.policyCode && r.type === '续保提醒' && r.dueDate === renewDate && r.clientName === c.name;
-      });
-      if (!existsRenew) {
-        reminderData.push({
-          id: genId(),
-          type: '续保提醒',
-          policyCode: p.policyCode,
-          clientName: c.name,
-          title: '续保提醒 - ' + (p.insuranceName || '') + ' (' + (p.policyCode || '') + ')',
-          dueDate: renewDate,
-          daysBefore: 60,
-          enabled: true,
-          dismissed: false,
-          createdAt: new Date().toISOString().slice(0, 10).replace(/-/g, '')
-        });
-        count++;
-      }
-
-      /* 保单周年提醒 */
-      var existsAnniv = reminderData.some(function(r) {
-        return r.policyCode === p.policyCode && r.type === '保单周年' && r.clientName === c.name;
-      });
-      if (!existsAnniv) {
-        reminderData.push({
-          id: genId(),
-          type: '保单周年',
-          policyCode: p.policyCode,
-          clientName: c.name,
-          title: '保单周年 - ' + (p.insuranceName || '') + ' (' + (p.policyCode || '') + ')',
-          dueDate: effDate,
-          daysBefore: 14,
-          enabled: true,
-          dismissed: false,
-          createdAt: new Date().toISOString().slice(0, 10).replace(/-/g, '')
-        });
-        count++;
-      }
-    });
-  });
-
-  saveReminderData();
-}
-
-/* 清除已处理提醒 */
-function dismissAllProcessed() {
-  showConfirm('确定要清除所有已处理的提醒吗？', function() {
-    reminderData = reminderData.filter(function(r) { return !r.dismissed; });
-    saveReminderData();
-    renderReminders();
-    showToast('已清除所有已处理提醒', 'success');
-  });
-}
-
-/* ======== 追踪功能 ======== */
-
-/* 填充追踪客户选择 */
-function populateTrackClientSelect() {
-  var sel = document.getElementById('trackClientSelect');
-  sel.innerHTML = '<option value="">选择客户查看追踪信息</option>';
-  clientData.forEach(function(c, idx) {
-    sel.innerHTML += '<option value="' + idx + '">' + (c.name || '未命名') + '</option>';
-  });
-  renderTrackingStats();
-}
-
-/* 渲染追踪统计 */
-function renderTrackingStats() {
-  var totalPolicies = 0, validPolicies = 0, totalContacts = 0, totalPremium = 0;
-  clientData.forEach(function(c) {
-    totalPolicies += (c.policies || []).length;
-    validPolicies += (c.policies || []).filter(function(p) { return p.status === '有效'; }).length;
-    totalContacts += (c.contactHistory || []).length;
-    (c.policies || []).forEach(function(p) { totalPremium += parseFloat(p.annualPremium) || 0; });
-  });
-  document.getElementById('trackingStats').innerHTML = '' +
-    '<div class="stat-card"><div class="stat-value">' + totalPolicies + '</div><div class="stat-label">总保单数</div></div>' +
-    '<div class="stat-card green"><div class="stat-value">' + validPolicies + '</div><div class="stat-label">有效保单</div></div>' +
-    '<div class="stat-card yellow"><div class="stat-value">' + totalContacts + '</div><div class="stat-label">联系记录</div></div>' +
-    '<div class="stat-card"><div class="stat-value">' + formatMoney(totalPremium) + '</div><div class="stat-label">总年缴保费</div></div>';
-}
-
-/* 加载追踪数据 */
-function loadTrackingData() {
-  var sel = document.getElementById('trackClientSelect');
-  var idx = parseInt(sel.value);
-  var content = document.getElementById('trackingContent');
-
-  if (isNaN(idx) || !clientData[idx]) {
-    content.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128269;</div><p>请选择一个客户查看追踪详情</p></div>';
-    return;
-  }
-
-  var c = clientData[idx];
-  var html = '';
-
-  /* 联系记录时间线 */
-  html += '<div class="card"><div class="card-title">联系追踪 - ' + (c.name || '') +
-    '<button class="btn-sm btn-primary" onclick="selectedClientIdx=' + idx + ';openAddContactModal()">添加联系记录</button></div>';
-
-  /* 联系频率统计 */
-  var contacts = c.contactHistory || [];
-  var statusCount = {};
-  contacts.forEach(function(ch) {
-    statusCount[ch.status] = (statusCount[ch.status] || 0) + 1;
-  });
-  html += '<div style="margin-bottom:12px;">';
-  Object.keys(statusCount).forEach(function(s) {
-    html += '<span class="tag tag-blue" style="margin-right:8px;">' + s + ': ' + statusCount[s] + ' 次</span>';
-  });
-  html += '</div>';
-
-  if (contacts.length === 0) {
-    html += '<div class="empty-state"><p>暂无联系记录</p></div>';
-  } else {
-    html += '<div class="timeline">';
-    contacts.forEach(function(ch) {
-      var cls = 'success';
-      if (ch.status === '未联系上' || ch.status === '电话挂断') cls = 'danger';
-      else if (ch.status === '已加微信') cls = 'warning';
-      html += '<div class="timeline-item ' + cls + '">' +
-        '<div class="timeline-date">' + formatDate(ch.date) +
-        ' <span class="tag tag-' +
-        (ch.status === '已电话联系' || ch.status === '面见客户' ? 'green' : ch.status === '未联系上' || ch.status === '电话挂断' ? 'red' : 'yellow') +
-        '">' + (ch.status || '') + '</span></div>' +
-        '<div class="timeline-content">' + (ch.note || '无备注') + '</div></div>';
-    });
-    html += '</div>';
-  }
-  html += '</div>';
-
-  /* 保单状态追踪 */
-  html += '<div class="card"><div class="card-title">保单状态追踪</div>';
-  var validPolicies = (c.policies || []).filter(function(p) { return p.status === '有效'; });
-  var expiredPolicies = (c.policies || []).filter(function(p) { return p.status === '失效'; });
-
-  html += '<div style="margin-bottom:12px;">' +
-    '<span class="tag tag-green" style="font-size:14px;">有效: ' + validPolicies.length + '</span> ' +
-    '<span class="tag tag-red" style="font-size:14px;">失效: ' + expiredPolicies.length + '</span></div>';
-
-  /* 有效保单 */
-  if (validPolicies.length > 0) {
-    html += '<h4 style="font-size:14px;margin-bottom:8px;color:#166534;">有效保单</h4>';
-    validPolicies.forEach(function(p) {
-      html += '<div style="padding:8px;border:1px solid #dcfce7;border-radius:8px;margin-bottom:6px;">' +
-        '<strong>' + (p.policyCode || '') + '</strong> - ' + (p.insuranceName || '') +
-        ' | 保费: ' + formatMoney(p.annualPremium) + ' | 保额: ' + formatMoney(p.sumInsured) +
-        ' | 生效日: ' + formatDate(p.effectiveDate) + '</div>';
-    });
-  }
-
-  /* 失效保单 */
-  if (expiredPolicies.length > 0) {
-    html += '<h4 style="font-size:14px;margin:12px 0 8px;color:#991b1b;">失效保单</h4>';
-    expiredPolicies.forEach(function(p) {
-      html += '<div style="padding:8px;border:1px solid #fee2e2;border-radius:8px;margin-bottom:6px;">' +
-        '<strong>' + (p.policyCode || '') + '</strong> - ' + (p.insuranceName || '') +
-        ' | 生效日: ' + formatDate(p.effectiveDate) + '</div>';
-    });
-  }
-
-  /* 服务记录 */
-  html += '<h4 style="font-size:14px;margin:12px 0 8px;color:#1e40af;">服务记录</h4>';
-  var hasService = false;
-  (c.policies || []).forEach(function(p) {
-    if (p.serviceRecords && p.serviceRecords.length > 0) {
-      hasService = true;
-      p.serviceRecords.forEach(function(sr) {
-        html += '<div class="timeline">' +
-          '<div class="timeline-item">' +
-          '<div class="timeline-date">' + formatDate(sr.date) + ' | ' + (p.policyCode || '') + ' - ' + (p.insuranceName || '') + '</div>' +
-          '<div class="timeline-content">' + (sr.content || '') + '</div></div></div>';
-      });
-    }
-  });
-  if (!hasService) html += '<p style="font-size:13px;color:#94a3b8;">暂无服务记录</p>';
-  html += '</div>';
-
-  content.innerHTML = html;
-}
-
 /* ======== 数据导入导出 ======== */
 
 /* 导出数据 */
 function exportData() {
   var data = {
     policies: clientData,
-    reminders: reminderData,
     exportDate: new Date().toISOString(),
     user: currentUser
   };
@@ -5173,7 +4591,7 @@ function importData(e) {
         /* 格式一：直接是数组 [{name, idCard, ...}, ...] */
         arrData = raw;
       } else if (raw && raw.policies && Array.isArray(raw.policies)) {
-        /* 格式二：包装格式 {policies: [...], reminders: [...], ...} */
+        /* 格式二：包装格式 {policies: [...], ...} */
         arrData = raw.policies;
       }
       if (!arrData || !Array.isArray(arrData) || arrData.length === 0) {
@@ -5221,11 +4639,6 @@ function importData(e) {
       showConfirm('检测到 ' + normalized.length + ' 位客户数据。确定导入将覆盖当前数据。', function() {
         clientData = normalized;
         savePolicyData();
-        /* 如果包装格式还有提醒，也导入 */
-        if (raw && raw.reminders && Array.isArray(raw.reminders)) {
-          reminderData = raw.reminders;
-          saveReminderData();
-        }
         refreshCurrentTab();
         updateBottomStats();
         autoSyncPush();
@@ -5523,9 +4936,7 @@ function exportClientToWord(idx) {
 function confirmClearData() {
   showConfirm('确定要清空当前用户的所有数据吗？此操作不可撤销！', function() {
     clientData = [];
-    reminderData = [];
     savePolicyData();
-    saveReminderData();
     refreshCurrentTab();
     showToast('数据已清空', 'success');
   });
