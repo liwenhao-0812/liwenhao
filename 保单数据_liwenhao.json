@@ -1972,6 +1972,7 @@
       "address": "广东省清远市清城区石角镇石角居委会金康大街水塔楼504号",
       "policies": [
         {
+          "_idx": 0,
           "remark": "",
           "status": "有效",
           "insured": "叶可仪",
@@ -1981,20 +1982,33 @@
           "policyCode": "2010442001S93015015645",
           "sumInsured": "",
           "extraFields": {},
+          "hasDividend": false,
+          "paymentBank": "",
           "paymentTerm": "5",
           "insuredPhone": "13346548376",
+          "maturityDate": "",
           "annualPremium": "2000",
           "beneficiaries": [
             {
               "name": "李素霞",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "effectiveDate": "20100428",
           "insuranceName": "国寿美满一生年金保险(分红型)",
           "paymentMethod": "年缴",
+          "insuredAddress": "广东省清远市清城区石角镇石角居委会金康大街水塔楼504号",
           "serviceRecords": [],
           "insuredRelation": "女儿",
+          "paymentBankCard": "",
+          "survivalBenefit": {
+            "note": "",
+            "type": "",
+            "amount": "",
+            "lastDate": "",
+            "nextDate": "",
+            "startDate": ""
+          },
           "parentPolicyCode": ""
         }
       ],
@@ -7158,7 +7172,7 @@
       "insuranceName": "康宁定期保险"
     }
   ],
-  "_timestamp": "1786095442633",
+  "_timestamp": "1786095487838",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
