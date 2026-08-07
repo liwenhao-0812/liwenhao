@@ -1433,26 +1433,39 @@
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "20170910",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "1500",
           "sumInsured": "",
           "paymentTerm": "20",
+          "paymentBank": "",
+          "paymentBankCard": "",
           "insured": "雷秋玲",
           "insuredRelation": "本人",
           "insuredId": "441882198507141564",
           "insuredPhone": "15219079862",
+          "insuredAddress": "广东省清远市清城区源潭大连村委会东门闸门围4号",
           "beneficiaries": [
             {
               "name": "赖浩宇",
-              "quota": 50
+              "quota": "50"
             },
             {
               "name": "赖水松",
-              "quota": 50
+              "quota": "50"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
           "serviceRecords": []
         },
@@ -1484,7 +1497,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 1
         },
         {
           "policyCode": "2017442001512015116760",
@@ -1514,7 +1528,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 2
         },
         {
           "policyCode": "2017442001321300104999",
@@ -1544,7 +1559,8 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 3
         }
       ],
       "familyMembers": [
@@ -3290,7 +3306,14 @@
           "note": ""
         }
       ],
-      "contactHistory": []
+      "contactHistory": [
+        {
+          "status": "已电话联系",
+          "date": "20260806",
+          "note": "客户告知不需要再服务"
+        }
+      ],
+      "doNotContact": true
     },
     {
       "name": "张彩美",
@@ -3558,7 +3581,13 @@
         }
       ],
       "familyMembers": [],
-      "contactHistory": []
+      "contactHistory": [
+        {
+          "status": "已加微信",
+          "date": "20260806",
+          "note": "微信被拉黑"
+        }
+      ]
     },
     {
       "name": "钟永全",
@@ -3686,7 +3715,8 @@
             "note": ""
           },
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 1
         }
       ],
       "familyMembers": [],
@@ -7064,7 +7094,7 @@
       "codeType": "S43"
     }
   ],
-  "_timestamp": "1786092054979",
+  "_timestamp": "1786092155862",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
