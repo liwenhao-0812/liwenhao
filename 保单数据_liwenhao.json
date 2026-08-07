@@ -3114,7 +3114,13 @@
       "workAddress": "",
       "workCompany": "",
       "familyMembers": [],
-      "contactHistory": []
+      "contactHistory": [
+        {
+          "date": "20260807",
+          "note": "电话未联系上",
+          "status": "未联系上"
+        }
+      ]
     },
     {
       "name": "叶海燕",
@@ -4022,13 +4028,9 @@
     {
       "codeType": "S43",
       "insuranceName": "康宁定期保险"
-    },
-    {
-      "codeType": "R42",
-      "insuranceName": "99鸿福终身保险(97版)"
     }
   ],
-  "_timestamp": "1786102755707",
+  "_timestamp": "1786104442227",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
