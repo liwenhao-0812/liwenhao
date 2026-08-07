@@ -1829,6 +1829,11 @@ const SUPABASE_DEFAULTS = {
 };
 
 function initSupabase() {
+  /* 先清理旧连接，避免 Multiple GoTrueClient 警告 */
+  if (supabaseChannel) {
+    try { supabaseClient.removeChannel(supabaseChannel); } catch(e) {}
+    supabaseChannel = null;
+  }
   supabaseClient = null;
   supabaseLastError = '';
   var url = secureGetItem('supabase_url_' + currentUser, 'supabase_config') || SUPABASE_DEFAULTS.url;
@@ -1862,35 +1867,57 @@ function isSupabaseConnected() {
   return supabaseClient !== null;
 }
 
-/* Supabase 连接测试（真正查询数据库） */
+/* Supabase 连接测试（完整诊断：读 + 写 + 实时） */
 async function testSupabaseConnection() {
   if (!isSupabaseConnected() || !currentUser) {
-    return { ok: false, error: supabaseLastError || '未连接到 Supabase，请检查配置' };
+    return { ok: false, error: supabaseLastError || '未连接到 Supabase，请检查配置', details: '' };
   }
+  var results = [];
   try {
-    /* 尝试查询 user_data 表（只查1行，不取数据） */
+    /* 1. 测试读取权限 */
     var { data, error, status } = await supabaseClient
       .from('user_data')
       .select('username', { count: 'exact', head: true })
       .limit(1);
     if (error) {
-      /* 42P01 = 表不存在 */
       if (error.code === '42P01' || (error.message && error.message.includes('does not exist'))) {
-        return { ok: false, error: '数据库表 user_data 不存在，请先在 Supabase SQL Editor 中执行迁移脚本（supabase_migration.sql）' };
+        return { ok: false, error: '数据库表 user_data 不存在', details: '请在 Supabase SQL Editor 中执行 supabase_migration.sql' };
       }
-      /* PGRST 开头的是 PostgREST 错误 */
       if (error.code && error.code.startsWith('PGRST')) {
-        return { ok: false, error: 'API 权限错误 (' + error.code + '): ' + (error.message || '') + '。请检查 RLS 策略是否已启用。' };
+        return { ok: false, error: 'API 权限错误 (' + error.code + ')', details: (error.message || '') + ' — 请检查 RLS 是否已启用' };
       }
-      return { ok: false, error: '查询失败 (' + (error.code || status) + '): ' + (error.message || '未知错误') };
+      return { ok: false, error: '读取失败 (' + (error.code || status) + ')', details: (error.message || error.details || '') };
     }
-    return { ok: true, error: null };
+    results.push('读取: OK');
+
+    /* 2. 测试写入权限（尝试 upsert 一条测试数据然后立即删除） */
+    try {
+      var testPayload = { username: currentUser, data: [], reminders: [], insurance_types: [] };
+      var { error: upsertErr } = await supabaseClient
+        .from('user_data')
+        .upsert(testPayload, { onConflict: 'username' });
+      if (upsertErr) {
+        return { 
+          ok: false, 
+          error: '写入权限不足 (' + (upsertErr.code || '') + ')', 
+          details: (upsertErr.message || '') + (upsertErr.details ? ' | ' + upsertErr.details : '') + (upsertErr.hint ? ' | ' + upsertErr.hint : '') + ' — 请确认 RLS 策略允许 INSERT/UPDATE'
+        };
+      }
+      results.push('写入: OK');
+    } catch(writeErr) {
+      return { ok: false, error: '写入测试异常', details: (writeErr.message || '') };
+    }
+
+    /* 3. 提示 Realtime 需要手动启用 */
+    results.push('Realtime: 需在 Supabase Dashboard → Database → Replication 中手动启用');
+
+    return { ok: true, error: null, details: results.join(' | ') };
   } catch(e) {
     var msg = e.message || String(e);
     if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
-      return { ok: false, error: '网络连接失败，请检查 Project URL 是否正确（应以 https:// 开头）' };
+      return { ok: false, error: '网络连接失败', details: '请检查 Project URL 是否正确（应以 https:// 开头）' };
     }
-    return { ok: false, error: '连接异常: ' + msg };
+    return { ok: false, error: '连接异常', details: msg };
   }
 }
 
@@ -1905,14 +1932,14 @@ async function supabaseLoadData() {
       .maybeSingle();
     if (error) {
       supabaseLastError = '读取失败: ' + (error.message || error.code || '');
-      console.error('[Supabase] load error:', error);
+      console.error('[Supabase] load error 详情:', JSON.stringify({ code: error.code, message: error.message, details: error.details, hint: error.hint }));
       return null;
     }
     console.log('[Supabase] 数据加载成功，username:', currentUser, 'hasData:', !!data);
     return data;
   } catch(e) {
     supabaseLastError = '读取异常: ' + (e.message || e);
-    console.error('[Supabase] load exception:', e);
+    console.error('[Supabase] load exception 详情:', e.message, e);
     return null;
   }
 }
@@ -1932,46 +1959,59 @@ async function supabaseSaveData() {
       .upsert(payload, { onConflict: 'username' });
     if (error) {
       supabaseLastError = '保存失败: ' + (error.message || error.code || '');
-      console.error('[Supabase] save error:', error);
+      console.error('[Supabase] save error 详情:', JSON.stringify({ code: error.code, message: error.message, details: error.details, hint: error.hint }));
     } else {
       console.log('[Supabase] 数据保存成功');
     }
   } catch(e) {
     supabaseLastError = '保存异常: ' + (e.message || e);
-    console.error('[Supabase] save exception:', e);
+    console.error('[Supabase] save exception 详情:', e.message, e);
   }
 }
 
-/* Supabase 实时订阅 */
+/* Supabase 实时订阅（非致命：失败不影响 REST API 同步） */
 let supabaseChannel = null;
 function supabaseSubscribeRealtime() {
   if (!isSupabaseConnected() || !currentUser) return;
-  if (supabaseChannel) supabaseClient.removeChannel(supabaseChannel);
-  supabaseChannel = supabaseClient
-    .channel('user_data_changes')
-    .on('postgres_changes',
-      { event: '*', schema: 'public', table: 'user_data', filter: 'username=eq.' + currentUser },
-      function(payload) {
-        if (payload.new && payload.new.username === currentUser) {
-          /* 远端数据变更，自动同步到本地 */
-          if (payload.new.data) {
-            clientData = payload.new.data;
-            secureSetItem('policy_data_' + currentUser, clientData);
+  try {
+    if (supabaseChannel) {
+      try { supabaseClient.removeChannel(supabaseChannel); } catch(e) {}
+    }
+    supabaseChannel = supabaseClient
+      .channel('user_data_changes')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'user_data', filter: 'username=eq.' + currentUser },
+        function(payload) {
+          if (payload.new && payload.new.username === currentUser) {
+            /* 远端数据变更，自动同步到本地 */
+            if (payload.new.data) {
+              clientData = payload.new.data;
+              secureSetItem('policy_data_' + currentUser, clientData);
+            }
+            if (payload.new.reminders) {
+              reminderData = payload.new.reminders;
+              secureSetItem('reminders_' + currentUser, reminderData);
+            }
+            if (payload.new.insurance_types) {
+              secureSetItem('insurance_type_lib_' + currentUser, payload.new.insurance_types);
+            }
+            /* 刷新当前页面视图 */
+            refreshCurrentView();
+            showToast('检测到其他设备的数据更新，已自动同步', 'success');
           }
-          if (payload.new.reminders) {
-            reminderData = payload.new.reminders;
-            secureSetItem('reminders_' + currentUser, reminderData);
-          }
-          if (payload.new.insurance_types) {
-            secureSetItem('insurance_type_lib_' + currentUser, payload.new.insurance_types);
-          }
-          /* 刷新当前页面视图 */
-          refreshCurrentView();
-          showToast('检测到其他设备的数据更新，已自动同步', 'success');
         }
-      }
-    )
-    .subscribe();
+      )
+      .subscribe(function(status) {
+        if (status === 'SUBSCRIBED') {
+          console.log('[Supabase] 实时订阅成功');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.warn('[Supabase] 实时订阅失败（WebSocket无法连接），数据同步仍可通过 REST API 工作');
+          console.warn('[Supabase] 请在 Supabase Dashboard → Database → Replication 中启用 Realtime');
+        }
+      });
+  } catch(e) {
+    console.warn('[Supabase] 实时订阅初始化失败:', e.message, '— 数据同步仍可通过 REST API 工作');
+  }
 }
 
 function refreshCurrentView() {
@@ -2521,16 +2561,18 @@ function saveSupabaseConfig() {
   /* 真正测试连接 */
   testSupabaseConnection().then(function(result) {
     if (result.ok) {
-      document.getElementById('supabaseStatus').innerHTML = '<span style="color:#16a34a;font-weight:600;">连接成功！正在同步数据...</span>';
+      var detailsHtml = result.details ? '<br><small style="color:#64748b;">' + result.details + '</small>' : '';
+      document.getElementById('supabaseStatus').innerHTML = '<span style="color:#16a34a;font-weight:600;">连接成功！正在同步数据...</span>' + detailsHtml;
       showToast('Supabase 连接成功！', 'success');
       /* 推送当前数据 */
       supabaseSaveData().then(function() {
         supabaseSubscribeRealtime();
-        document.getElementById('supabaseStatus').innerHTML = '<span style="color:#16a34a;font-weight:600;">实时同步已启用</span>';
+        document.getElementById('supabaseStatus').innerHTML = '<span style="color:#16a34a;font-weight:600;">实时同步已启用</span>' + detailsHtml;
         showToast('Supabase 实时同步已启用', 'success');
       });
     } else {
-      document.getElementById('supabaseStatus').innerHTML = '<span style="color:#dc2626;">' + result.error + '</span>';
+      var detailsHtml = result.details ? '<br><small style="color:#64748b;">' + result.details + '</small>' : '';
+      document.getElementById('supabaseStatus').innerHTML = '<span style="color:#dc2626;font-weight:600;">' + result.error + '</span>' + detailsHtml;
       showToast('连接失败: ' + result.error, 'error');
     }
   });
@@ -2577,12 +2619,15 @@ function testSupabaseConnectionUI() {
   document.getElementById('supabaseStatus').innerHTML = '<span style="color:#d97706;">正在测试连接...</span>';
   testSupabaseConnection().then(function(result) {
     if (result.ok) {
-      document.getElementById('supabaseStatus').innerHTML = '<span style="color:#16a34a;font-weight:600;">连接成功！Supabase 工作正常</span>';
+      var detailsHtml = result.details ? '<br><small style="color:#64748b;">' + result.details + '</small>' : '';
+      document.getElementById('supabaseStatus').innerHTML = '<span style="color:#16a34a;font-weight:600;">连接成功！</span>' + detailsHtml;
       showToast('Supabase 连接正常！', 'success');
-      /* 确保实时订阅 */
-      supabaseSubscribeRealtime();
+      supabaseSaveData().then(function() {
+        supabaseSubscribeRealtime();
+      });
     } else {
-      document.getElementById('supabaseStatus').innerHTML = '<span style="color:#dc2626;">' + result.error + '</span>';
+      var detailsHtml = result.details ? '<br><small style="color:#64748b;">' + result.details + '</small>' : '';
+      document.getElementById('supabaseStatus').innerHTML = '<span style="color:#dc2626;font-weight:600;">' + result.error + '</span>' + detailsHtml;
       showToast('连接失败: ' + result.error, 'error');
     }
   });
