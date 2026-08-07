@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>保单管理系统</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 /* ======== CSS Variables - Financial Precision ======== */
 :root {
@@ -1377,6 +1378,27 @@ button {
         <div id="tokenStatus" style="margin-top:8px;font-size:12px;"></div>
       </div>
       <div class="card">
+        <div class="card-title">&#9889; Supabase 实时同步（推荐）</div>
+        <p style="font-size:12px;color:#64748b;margin-bottom:8px;line-height:1.5;">
+          使用 Supabase 实现跨设备实时数据同步，电脑端修改后手机端自动刷新。<br>
+          请前往 <a href="https://supabase.com" target="_blank" style="color:#2563eb;">supabase.com</a> 注册并创建项目，在项目 Settings → API 中获取 <strong>Project URL</strong> 和 <strong>anon public key</strong>。<br>
+          然后在项目的 SQL Editor 中执行 <a href="supabase_migration.sql" target="_blank" style="color:#2563eb;">迁移脚本</a> 创建数据库表。
+        </p>
+        <div class="form-group">
+          <label>Project URL</label>
+          <input type="text" id="supabaseUrlInput" placeholder="https://xxxxx.supabase.co" style="font-family:monospace;font-size:13px;">
+        </div>
+        <div class="form-group">
+          <label>Anon Key</label>
+          <input type="password" id="supabaseKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="font-family:monospace;font-size:13px;">
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end;">
+          <button class="btn-primary" onclick="saveSupabaseConfig()">保存配置</button>
+          <button class="btn-outline btn-sm" onclick="toggleSupabaseKeyVisibility()" style="white-space:nowrap;" id="toggleSupabaseKeyBtn">显示</button>
+        </div>
+        <div id="supabaseStatus" style="margin-top:8px;font-size:12px;"></div>
+      </div>
+      <div class="card">
         <div class="card-title">数据管理</div>
         <div class="btn-group" style="flex-wrap:wrap;gap:8px;">
           <button class="btn-warning" onclick="exportData()">导出数据（JSON）</button>
@@ -1436,7 +1458,7 @@ button {
   <!-- 免责声明 -->
   <div style="text-align:center;padding:12px 20px;font-size:11px;color:#94a3b8;line-height:1.6;">
     <strong>免责声明：</strong>本系统仅供个人保单信息管理使用，不构成任何金融建议。<br>
-    所有数据存储在您的浏览器本地，请勿在公共设备上使用。系统不会将您的数据上传至任何第三方服务器。
+    数据默认存储在浏览器本地，配置 Supabase 后可实现跨设备加密同步。请勿在公共设备上使用。
   </div>
 </div>
 
@@ -1797,6 +1819,110 @@ let reminderFilter = 'all';     // 提醒筛选条件
 let currentTrackClient = '';     // 追踪页选中的客户名
 let confirmCallback = null;     // 确认对话框回调
 
+/* ======== Supabase 配置 ======== */
+let supabaseClient = null;
+const SUPABASE_DEFAULTS = {
+  url: 'https://YOUR_PROJECT_ID.supabase.co',
+  anonKey: 'YOUR_ANON_KEY'
+};
+
+function initSupabase() {
+  var url = secureGetItem('supabase_url_' + currentUser, 'supabase_config') || SUPABASE_DEFAULTS.url;
+  var key = secureGetItem('supabase_key_' + currentUser, 'supabase_config') || SUPABASE_DEFAULTS.anonKey;
+  if (url && key && url !== SUPABASE_DEFAULTS.url && key !== SUPABASE_DEFAULTS.anonKey) {
+    try {
+      supabaseClient = supabase.createClient(url, key, {
+        realtime: { params: { eventsPerSecond: 10 } }
+      });
+      return true;
+    } catch(e) { console.error('Supabase init error:', e); }
+  }
+  return false;
+}
+
+function hasSupabaseConfig() {
+  var url = secureGetItem('supabase_url_' + currentUser, 'supabase_config');
+  var key = secureGetItem('supabase_key_' + currentUser, 'supabase_config');
+  return url && key && url.length > 10 && key.length > 10;
+}
+
+function isSupabaseConnected() {
+  return supabaseClient !== null;
+}
+
+/* Supabase 读数据 */
+async function supabaseLoadData() {
+  if (!isSupabaseConnected() || !currentUser) return null;
+  try {
+    var { data, error } = await supabaseClient
+      .from('user_data')
+      .select('*')
+      .eq('username', currentUser)
+      .maybeSingle();
+    if (error) { console.error('Supabase load error:', error); return null; }
+    return data;
+  } catch(e) { console.error('Supabase load exception:', e); return null; }
+}
+
+/* Supabase 写数据（upsert） */
+async function supabaseSaveData() {
+  if (!isSupabaseConnected() || !currentUser) return;
+  try {
+    var payload = {
+      username: currentUser,
+      data: clientData,
+      reminders: reminderData,
+      insurance_types: getInsuranceTypeLib()
+    };
+    var { error } = await supabaseClient
+      .from('user_data')
+      .upsert(payload, { onConflict: 'username' });
+    if (error) console.error('Supabase save error:', error);
+  } catch(e) { console.error('Supabase save exception:', e); }
+}
+
+/* Supabase 实时订阅 */
+let supabaseChannel = null;
+function supabaseSubscribeRealtime() {
+  if (!isSupabaseConnected() || !currentUser) return;
+  if (supabaseChannel) supabaseClient.removeChannel(supabaseChannel);
+  supabaseChannel = supabaseClient
+    .channel('user_data_changes')
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'user_data', filter: 'username=eq.' + currentUser },
+      function(payload) {
+        if (payload.new && payload.new.username === currentUser) {
+          /* 远端数据变更，自动同步到本地 */
+          if (payload.new.data) {
+            clientData = payload.new.data;
+            secureSetItem('policy_data_' + currentUser, clientData);
+          }
+          if (payload.new.reminders) {
+            reminderData = payload.new.reminders;
+            secureSetItem('reminders_' + currentUser, reminderData);
+          }
+          if (payload.new.insurance_types) {
+            secureSetItem('insurance_type_lib_' + currentUser, payload.new.insurance_types);
+          }
+          /* 刷新当前页面视图 */
+          refreshCurrentView();
+          showToast('检测到其他设备的数据更新，已自动同步', 'success');
+        }
+      }
+    )
+    .subscribe();
+}
+
+function refreshCurrentView() {
+  switch(currentTab) {
+    case 'home': renderDashboard(); break;
+    case 'query': handleSearch(); break;
+    case 'reminders': renderReminders(); break;
+    case 'track': renderTrackPanel(); break;
+    case 'inslib': renderInsuranceTypeLib(); break;
+  }
+}
+
 /* ======== 工具函数 ======== */
 
 /* 简单hash（用于密码存储） */
@@ -2131,18 +2257,23 @@ function enterMainApp() {
   document.getElementById('authPage').style.display = 'none';
   document.getElementById('mainApp').style.display = 'block';
   document.getElementById('currentUserName').textContent = currentUser;
-  loadUserData();
-  autoSyncReminders();
-  startAutoPull();
-  updateSettingSyncStatus(hasGitHubToken());
-  /* 如果本地没有数据，自动从云端拉取 */
-  if (clientData.length === 0 && reminderData.length === 0) {
-    autoPullFromCloud();
-  }
-  syncExistingPoliciesToLib();
-  updateInsuranceTypeDatalist();
-  switchTab('home');
-  updateBottomStats();
+
+  /* 初始化 Supabase */
+  initSupabase();
+
+  /* 加载数据（异步） */
+  loadUserData().then(function() {
+    autoSyncReminders();
+    updateSettingSyncStatus(hasGitHubToken());
+    /* 如果本地没有数据，自动从云端拉取 */
+    if (clientData.length === 0 && reminderData.length === 0) {
+      autoPullFromCloud();
+    }
+    syncExistingPoliciesToLib();
+    updateInsuranceTypeDatalist();
+    switchTab('home');
+    updateBottomStats();
+  });
 }
 
 /* ======== 数据存储（加密 + 用户隔离） ======== */
@@ -2157,6 +2288,10 @@ function getPolicyData() {
 /* 保存保单数据 */
 function savePolicyData() {
   secureSetItem('policy_data_' + currentUser, clientData);
+  updateLocalTimestamp();
+  /* 同步到 Supabase */
+  supabaseSaveData();
+  /* 同时保留 GitHub 同步 */
   autoSyncPush();
 }
 
@@ -2170,13 +2305,52 @@ function getReminderData() {
 /* 保存提醒数据 */
 function saveReminderData() {
   secureSetItem('reminders_' + currentUser, reminderData);
+  supabaseSaveData();
   autoSyncPush();
 }
 
 /* 加载当前用户所有数据 */
-function loadUserData() {
+async function loadUserData() {
   clientData = getPolicyData();
   reminderData = getReminderData();
+
+  /* 尝试从 Supabase 加载最新数据 */
+  if (hasSupabaseConfig()) {
+    var cloudData = await supabaseLoadData();
+    if (cloudData) {
+      /* 比较时间戳，用较新的数据 */
+      var localTs = secureGetItem('policy_data_' + currentUser + '_timestamp');
+      var cloudTs = cloudData.updated_at || '';
+      if (!localTs || cloudTs > localTs) {
+        if (cloudData.data) {
+          clientData = cloudData.data;
+          secureSetItem('policy_data_' + currentUser, clientData);
+        }
+        if (cloudData.reminders) {
+          reminderData = cloudData.reminders;
+          secureSetItem('reminders_' + currentUser, reminderData);
+        }
+        if (cloudData.insurance_types) {
+          secureSetItem('insurance_type_lib_' + currentUser, cloudData.insurance_types);
+        }
+        secureSetItem('policy_data_' + currentUser + '_timestamp', cloudTs);
+        console.log('已从 Supabase 加载最新数据');
+      } else {
+        /* 本地数据较新，推送到 Supabase */
+        await supabaseSaveData();
+      }
+    } else {
+      /* Supabase 无数据，首次推送 */
+      await supabaseSaveData();
+    }
+    /* 订阅实时变更 */
+    supabaseSubscribeRealtime();
+  }
+}
+
+/* 刷新当前时间戳 */
+function updateLocalTimestamp() {
+  secureSetItem('policy_data_' + currentUser + '_timestamp', new Date().toISOString());
 }
 
 /* ======== 自动云同步（GitHub） ======== */
@@ -2238,6 +2412,63 @@ function initTokenStatus() {
     statusEl.innerHTML = '<span style="color:#16a34a;font-weight:600;">已配置 (当前长度: ' + getGitHubToken().length + ')</span>';
   } else {
     statusEl.innerHTML = '<span style="color:#dc2626;">未配置，云同步功能暂不可用</span>';
+  }
+}
+
+/* ======== Supabase 配置函数 ======== */
+function saveSupabaseConfig() {
+  var url = document.getElementById('supabaseUrlInput').value.trim();
+  var key = document.getElementById('supabaseKeyInput').value.trim();
+  if (!url || !key) {
+    showToast('请填写 Supabase URL 和 Anon Key', 'warning');
+    return;
+  }
+  if (!url.startsWith('https://') || !url.includes('.supabase.co')) {
+    showToast('URL 格式不正确，应以 https://xxx.supabase.co 开头', 'error');
+    return;
+  }
+  if (key.length < 20) {
+    showToast('Anon Key 格式不正确', 'error');
+    return;
+  }
+  secureSetItem('supabase_url_' + currentUser, url, 'supabase_config');
+  secureSetItem('supabase_key_' + currentUser, key, 'supabase_config');
+  document.getElementById('supabaseUrlInput').value = '';
+  document.getElementById('supabaseKeyInput').value = '';
+  showToast('Supabase 配置已保存，正在初始化连接...', 'success');
+  /* 重新初始化 Supabase */
+  initSupabase();
+  if (isSupabaseConnected()) {
+    document.getElementById('supabaseStatus').innerHTML = '<span style="color:#16a34a;font-weight:600;">连接成功！正在同步数据...</span>';
+    /* 推送当前数据 */
+    supabaseSaveData().then(function() {
+      supabaseSubscribeRealtime();
+      showToast('Supabase 实时同步已启用', 'success');
+    });
+  } else {
+    document.getElementById('supabaseStatus').innerHTML = '<span style="color:#dc2626;">连接失败，请检查 URL 和 Key 是否正确</span>';
+  }
+}
+
+function toggleSupabaseKeyVisibility() {
+  var input = document.getElementById('supabaseKeyInput');
+  var btn = document.getElementById('toggleSupabaseKeyBtn');
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '隐藏';
+  } else {
+    input.type = 'password';
+    btn.textContent = '显示';
+  }
+}
+
+function initSupabaseStatus() {
+  var statusEl = document.getElementById('supabaseStatus');
+  if (!statusEl) return;
+  if (hasSupabaseConfig()) {
+    statusEl.innerHTML = '<span style="color:#16a34a;font-weight:600;">已配置 (' + (supabaseClient ? '已连接' : '待初始化') + ')</span>';
+  } else {
+    statusEl.innerHTML = '<span style="color:#94a3b8;">未配置，配置后即可实现跨设备实时同步</span>';
   }
 }
 
@@ -2542,7 +2773,7 @@ function refreshCurrentTab() {
     case 'reminders': renderReminders(); break;
     case 'tracking': populateTrackClientSelect(); break;
     case 'inslib': renderInsuranceTypeLib(); break;
-    case 'settings': updateSettingSyncStatus(hasGitHubToken()); initTokenStatus(); break;
+    case 'settings': updateSettingSyncStatus(hasGitHubToken()); initTokenStatus(); initSupabaseStatus(); break;
   }
   updateBottomStats();
 }
@@ -3897,6 +4128,7 @@ function getInsuranceTypeLib() {
 /* 保存险种库 */
 function saveInsuranceTypeLib(lib) {
   secureSetItem('insurance_type_lib_' + currentUser, lib);
+  supabaseSaveData();
 }
 
 /* 添加到险种库（去重） */
