@@ -1867,86 +1867,93 @@ function isSupabaseConnected() {
   return supabaseClient !== null;
 }
 
-/* Supabase 连接测试（完整诊断：读 + 写 + 实时） */
+/* 获取 Supabase REST API 基础信息 */
+function getSupabaseRestInfo() {
+  var url = secureGetItem('supabase_url_' + currentUser, 'supabase_config') || '';
+  var key = secureGetItem('supabase_key_' + currentUser, 'supabase_config') || '';
+  return { url: url, key: key, restUrl: url ? url + '/rest/v1' : '' };
+}
+
+/* Supabase 连接测试（用原生 REST API 绕过客户端库） */
 async function testSupabaseConnection() {
   if (!isSupabaseConnected() || !currentUser) {
-    return { ok: false, error: supabaseLastError || '未连接到 Supabase，请检查配置', details: '' };
+    return { ok: false, error: supabaseLastError || '未连接到 Supabase', details: '' };
   }
+  var info = getSupabaseRestInfo();
   var results = [];
   try {
-    /* 1. 测试读取权限 */
-    var { data, error, status } = await supabaseClient
-      .from('user_data')
-      .select('username', { count: 'exact', head: true })
-      .limit(1);
-    if (error) {
-      if (error.code === '42P01' || (error.message && error.message.includes('does not exist'))) {
-        return { ok: false, error: '数据库表 user_data 不存在', details: '请在 Supabase SQL Editor 中执行 supabase_migration.sql' };
-      }
-      if (error.code && error.code.startsWith('PGRST')) {
-        return { ok: false, error: 'API 权限错误 (' + error.code + ')', details: (error.message || '') + ' — 请检查 RLS 是否已启用' };
-      }
-      return { ok: false, error: '读取失败 (' + (error.code || status) + ')', details: (error.message || error.details || '') };
+    /* 1. 测试读取权限（GET） */
+    var readResp = await fetch(info.restUrl + '/user_data?select=username&limit=1', {
+      method: 'GET',
+      headers: { 'apikey': info.key, 'Authorization': 'Bearer ' + info.key }
+    });
+    if (!readResp.ok) {
+      var readErr = await readResp.text();
+      return { ok: false, error: '读取失败 (' + readResp.status + ')', details: readErr.substring(0, 200) };
     }
     results.push('读取: OK');
 
-    /* 2. 测试写入权限（尝试 upsert 一条测试数据然后立即删除） */
-    try {
-      var testPayload = { username: currentUser, data: [], reminders: [], insurance_types: [] };
-      var { error: upsertErr } = await supabaseClient
-        .from('user_data')
-        .upsert(testPayload, { onConflict: 'username' });
-      if (upsertErr) {
-        return { 
-          ok: false, 
-          error: '写入权限不足 (' + (upsertErr.code || '') + ')', 
-          details: (upsertErr.message || '') + (upsertErr.details ? ' | ' + upsertErr.details : '') + (upsertErr.hint ? ' | ' + upsertErr.hint : '') + ' — 请确认 RLS 策略允许 INSERT/UPDATE'
-        };
-      }
-      results.push('写入: OK');
-    } catch(writeErr) {
-      return { ok: false, error: '写入测试异常', details: (writeErr.message || '') };
+    /* 2. 测试写入权限（POST 插入） */
+    var testPayload = { username: currentUser + '_test', data: [], reminders: [], insurance_types: [] };
+    var writeResp = await fetch(info.restUrl + '/user_data', {
+      method: 'POST',
+      headers: {
+        'apikey': info.key,
+        'Authorization': 'Bearer ' + info.key,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(testPayload)
+    });
+    if (!writeResp.ok) {
+      var writeErr = await writeResp.text();
+      return { ok: false, error: '写入失败 (' + writeResp.status + ')', details: writeErr.substring(0, 300) };
     }
+    results.push('写入: OK');
 
-    /* 3. 提示 Realtime 需要手动启用 */
-    results.push('Realtime: 需在 Supabase Dashboard → Database → Replication 中手动启用');
+    /* 3. 清理测试数据 */
+    await fetch(info.restUrl + '/user_data?username=eq.' + encodeURIComponent(currentUser + '_test'), {
+      method: 'DELETE',
+      headers: { 'apikey': info.key, 'Authorization': 'Bearer ' + info.key }
+    });
+
+    /* 4. 提示 Realtime */
+    results.push('Realtime: 需在 Dashboard 中手动启用');
 
     return { ok: true, error: null, details: results.join(' | ') };
   } catch(e) {
-    var msg = e.message || String(e);
-    if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
-      return { ok: false, error: '网络连接失败', details: '请检查 Project URL 是否正确（应以 https:// 开头）' };
-    }
-    return { ok: false, error: '连接异常', details: msg };
+    return { ok: false, error: '连接异常', details: (e.message || '') };
   }
 }
 
-/* Supabase 读数据 */
+/* Supabase 读数据（原生 REST API） */
 async function supabaseLoadData() {
   if (!isSupabaseConnected() || !currentUser) return null;
+  var info = getSupabaseRestInfo();
   try {
-    var { data, error } = await supabaseClient
-      .from('user_data')
-      .select('*')
-      .eq('username', currentUser)
-      .maybeSingle();
-    if (error) {
-      supabaseLastError = '读取失败: ' + (error.message || error.code || '');
-      console.error('[Supabase] load error 详情:', JSON.stringify({ code: error.code, message: error.message, details: error.details, hint: error.hint }));
+    var resp = await fetch(info.restUrl + '/user_data?select=*&username=eq.' + encodeURIComponent(currentUser), {
+      headers: { 'apikey': info.key, 'Authorization': 'Bearer ' + info.key }
+    });
+    if (!resp.ok) {
+      supabaseLastError = '读取失败: HTTP ' + resp.status;
+      console.error('[Supabase] load error:', resp.status, await resp.text());
       return null;
     }
-    console.log('[Supabase] 数据加载成功，username:', currentUser, 'hasData:', !!data);
-    return data;
+    var data = await resp.json();
+    var result = data && data.length > 0 ? data[0] : null;
+    console.log('[Supabase] 数据加载成功，username:', currentUser, 'hasData:', !!result);
+    return result;
   } catch(e) {
     supabaseLastError = '读取异常: ' + (e.message || e);
-    console.error('[Supabase] load exception 详情:', e.message, e);
+    console.error('[Supabase] load exception:', e);
     return null;
   }
 }
 
-/* Supabase 写数据（upsert） */
+/* Supabase 写数据（原生 REST API：先查后插/改） */
 async function supabaseSaveData() {
   if (!isSupabaseConnected() || !currentUser) return;
+  var info = getSupabaseRestInfo();
   try {
     var payload = {
       username: currentUser,
@@ -1954,18 +1961,53 @@ async function supabaseSaveData() {
       reminders: reminderData,
       insurance_types: getInsuranceTypeLib()
     };
-    var { error } = await supabaseClient
-      .from('user_data')
-      .upsert(payload, { onConflict: 'username' });
-    if (error) {
-      supabaseLastError = '保存失败: ' + (error.message || error.code || '');
-      console.error('[Supabase] save error 详情:', JSON.stringify({ code: error.code, message: error.message, details: error.details, hint: error.hint }));
+
+    /* 先查是否存在 */
+    var checkResp = await fetch(info.restUrl + '/user_data?select=id&username=eq.' + encodeURIComponent(currentUser), {
+      headers: { 'apikey': info.key, 'Authorization': 'Bearer ' + info.key }
+    });
+    var existing = checkResp.ok ? await checkResp.json() : [];
+
+    if (existing && existing.length > 0) {
+      /* 已存在 → PATCH 更新 */
+      var patchResp = await fetch(info.restUrl + '/user_data?username=eq.' + encodeURIComponent(currentUser), {
+        method: 'PATCH',
+        headers: {
+          'apikey': info.key,
+          'Authorization': 'Bearer ' + info.key,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!patchResp.ok) {
+        supabaseLastError = '更新失败: HTTP ' + patchResp.status;
+        console.error('[Supabase] patch error:', patchResp.status, await patchResp.text());
+      } else {
+        console.log('[Supabase] 数据更新成功');
+      }
     } else {
-      console.log('[Supabase] 数据保存成功');
+      /* 不存在 → POST 插入 */
+      var postResp = await fetch(info.restUrl + '/user_data', {
+        method: 'POST',
+        headers: {
+          'apikey': info.key,
+          'Authorization': 'Bearer ' + info.key,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!postResp.ok) {
+        supabaseLastError = '插入失败: HTTP ' + postResp.status;
+        console.error('[Supabase] post error:', postResp.status, await postResp.text());
+      } else {
+        console.log('[Supabase] 数据插入成功');
+      }
     }
   } catch(e) {
     supabaseLastError = '保存异常: ' + (e.message || e);
-    console.error('[Supabase] save exception 详情:', e.message, e);
+    console.error('[Supabase] save exception:', e);
   }
 }
 
