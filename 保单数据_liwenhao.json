@@ -3158,20 +3158,33 @@
           "policyCode": "1998442011Y05100000378",
           "sumInsured": "",
           "extraFields": {},
+          "hasDividend": false,
+          "paymentBank": "",
           "paymentTerm": "20",
           "insuredPhone": "13926614238",
+          "maturityDate": "",
           "annualPremium": "660",
           "beneficiaries": [
             {
               "name": "未指定",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "effectiveDate": "19980603",
           "insuranceName": "鸿寿养老金保险(97版)",
           "paymentMethod": "年缴",
+          "insuredAddress": "广东省清远市清城区凤城街道朝阳花苑24号楼B座604号",
           "serviceRecords": [],
           "insuredRelation": "本人",
+          "paymentBankCard": "",
+          "survivalBenefit": {
+            "note": "",
+            "type": "",
+            "amount": "",
+            "lastDate": "",
+            "nextDate": "",
+            "startDate": ""
+          },
           "parentPolicyCode": ""
         },
         {
@@ -3264,9 +3277,21 @@
           "phone": "13927621591",
           "idCard": "441802198812280235",
           "relationship": "儿子"
+        },
+        {
+          "name": "何志韵",
+          "note": "",
+          "phone": "",
+          "idCard": "",
+          "relationship": "女儿"
         }
       ],
       "contactHistory": [
+        {
+          "date": "20260807",
+          "note": "11点 在东城碧桂园云湖  21栋1601 见面",
+          "status": "面见客户"
+        },
         {
           "date": "20260806",
           "note": "已约面见20260807早上11点",
@@ -7126,9 +7151,13 @@
     {
       "codeType": "R45",
       "insuranceName": "鸿寿养老金保险(97版)"
+    },
+    {
+      "codeType": "R44",
+      "insuranceName": "鸿寿养老金保险(97版)"
     }
   ],
-  "_timestamp": "1786095313146",
+  "_timestamp": "1786095393355",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
