@@ -1433,39 +1433,26 @@
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "有效",
-          "hasDividend": false,
           "effectiveDate": "20170910",
-          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "1500",
           "sumInsured": "",
           "paymentTerm": "20",
-          "paymentBank": "",
-          "paymentBankCard": "",
           "insured": "雷秋玲",
           "insuredRelation": "本人",
           "insuredId": "441882198507141564",
           "insuredPhone": "15219079862",
-          "insuredAddress": "广东省清远市清城区源潭大连村委会东门闸门围4号",
           "beneficiaries": [
             {
               "name": "赖浩宇",
-              "quota": "50"
+              "quota": 50
             },
             {
               "name": "赖水松",
-              "quota": "50"
+              "quota": 50
             }
           ],
           "remark": "",
-          "survivalBenefit": {
-            "type": "",
-            "amount": "",
-            "startDate": "",
-            "lastDate": "",
-            "nextDate": "",
-            "note": ""
-          },
           "extraFields": {},
           "serviceRecords": []
         },
@@ -1497,8 +1484,7 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": [],
-          "_idx": 1
+          "serviceRecords": []
         },
         {
           "policyCode": "2017442001512015116760",
@@ -1528,8 +1514,7 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": [],
-          "_idx": 2
+          "serviceRecords": []
         },
         {
           "policyCode": "2017442001321300104999",
@@ -1559,8 +1544,7 @@
           ],
           "remark": "",
           "extraFields": {},
-          "serviceRecords": [],
-          "_idx": 3
+          "serviceRecords": []
         }
       ],
       "familyMembers": [
@@ -3156,22 +3140,35 @@
           "mainType": "主险",
           "parentPolicyCode": "",
           "status": "有效",
+          "hasDividend": false,
           "effectiveDate": "19980603",
+          "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "660",
           "sumInsured": "",
           "paymentTerm": "20",
+          "paymentBank": "",
+          "paymentBankCard": "",
           "insured": "叶连好",
           "insuredRelation": "本人",
           "insuredId": "440127196410171449",
           "insuredPhone": "13926614238",
+          "insuredAddress": "广东省清远市清城区凤城街道朝阳花苑24号楼B座604号",
           "beneficiaries": [
             {
-              "name": "未指定",
-              "quota": 100
+              "name": "何志韵",
+              "quota": "100"
             }
           ],
           "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
           "extraFields": {},
           "serviceRecords": [],
           "_idx": 0
@@ -3306,14 +3303,7 @@
           "note": ""
         }
       ],
-      "contactHistory": [
-        {
-          "status": "已电话联系",
-          "date": "20260806",
-          "note": "客户告知不需要再服务"
-        }
-      ],
-      "doNotContact": true
+      "contactHistory": []
     },
     {
       "name": "张彩美",
@@ -3585,7 +3575,7 @@
         {
           "status": "已加微信",
           "date": "20260806",
-          "note": "微信被拉黑"
+          "note": "加微信后，被删除"
         }
       ]
     },
@@ -3715,8 +3705,7 @@
             "note": ""
           },
           "extraFields": {},
-          "serviceRecords": [],
-          "_idx": 1
+          "serviceRecords": []
         }
       ],
       "familyMembers": [],
@@ -7092,9 +7081,13 @@
     {
       "insuranceName": "康宁定期保险",
       "codeType": "S43"
+    },
+    {
+      "insuranceName": "鸿寿养老金保险(97版)",
+      "codeType": "R44"
     }
   ],
-  "_timestamp": "1786092333189",
+  "_timestamp": "1786092385560",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
