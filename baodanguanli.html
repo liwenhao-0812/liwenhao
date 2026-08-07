@@ -1394,6 +1394,7 @@ button {
         </div>
         <div style="display:flex;gap:8px;align-items:flex-end;">
           <button class="btn-primary" onclick="saveSupabaseConfig()">保存配置</button>
+          <button class="btn-outline" onclick="testSupabaseConnectionUI()">测试连接</button>
           <button class="btn-outline btn-sm" onclick="toggleSupabaseKeyVisibility()" style="white-space:nowrap;" id="toggleSupabaseKeyBtn">显示</button>
         </div>
         <div id="supabaseStatus" style="margin-top:8px;font-size:12px;"></div>
@@ -1821,12 +1822,15 @@ let confirmCallback = null;     // 确认对话框回调
 
 /* ======== Supabase 配置 ======== */
 let supabaseClient = null;
+let supabaseLastError = '';    // 最近的错误信息
 const SUPABASE_DEFAULTS = {
   url: 'https://YOUR_PROJECT_ID.supabase.co',
   anonKey: 'YOUR_ANON_KEY'
 };
 
 function initSupabase() {
+  supabaseClient = null;
+  supabaseLastError = '';
   var url = secureGetItem('supabase_url_' + currentUser, 'supabase_config') || SUPABASE_DEFAULTS.url;
   var key = secureGetItem('supabase_key_' + currentUser, 'supabase_config') || SUPABASE_DEFAULTS.anonKey;
   if (url && key && url !== SUPABASE_DEFAULTS.url && key !== SUPABASE_DEFAULTS.anonKey) {
@@ -1834,8 +1838,16 @@ function initSupabase() {
       supabaseClient = supabase.createClient(url, key, {
         realtime: { params: { eventsPerSecond: 10 } }
       });
+      console.log('[Supabase] 客户端已创建，URL:', url.substring(0, 40) + '...');
       return true;
-    } catch(e) { console.error('Supabase init error:', e); }
+    } catch(e) {
+      supabaseLastError = '初始化失败: ' + (e.message || e);
+      console.error('[Supabase] init error:', e);
+    }
+  } else {
+    if (!url || url === SUPABASE_DEFAULTS.url) supabaseLastError = '未配置有效的 Project URL';
+    else if (!key || key === SUPABASE_DEFAULTS.anonKey) supabaseLastError = '未配置有效的 Anon Key';
+    console.log('[Supabase] 未初始化 - URL或Key无效');
   }
   return false;
 }
@@ -1843,11 +1855,43 @@ function initSupabase() {
 function hasSupabaseConfig() {
   var url = secureGetItem('supabase_url_' + currentUser, 'supabase_config');
   var key = secureGetItem('supabase_key_' + currentUser, 'supabase_config');
-  return url && key && url.length > 10 && key.length > 10;
+  return url && key && url.length > 10 && key.length > 10 && url !== SUPABASE_DEFAULTS.url && key !== SUPABASE_DEFAULTS.anonKey;
 }
 
 function isSupabaseConnected() {
   return supabaseClient !== null;
+}
+
+/* Supabase 连接测试（真正查询数据库） */
+async function testSupabaseConnection() {
+  if (!isSupabaseConnected() || !currentUser) {
+    return { ok: false, error: supabaseLastError || '未连接到 Supabase，请检查配置' };
+  }
+  try {
+    /* 尝试查询 user_data 表（只查1行，不取数据） */
+    var { data, error, status } = await supabaseClient
+      .from('user_data')
+      .select('username', { count: 'exact', head: true })
+      .limit(1);
+    if (error) {
+      /* 42P01 = 表不存在 */
+      if (error.code === '42P01' || (error.message && error.message.includes('does not exist'))) {
+        return { ok: false, error: '数据库表 user_data 不存在，请先在 Supabase SQL Editor 中执行迁移脚本（supabase_migration.sql）' };
+      }
+      /* PGRST 开头的是 PostgREST 错误 */
+      if (error.code && error.code.startsWith('PGRST')) {
+        return { ok: false, error: 'API 权限错误 (' + error.code + '): ' + (error.message || '') + '。请检查 RLS 策略是否已启用。' };
+      }
+      return { ok: false, error: '查询失败 (' + (error.code || status) + '): ' + (error.message || '未知错误') };
+    }
+    return { ok: true, error: null };
+  } catch(e) {
+    var msg = e.message || String(e);
+    if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+      return { ok: false, error: '网络连接失败，请检查 Project URL 是否正确（应以 https:// 开头）' };
+    }
+    return { ok: false, error: '连接异常: ' + msg };
+  }
 }
 
 /* Supabase 读数据 */
@@ -1859,9 +1903,18 @@ async function supabaseLoadData() {
       .select('*')
       .eq('username', currentUser)
       .maybeSingle();
-    if (error) { console.error('Supabase load error:', error); return null; }
+    if (error) {
+      supabaseLastError = '读取失败: ' + (error.message || error.code || '');
+      console.error('[Supabase] load error:', error);
+      return null;
+    }
+    console.log('[Supabase] 数据加载成功，username:', currentUser, 'hasData:', !!data);
     return data;
-  } catch(e) { console.error('Supabase load exception:', e); return null; }
+  } catch(e) {
+    supabaseLastError = '读取异常: ' + (e.message || e);
+    console.error('[Supabase] load exception:', e);
+    return null;
+  }
 }
 
 /* Supabase 写数据（upsert） */
@@ -1877,8 +1930,16 @@ async function supabaseSaveData() {
     var { error } = await supabaseClient
       .from('user_data')
       .upsert(payload, { onConflict: 'username' });
-    if (error) console.error('Supabase save error:', error);
-  } catch(e) { console.error('Supabase save exception:', e); }
+    if (error) {
+      supabaseLastError = '保存失败: ' + (error.message || error.code || '');
+      console.error('[Supabase] save error:', error);
+    } else {
+      console.log('[Supabase] 数据保存成功');
+    }
+  } catch(e) {
+    supabaseLastError = '保存异常: ' + (e.message || e);
+    console.error('[Supabase] save exception:', e);
+  }
 }
 
 /* Supabase 实时订阅 */
@@ -1918,7 +1979,7 @@ function refreshCurrentView() {
     case 'home': renderDashboard(); break;
     case 'query': handleSearch(); break;
     case 'reminders': renderReminders(); break;
-    case 'track': renderTrackPanel(); break;
+    case 'tracking': populateTrackClientSelect(); break;
     case 'inslib': renderInsuranceTypeLib(); break;
   }
 }
@@ -2314,37 +2375,50 @@ async function loadUserData() {
   clientData = getPolicyData();
   reminderData = getReminderData();
 
+  console.log('[Supabase] loadUserData: hasConfig=' + hasSupabaseConfig() + ', connected=' + isSupabaseConnected());
+
   /* 尝试从 Supabase 加载最新数据 */
   if (hasSupabaseConfig()) {
-    var cloudData = await supabaseLoadData();
-    if (cloudData) {
-      /* 比较时间戳，用较新的数据 */
-      var localTs = secureGetItem('policy_data_' + currentUser + '_timestamp');
-      var cloudTs = cloudData.updated_at || '';
-      if (!localTs || cloudTs > localTs) {
-        if (cloudData.data) {
-          clientData = cloudData.data;
-          secureSetItem('policy_data_' + currentUser, clientData);
+    /* 确保客户端已初始化 */
+    if (!isSupabaseConnected()) {
+      initSupabase();
+    }
+    if (isSupabaseConnected()) {
+      var cloudData = await supabaseLoadData();
+      if (cloudData) {
+        /* 比较时间戳，用较新的数据 */
+        var localTs = secureGetItem('policy_data_' + currentUser + '_timestamp');
+        var cloudTs = cloudData.updated_at || '';
+        if (!localTs || cloudTs > localTs) {
+          console.log('[Supabase] 云端数据较新，拉取中...');
+          if (cloudData.data) {
+            clientData = cloudData.data;
+            secureSetItem('policy_data_' + currentUser, clientData);
+          }
+          if (cloudData.reminders) {
+            reminderData = cloudData.reminders;
+            secureSetItem('reminders_' + currentUser, reminderData);
+          }
+          if (cloudData.insurance_types) {
+            secureSetItem('insurance_type_lib_' + currentUser, cloudData.insurance_types);
+          }
+          secureSetItem('policy_data_' + currentUser + '_timestamp', cloudTs);
+          console.log('[Supabase] 已从云端加载最新数据');
+        } else {
+          /* 本地数据较新，推送到 Supabase */
+          console.log('[Supabase] 本地数据较新，推送到云端');
+          await supabaseSaveData();
         }
-        if (cloudData.reminders) {
-          reminderData = cloudData.reminders;
-          secureSetItem('reminders_' + currentUser, reminderData);
-        }
-        if (cloudData.insurance_types) {
-          secureSetItem('insurance_type_lib_' + currentUser, cloudData.insurance_types);
-        }
-        secureSetItem('policy_data_' + currentUser + '_timestamp', cloudTs);
-        console.log('已从 Supabase 加载最新数据');
       } else {
-        /* 本地数据较新，推送到 Supabase */
+        /* Supabase 无数据，首次推送 */
+        console.log('[Supabase] 云端无数据，首次推送');
         await supabaseSaveData();
       }
+      /* 订阅实时变更 */
+      supabaseSubscribeRealtime();
     } else {
-      /* Supabase 无数据，首次推送 */
-      await supabaseSaveData();
+      console.log('[Supabase] 客户端初始化失败: ' + supabaseLastError);
     }
-    /* 订阅实时变更 */
-    supabaseSubscribeRealtime();
   }
 }
 
@@ -2435,19 +2509,31 @@ function saveSupabaseConfig() {
   secureSetItem('supabase_key_' + currentUser, key, 'supabase_config');
   document.getElementById('supabaseUrlInput').value = '';
   document.getElementById('supabaseKeyInput').value = '';
-  showToast('Supabase 配置已保存，正在初始化连接...', 'success');
-  /* 重新初始化 Supabase */
-  initSupabase();
-  if (isSupabaseConnected()) {
-    document.getElementById('supabaseStatus').innerHTML = '<span style="color:#16a34a;font-weight:600;">连接成功！正在同步数据...</span>';
-    /* 推送当前数据 */
-    supabaseSaveData().then(function() {
-      supabaseSubscribeRealtime();
-      showToast('Supabase 实时同步已启用', 'success');
-    });
-  } else {
-    document.getElementById('supabaseStatus').innerHTML = '<span style="color:#dc2626;">连接失败，请检查 URL 和 Key 是否正确</span>';
+  document.getElementById('supabaseStatus').innerHTML = '<span style="color:#d97706;">正在测试连接...</span>';
+
+  /* 初始化客户端 */
+  if (!initSupabase()) {
+    document.getElementById('supabaseStatus').innerHTML = '<span style="color:#dc2626;">' + (supabaseLastError || '初始化失败') + '</span>';
+    showToast('Supabase 初始化失败: ' + supabaseLastError, 'error');
+    return;
   }
+
+  /* 真正测试连接 */
+  testSupabaseConnection().then(function(result) {
+    if (result.ok) {
+      document.getElementById('supabaseStatus').innerHTML = '<span style="color:#16a34a;font-weight:600;">连接成功！正在同步数据...</span>';
+      showToast('Supabase 连接成功！', 'success');
+      /* 推送当前数据 */
+      supabaseSaveData().then(function() {
+        supabaseSubscribeRealtime();
+        document.getElementById('supabaseStatus').innerHTML = '<span style="color:#16a34a;font-weight:600;">实时同步已启用</span>';
+        showToast('Supabase 实时同步已启用', 'success');
+      });
+    } else {
+      document.getElementById('supabaseStatus').innerHTML = '<span style="color:#dc2626;">' + result.error + '</span>';
+      showToast('连接失败: ' + result.error, 'error');
+    }
+  });
 }
 
 function toggleSupabaseKeyVisibility() {
@@ -2466,10 +2552,40 @@ function initSupabaseStatus() {
   var statusEl = document.getElementById('supabaseStatus');
   if (!statusEl) return;
   if (hasSupabaseConfig()) {
-    statusEl.innerHTML = '<span style="color:#16a34a;font-weight:600;">已配置 (' + (supabaseClient ? '已连接' : '待初始化') + ')</span>';
+    var connected = isSupabaseConnected();
+    if (connected) {
+      statusEl.innerHTML = '<span style="color:#16a34a;font-weight:600;">已配置并连接</span>';
+    } else {
+      statusEl.innerHTML = '<span style="color:#d97706;">已配置但未连接 (' + (supabaseLastError || '点击保存重新测试') + ')</span>';
+    }
   } else {
     statusEl.innerHTML = '<span style="color:#94a3b8;">未配置，配置后即可实现跨设备实时同步</span>';
   }
+}
+
+/* 测试连接按钮（UI 封装） */
+function testSupabaseConnectionUI() {
+  if (!hasSupabaseConfig()) {
+    showToast('请先填写 Supabase URL 和 Key', 'warning');
+    return;
+  }
+  if (!initSupabase()) {
+    document.getElementById('supabaseStatus').innerHTML = '<span style="color:#dc2626;">' + (supabaseLastError || '初始化失败') + '</span>';
+    showToast('初始化失败: ' + supabaseLastError, 'error');
+    return;
+  }
+  document.getElementById('supabaseStatus').innerHTML = '<span style="color:#d97706;">正在测试连接...</span>';
+  testSupabaseConnection().then(function(result) {
+    if (result.ok) {
+      document.getElementById('supabaseStatus').innerHTML = '<span style="color:#16a34a;font-weight:600;">连接成功！Supabase 工作正常</span>';
+      showToast('Supabase 连接正常！', 'success');
+      /* 确保实时订阅 */
+      supabaseSubscribeRealtime();
+    } else {
+      document.getElementById('supabaseStatus').innerHTML = '<span style="color:#dc2626;">' + result.error + '</span>';
+      showToast('连接失败: ' + result.error, 'error');
+    }
+  });
 }
 
 /* 获取当前用户的数据文件名 */
