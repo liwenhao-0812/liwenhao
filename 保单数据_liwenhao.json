@@ -3201,7 +3201,12 @@
           "insuranceName": "鸿寿养老金保险(97版)",
           "paymentMethod": "年缴",
           "insuredAddress": "广东省清远市清城区凤城街道朝阳花苑24号楼B座604号",
-          "serviceRecords": [],
+          "serviceRecords": [
+            {
+              "date": "20260807",
+              "content": "协助更改收益人，改为女儿"
+            }
+          ],
           "insuredRelation": "本人",
           "paymentBankCard": "",
           "survivalBenefit": {
@@ -3233,7 +3238,7 @@
           "annualPremium": "640",
           "beneficiaries": [
             {
-              "name": "未指定",
+              "name": "叶连好",
               "quota": "100"
             }
           ],
@@ -3263,7 +3268,7 @@
           "mainType": "主险",
           "insuredId": "441802198812280235",
           "policyCode": "1998442011S11000000585",
-          "sumInsured": "",
+          "sumInsured": "2000",
           "extraFields": {},
           "hasDividend": false,
           "paymentBank": "",
@@ -7174,9 +7179,17 @@
     {
       "codeType": "R44",
       "insuranceName": "鸿寿养老金保险(97版)"
+    },
+    {
+      "codeType": "R45",
+      "insuranceName": "鸿寿养老金保险(97版)"
+    },
+    {
+      "codeType": "R46",
+      "insuranceName": "66鸿运保险(B型)(97版)"
     }
   ],
-  "_timestamp": "1786095699178",
+  "_timestamp": "1786095776004",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
