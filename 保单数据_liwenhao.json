@@ -3193,7 +3193,7 @@
           "annualPremium": "660",
           "beneficiaries": [
             {
-              "name": "未指定",
+              "name": "何志韵",
               "quota": "100"
             }
           ],
@@ -7170,9 +7170,13 @@
     {
       "codeType": "S43",
       "insuranceName": "康宁定期保险"
+    },
+    {
+      "codeType": "R44",
+      "insuranceName": "鸿寿养老金保险(97版)"
     }
   ],
-  "_timestamp": "1786095487838",
+  "_timestamp": "1786095699178",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
