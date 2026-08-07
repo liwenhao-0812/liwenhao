@@ -3810,39 +3810,6 @@
           "status": "已电话联系"
         }
       ]
-    },
-    {
-      "name": "冯晓明",
-      "phone": "1582032850",
-      "idCard": "",
-      "address": "",
-      "policies": [
-        {
-          "remark": "",
-          "status": "有效",
-          "insured": "",
-          "codeType": "",
-          "mainType": "主险",
-          "insuredId": "",
-          "policyCode": "",
-          "sumInsured": "",
-          "extraFields": {},
-          "paymentTerm": "",
-          "insuredPhone": "",
-          "annualPremium": "",
-          "beneficiaries": [],
-          "effectiveDate": "",
-          "insuranceName": "国寿新绿舟定期寿险",
-          "paymentMethod": "年缴",
-          "serviceRecords": [],
-          "insuredRelation": "",
-          "parentPolicyCode": ""
-        }
-      ],
-      "workAddress": "",
-      "workCompany": "",
-      "familyMembers": [],
-      "contactHistory": []
     }
   ],
   "reminders": [
@@ -4501,7 +4468,7 @@
       "dueDate": "-",
       "enabled": true,
       "createdAt": "20260806",
-      "dismissed": false,
+      "dismissed": true,
       "clientName": "赖新爱",
       "daysBefore": 30,
       "policyCode": "2006442011S42015005147"
@@ -4513,7 +4480,7 @@
       "dueDate": "-",
       "enabled": true,
       "createdAt": "20260806",
-      "dismissed": false,
+      "dismissed": true,
       "clientName": "赖新爱",
       "daysBefore": 60,
       "policyCode": "2006442011S42015005147"
@@ -4525,7 +4492,7 @@
       "dueDate": "-",
       "enabled": true,
       "createdAt": "20260806",
-      "dismissed": false,
+      "dismissed": true,
       "clientName": "赖新爱",
       "daysBefore": 14,
       "policyCode": "2006442011S42015005147"
@@ -4537,7 +4504,7 @@
       "dueDate": "-",
       "enabled": true,
       "createdAt": "20260806",
-      "dismissed": false,
+      "dismissed": true,
       "clientName": "雷焕洪",
       "daysBefore": 30,
       "policyCode": "2004442011S42000006821"
@@ -4549,7 +4516,7 @@
       "dueDate": "-",
       "enabled": true,
       "createdAt": "20260806",
-      "dismissed": false,
+      "dismissed": true,
       "clientName": "雷焕洪",
       "daysBefore": 60,
       "policyCode": "2004442011S42000006821"
@@ -7175,21 +7142,9 @@
     {
       "codeType": "S43",
       "insuranceName": "康宁定期保险"
-    },
-    {
-      "codeType": "R44",
-      "insuranceName": "鸿寿养老金保险(97版)"
-    },
-    {
-      "codeType": "R45",
-      "insuranceName": "鸿寿养老金保险(97版)"
-    },
-    {
-      "codeType": "R46",
-      "insuranceName": "66鸿运保险(B型)(97版)"
     }
   ],
-  "_timestamp": "1786095776004",
+  "_timestamp": "1786095894471",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
