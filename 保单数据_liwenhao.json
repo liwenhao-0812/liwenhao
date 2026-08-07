@@ -3105,20 +3105,33 @@
           "policyCode": "2004442001S50000048630",
           "sumInsured": "",
           "extraFields": {},
+          "hasDividend": false,
+          "paymentBank": "",
           "paymentTerm": "20",
           "insuredPhone": "18318702332",
+          "maturityDate": "",
           "annualPremium": "800",
           "beneficiaries": [
             {
               "name": "叶海燕",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "effectiveDate": "20041106",
           "insuranceName": "国寿千禧理财两全保险(分红型)",
           "paymentMethod": "年缴",
+          "insuredAddress": "广东省清远市清城区东城街道金湖社区清碧路1号锦江豪庭2座2801房",
           "serviceRecords": [],
           "insuredRelation": "儿子",
+          "paymentBankCard": "",
+          "survivalBenefit": {
+            "note": "",
+            "type": "",
+            "amount": "",
+            "lastDate": "",
+            "nextDate": "",
+            "startDate": ""
+          },
           "parentPolicyCode": ""
         }
       ],
@@ -7143,21 +7156,9 @@
     {
       "codeType": "S43",
       "insuranceName": "康宁定期保险"
-    },
-    {
-      "codeType": "R46",
-      "insuranceName": "66鸿运保险(B型)(97版)"
-    },
-    {
-      "codeType": "R45",
-      "insuranceName": "鸿寿养老金保险(97版)"
-    },
-    {
-      "codeType": "R44",
-      "insuranceName": "鸿寿养老金保险(97版)"
     }
   ],
-  "_timestamp": "1786095393355",
+  "_timestamp": "1786095442633",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
