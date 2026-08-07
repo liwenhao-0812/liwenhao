@@ -1279,6 +1279,15 @@ button {
         <button class="btn-outline" onclick="clearSearch()">清空</button>
       </div>
       <div class="search-result-info" id="searchResultInfo"></div>
+      <!-- 跟进状态筛选 -->
+      <div class="follow-up-filter" style="margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:12px;font-weight:600;color:#64748b;">跟进状态：</span>
+        <select id="followUpFilter" onchange="handleSearch()" style="padding:6px 10px;border-radius:6px;border:1px solid #d1d5db;font-size:13px;font-family:inherit;background:#fff;">
+          <option value="all">全部客户</option>
+          <option value="followUp">需跟进（未联系上/电话挂断）</option>
+          <option value="wechatNoMeeting">已加微信未见面</option>
+        </select>
+      </div>
       <div class="sort-bar">
         <span>排序：</span>
         <select id="sortSelect" onchange="handleSearch()">
@@ -2675,6 +2684,7 @@ function renderAdminPanel() {
 /* 清空搜索 */
 function clearSearch() {
   document.getElementById('searchInput').value = '';
+  document.getElementById('followUpFilter').value = 'all';
   handleSearch();
 }
 
@@ -2701,6 +2711,39 @@ function handleSearch() {
     });
     return { clientIdx: idx, client: client, matchedPolicies: matchedPolicies };
   }).filter(function(item) { return item.matchedPolicies.length > 0 || !keyword; });
+
+  /* 跟进状态筛选 */
+  var followUpFilter = document.getElementById('followUpFilter').value || 'all';
+  if (followUpFilter !== 'all') {
+    filtered = filtered.filter(function(item) {
+      var c = item.client;
+      var hasWechat = false;
+      var hasMeeting = false;
+      var latestContact = null;
+
+      if (c.contactHistory && c.contactHistory.length > 0) {
+        c.contactHistory.forEach(function(ch) {
+          if (ch.status === '已加微信') hasWechat = true;
+          if (ch.status === '面见客户') hasMeeting = true;
+          if (!latestContact || ch.date > latestContact.date) {
+            latestContact = ch;
+          }
+        });
+      }
+
+      if (followUpFilter === 'followUp') {
+        /* 需跟进：最近一次联系状态为未联系上或电话挂断，或无联系记录 */
+        return !latestContact || latestContact.status === '未联系上' || latestContact.status === '电话挂断';
+      }
+
+      if (followUpFilter === 'wechatNoMeeting') {
+        /* 已加微信但未见面 */
+        return hasWechat && !hasMeeting;
+      }
+
+      return true;
+    });
+  }
 
   /* 排序 */
   var sortBy = document.getElementById('sortSelect').value;
@@ -2878,6 +2921,39 @@ function renderClientList(filtered) {
         html += '</div>';
       } else {
         html += '<div style="display:flex;align-items:center;gap:8px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;padding:8px 12px;font-size:12px;color:#94a3b8;">📞 暂无联系记录，点击添加</div>';
+      }
+
+      /* 服务记录摘要 */
+      var allServiceRecords = [];
+      item.matchedPolicies.forEach(function(p) {
+        if (p.serviceRecords && p.serviceRecords.length > 0) {
+          p.serviceRecords.forEach(function(sr) {
+            allServiceRecords.push({
+              date: sr.date,
+              content: sr.content,
+              policyName: p.insuranceName || '未命名保单'
+            });
+          });
+        }
+      });
+      allServiceRecords.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+
+      if (allServiceRecords.length > 0) {
+        html += '<div style="margin-top:8px;border-top:1px solid #f1f5f9;padding-top:8px;">';
+        html += '<div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px;">📋 服务记录 (' + allServiceRecords.length + ')</div>';
+        html += '<div style="font-size:12px;max-height:100px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:6px;padding:6px;">';
+        var displayRecords = allServiceRecords.slice(0, 3);
+        displayRecords.forEach(function(sr) {
+          html += '<div style="margin-bottom:4px;padding-bottom:4px;border-bottom:1px dashed #f1f5f9;">';
+          html += '<div style="font-weight:600;color:#334155;">' + (sr.policyName || '') + '</div>';
+          html += '<div style="color:#94a3b8;font-size:11px;">' + formatDate(sr.date) + '</div>';
+          html += '<div style="color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (sr.content || '') + '</div>';
+          html += '</div>';
+        });
+        if (allServiceRecords.length > 3) {
+          html += '<div style="text-align:center;color:#3b82f6;font-size:11px;cursor:pointer;padding:2px 0;" onclick="event.stopPropagation();selectClient(' + item.clientIdx + ')">查看全部 ' + allServiceRecords.length + ' 条记录 →</div>';
+        }
+        html += '</div></div>';
       }
 
       html += '</div>';
