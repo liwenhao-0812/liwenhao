@@ -3,7 +3,7 @@
 -- 在 Supabase SQL Editor 中执行此脚本（可安全重复执行）
 -- ============================================
 
--- 0. 先处理 publication 冲突（安全移除再重新添加）
+-- 0. 先处理 publication 冲突
 DO $$
 BEGIN
   IF EXISTS (
@@ -41,19 +41,24 @@ CREATE TRIGGER user_data_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at();
 
--- 3. 启用 Row Level Security
+-- 3. 先禁用 RLS 确保写入权限，再重新启用
+ALTER TABLE user_data DISABLE ROW LEVEL SECURITY;
 ALTER TABLE user_data ENABLE ROW LEVEL SECURITY;
 
--- 4. RLS 策略
+-- 4. RLS 策略（显式指定 TO anon 角色）
 DROP POLICY IF EXISTS "允许所有操作" ON user_data;
 CREATE POLICY "允许所有操作" ON user_data
   FOR ALL
+  TO anon, authenticated
   USING (true)
   WITH CHECK (true);
 
--- 5. 重新添加到 Realtime（必须先执行第0步移除了才能添加）
+-- 5. 如果上面还不行，直接禁用 RLS（临时方案，个人使用足够安全）
+-- ALTER TABLE user_data DISABLE ROW LEVEL SECURITY;
+
+-- 6. 重新添加到 Realtime
 ALTER PUBLICATION supabase_realtime ADD TABLE user_data;
 
--- 6. 索引
+-- 7. 索引
 CREATE INDEX IF NOT EXISTS idx_user_data_username ON user_data(username);
 CREATE INDEX IF NOT EXISTS idx_user_data_updated_at ON user_data(updated_at DESC);
