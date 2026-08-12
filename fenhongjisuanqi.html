@@ -509,6 +509,24 @@ body {
       </div>
     </div>
 
+    <!-- 投入收益计算 -->
+    <div class="card section-teal">
+      <div class="card-header" style="cursor:pointer;user-select:none;" onclick="toggleIdleFundSection()">
+        <span class="icon-dot" style="background:#14b8a6;"></span>投入收益计算
+        <label style="margin-left:auto;display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--gray-700);">
+          <input type="checkbox" id="enableIdleFundCalc" onchange="toggleIdleFundSection()" style="width:18px;height:18px;accent-color:#14b8a6;">
+          启用投入收益计算
+        </label>
+      </div>
+      <div id="idleFundSection" style="display:none;">
+        <div class="form-hint" style="margin-bottom:10px;font-size:12px;color:var(--gray-500);">假设手持总保费全额，缴费后闲置资金存入银行定期，获取利息收益</div>
+        <div class="form-group">
+          <label>闲置资金银行利率</label>
+          <div class="input-suffix"><input type="number" id="idleFundRate" value="2.0" min="0" max="10" step="0.01"><span class="suffix">%</span></div>
+        </div>
+      </div>
+    </div>
+
     <!-- 万能账户追加 -->
     <div class="card section-purple">
       <div class="card-header"><span class="icon-dot" style="background:#a855f7;"></span>万能账户追加</div>
@@ -560,6 +578,30 @@ body {
       </div>
     </div>
 
+    <!-- 年龄收益对比 -->
+    <div class="card section-cyan">
+      <div class="card-header" style="cursor:pointer;user-select:none;" onclick="toggleAgeCompareSection()">
+        <span class="icon-dot" style="background:#06b6d4;"></span>年龄收益对比
+        <label style="margin-left:auto;display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--gray-700);">
+          <input type="checkbox" id="enableAgeCompare" onchange="toggleAgeCompareSection()" style="width:18px;height:18px;accent-color:#06b6d4;">
+          启用年龄收益对比
+        </label>
+      </div>
+      <div id="ageCompareSection" style="display:none;">
+        <div class="form-hint" style="margin-bottom:10px;font-size:12px;color:var(--gray-500);">对比不同年龄投保的收益差异，仅生存金数值不同，其他参数共用</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>对比年龄</label>
+            <div class="input-suffix"><input type="number" id="compareAge" value="40" min="18" max="65"><span class="suffix">岁</span></div>
+          </div>
+          <div class="form-group">
+            <label>对比年龄年生存金</label>
+            <div class="input-suffix"><input type="number" id="compareSurvivalBenefit" value="2000" min="0" max="1000000" step="100"><span class="suffix">元</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 操作按钮 -->
     <div class="btn-group">
       <button class="btn btn-primary" onclick="calculate()">开始计算</button>
@@ -595,6 +637,12 @@ body {
       <div class="chart-container">
         <h3>保单收益 vs 银行储蓄（含本金保障）</h3>
         <div class="chart-wrap"><canvas id="compareChart"></canvas></div>
+      </div>
+
+      <!-- 年龄收益对比图 -->
+      <div class="chart-container" id="ageCompareChartContainer" style="display:none;">
+        <h3>年龄收益对比</h3>
+        <div class="chart-wrap"><canvas id="ageCompareChart"></canvas></div>
       </div>
 
       <!-- 情景对比柱状图 + 年份滑块 -->
@@ -692,6 +740,32 @@ function toggleDividendSection() {
   }
 }
 
+// ======== 投入收益计算开关 ========
+function isIdleFundEnabled() {
+  var cb = document.getElementById('enableIdleFundCalc');
+  return cb ? cb.checked : false;
+}
+function toggleIdleFundSection() {
+  var cb = document.getElementById('enableIdleFundCalc');
+  var section = document.getElementById('idleFundSection');
+  if (section) {
+    section.style.display = cb.checked ? '' : 'none';
+  }
+}
+
+// ======== 年龄收益对比开关 ========
+function isAgeCompareEnabled() {
+  var cb = document.getElementById('enableAgeCompare');
+  return cb ? cb.checked : false;
+}
+function toggleAgeCompareSection() {
+  var cb = document.getElementById('enableAgeCompare');
+  var section = document.getElementById('ageCompareSection');
+  if (section) {
+    section.style.display = cb.checked ? '' : 'none';
+  }
+}
+
 // ======== 万能账户追加方式切换 ========
 function toggleAddMethod() {
   var method = getRadioVal('addMethod');
@@ -746,7 +820,12 @@ function calculate() {
     addMethod: getRadioVal('addMethod'),
     universalAddAmount: getVal('universalAddAmount'),
     universalAddCapRatio: getVal('universalAddCapRatio'),
-    enableDividend: isDividendEnabled()
+    enableDividend: isDividendEnabled(),
+    enableIdleFundCalc: isIdleFundEnabled(),
+    idleFundRate: getVal('idleFundRate'),
+    enableAgeCompare: isAgeCompareEnabled(),
+    compareAge: getVal('compareAge'),
+    compareSurvivalBenefit: getVal('compareSurvivalBenefit')
   };
 
   // 校验
@@ -771,6 +850,19 @@ function calculate() {
 
   calcResult = result;
   currentScenario = 'medium';
+
+  // 年龄对比：如果启用，计算对比年龄场景
+  if (params.enableAgeCompare) {
+    var compareParams = Object.assign({}, params);
+    compareParams.insuredAge = params.compareAge;
+    compareParams.annualSurvivalBenefit = params.compareSurvivalBenefit;
+    calcResult.ageCompare = {
+      ageA: params.insuredAge,
+      ageB: params.compareAge,
+      scenarioA: computeScenario(params, params.dividendRateMedium),
+      scenarioB: computeScenario(compareParams, params.dividendRateMedium)
+    };
+  }
 
   document.getElementById('emptyState').style.display = 'none';
   document.getElementById('resultContent').style.display = 'block';
@@ -814,6 +906,10 @@ function computeScenario(params, firstYearDividend) {
   var totalAddAmount = new D(0);
   var firstYearCumPremium = new D(0);
   var extraDividendPaid = false;
+  // 闲置资金计算
+  var cumIdleFundInterest = new D(0);
+  var idleFundAccountPrev = new D(0);
+  var idleFundInterestPrev = new D(0);
 
   for (var y = 1; y <= years; y++) {
     var currentAge = params.insuredAge + y;
@@ -895,6 +991,31 @@ function computeScenario(params, firstYearDividend) {
     var bankInterest = bankBase.times(params.bankRate).div(100);
     bankAccount = bankBase.plus(bankInterest);
 
+    // 9. 闲置资金收益（假设手持总保费，缴费后剩余存银行定期）
+    var idleFundInterest = new D(0);
+    var idleFundAccount = new D(0);
+    if (params.enableIdleFundCalc) {
+      var totalPremium = annualPremium.times(params.paymentYears);
+      if (y === 1) {
+        // 第一年缴费后剩余 = 总保费 - 第一年保费
+        idleFundAccount = totalPremium.minus(annualPremium);
+        idleFundInterest = idleFundAccount.times(params.idleFundRate).div(100);
+        cumIdleFundInterest = cumIdleFundInterest.plus(idleFundInterest);
+      } else if (y <= params.paymentYears) {
+        // 到期取息 + 本金 - 当年保费，剩余继续存
+        idleFundAccount = idleFundAccountPrev.plus(idleFundInterestPrev).minus(annualPremium);
+        if (idleFundAccount.lt(0)) idleFundAccount = new D(0);
+        idleFundInterest = idleFundAccount.times(params.idleFundRate).div(100);
+        cumIdleFundInterest = cumIdleFundInterest.plus(idleFundInterest);
+      } else {
+        // 缴费期满，闲置资金已全部投入保单
+        idleFundAccount = new D(0);
+        idleFundInterest = new D(0);
+      }
+      idleFundAccountPrev = idleFundAccount;
+      idleFundInterestPrev = idleFundInterest;
+    }
+
     // 9. 现金价值
     var cashValue = cumPremium.times(0.85);
 
@@ -919,7 +1040,10 @@ function computeScenario(params, firstYearDividend) {
       bankInterest: bankAccount.minus(cumPremium).toNumber(),
       cashValue: cashValue.toNumber(),
       deathBenefit: deathBenefit.toNumber(),
-      withdrawal: withdrawal.toNumber()
+      withdrawal: withdrawal.toNumber(),
+      idleFundInterest: idleFundInterest.toNumber(),
+      idleFundAccount: idleFundAccount.toNumber(),
+      cumIdleFundInterest: cumIdleFundInterest.toNumber()
     });
   }
 
@@ -938,7 +1062,8 @@ function computeScenario(params, firstYearDividend) {
     finalBankAccount: bankAccount.toNumber(),
     totalBankInterest: bankAccount.minus(cumPremium).toNumber(),
     totalAddAmount: totalAddAmount.toNumber(),
-    addCap: addCap.toNumber()
+    addCap: addCap.toNumber(),
+    totalIdleFundInterest: cumIdleFundInterest.toNumber()
   };
 }
 
@@ -969,12 +1094,17 @@ function renderSummaryCards() {
     { cls: 'sc-cyan', label: '银行存款对比', value: formatMoney(s.finalBankAccount), sub: '本息合计' }
   );
 
+  if (p.enableIdleFundCalc) {
+    cards.push({ cls: 'sc-teal', label: '闲置资金银行利息', value: formatMoney(s.totalIdleFundInterest), sub: '手持保费分期存入产生的利息' });
+  }
+
   cards.forEach(function(c) {
     html += '<div class="summary-card ' + c.cls + '"' + (c.style ? ' style="' + c.style + '"' : '') + '><div class="sc-label">' + c.label + '</div><div class="sc-value">' + c.value + '</div><div class="sc-sub">' + c.sub + '</div></div>';
   });
 
-  // 保单 vs 银行收益差（保单 = 万能账户 + 累计保费）
-  var diff = (s.finalSecondaryAccount + s.totalPremium) - s.finalBankAccount;
+  // 保单 vs 银行收益差（保单 = 万能账户 + 累计保费 + 闲置资金利息）
+  var insuranceTotal = s.finalSecondaryAccount + s.totalPremium + (p.enableIdleFundCalc ? s.totalIdleFundInterest : 0);
+  var diff = insuranceTotal - s.finalBankAccount;
   var diffCls = diff >= 0 ? 'sc-green' : 'sc-red';
   var diffLabel = diff >= 0 ? '保单多赚' : '保单少赚';
   html += '<div class="summary-card ' + diffCls + '"><div class="sc-label">' + diffLabel + '</div><div class="sc-value">' + formatMoney(Math.abs(diff)) + '</div><div class="sc-sub">对比银行存款</div></div>';
@@ -1013,6 +1143,16 @@ function renderAllCharts() {
   renderEarningsChart();
   renderCompareChart();
   updateBarChart();
+  // 年龄对比图
+  var ageContainer = document.getElementById('ageCompareChartContainer');
+  if (ageContainer) {
+    if (calcResult.ageCompare) {
+      ageContainer.style.display = '';
+      renderAgeCompareChart();
+    } else {
+      ageContainer.style.display = 'none';
+    }
+  }
   // 不启用红利时隐藏三档对比柱状图
   var barContainer = document.getElementById('barChartContainer');
   if (barContainer) {
@@ -1099,6 +1239,9 @@ function renderCompareChart() {
           ds.push({ label: '保单收益（不含追加）', data: data.map(function(d) { return d.universalBaseAccount + d.cumPremium; }), borderColor: '#f97316', backgroundColor: 'rgba(249,115,22,.04)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2, borderDash: [4,2] });
         }
         ds.push({ label: '银行储蓄利息', data: data.map(function(d) { return d.bankInterest; }), borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,.04)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2 });
+        if (calcResult.params.enableIdleFundCalc) {
+          ds.push({ label: '保单+闲置资金收益', data: data.map(function(d) { return d.secondaryAccount + d.cumPremium + d.cumIdleFundInterest; }), borderColor: '#14b8a6', backgroundColor: 'rgba(20,184,166,.06)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2.5, borderDash: [8,3] });
+        }
         return ds;
       })()
     },
@@ -1118,7 +1261,80 @@ function renderCompareChart() {
   });
 }
 
-// 图表3: 三档情景对比柱状图
+// 图表3: 年龄收益对比
+function renderAgeCompareChart() {
+  destroyChart('ageCompare');
+  if (!calcResult.ageCompare) return;
+  var ac = calcResult.ageCompare;
+  var dataA = ac.scenarioA.data;
+  var dataB = ac.scenarioB.data;
+  var maxYears = Math.max(dataA.length, dataB.length);
+  var labels = [];
+  for (var i = 1; i <= maxYears; i++) { labels.push('第' + i + '年'); }
+
+  var ctx = document.getElementById('ageCompareChart').getContext('2d');
+  charts.ageCompare = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: ac.ageA + '岁投保 - 保单总收益',
+          data: dataA.map(function(d) { return d.secondaryAccount + d.cumPremium; }),
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37,99,235,.08)',
+          fill: true,
+          tension: .3,
+          pointRadius: 0,
+          borderWidth: 3
+        },
+        {
+          label: ac.ageB + '岁投保 - 保单总收益',
+          data: dataB.map(function(d) { return d.secondaryAccount + d.cumPremium; }),
+          borderColor: '#f59e0b',
+          backgroundColor: 'rgba(245,158,11,.08)',
+          fill: true,
+          tension: .3,
+          pointRadius: 0,
+          borderWidth: 3
+        },
+        {
+          label: ac.ageA + '岁投保 - 本金保障',
+          data: dataA.map(function(d) { return d.cumPremium; }),
+          borderColor: '#93c5fd',
+          borderWidth: 1.5,
+          tension: .3,
+          pointRadius: 0,
+          borderDash: [4,4]
+        },
+        {
+          label: ac.ageB + '岁投保 - 本金保障',
+          data: dataB.map(function(d) { return d.cumPremium; }),
+          borderColor: '#fcd34d',
+          borderWidth: 1.5,
+          tension: .3,
+          pointRadius: 0,
+          borderDash: [4,4]
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16, font: { size: 11 }, usePointStyle: true } },
+        tooltip: { callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + formatCurrency(ctx.parsed.y); } } }
+      },
+      scales: {
+        y: { ticks: { callback: function(v) { return formatMoney(v); } }, grid: { color: '#f3f4f6' } },
+        x: { ticks: { maxTicksLimit: 15, font: { size: 10 } }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+// 图表4: 三档情景对比柱状图
 function updateBarChart() {
   destroyChart('bar');
   var slider = document.getElementById('yearSlider');
@@ -1189,6 +1405,7 @@ function renderDataTable() {
   var data = getScenarioData();
   var enableDiv = calcResult.params.enableDividend;
   var hasAdd = calcResult.params.addMethod !== 'none';
+  var enableIdle = calcResult.params.enableIdleFundCalc;
   var html = '<table><thead><tr>';
   var headers = ['年份', '当年保费', '本金保障'];
   headers.push('生存金', '额外派息');
@@ -1196,6 +1413,7 @@ function renderDataTable() {
   headers.push('原账户', '当年提取');
   if (hasAdd) headers.push('追加账户', '当年追加');
   headers.push('万能账户总计', '银行存款');
+  if (enableIdle) headers.push('闲置资金利息', '闲置资金余额');
   headers.forEach(function(h) { html += '<th>' + h + '</th>'; });
   html += '</tr></thead><tbody>';
 
@@ -1217,6 +1435,10 @@ function renderDataTable() {
     }
     html += '<td style="font-weight:700;">' + formatMoney(d.secondaryAccount) + '</td>';
     html += '<td>' + formatMoney(d.bankAccount) + '</td>';
+    if (enableIdle) {
+      html += '<td style="color:#0d9488;">' + formatMoney(d.idleFundInterest) + '</td>';
+      html += '<td style="color:#0d9488;font-weight:600;">' + formatMoney(d.idleFundAccount) + '</td>';
+    }
     html += '</tr>';
   });
 
@@ -1247,6 +1469,16 @@ function resetAll() {
   document.getElementById('company').value = '国寿';
   document.querySelector('input[name="gender"][value="male"]').checked = true;
   document.querySelector('input[name="payMethod"][value="annual"]').checked = true;
+  // 新增功能重置
+  document.getElementById('enableIdleFundCalc').checked = false;
+  document.getElementById('idleFundRate').value = 2.0;
+  document.getElementById('idleFundSection').style.display = 'none';
+  document.getElementById('enableAgeCompare').checked = false;
+  document.getElementById('compareAge').value = 40;
+  document.getElementById('compareSurvivalBenefit').value = 2000;
+  document.getElementById('ageCompareSection').style.display = 'none';
+  document.getElementById('enableDividend').checked = true;
+  document.getElementById('dividendSection').style.display = '';
 
   calcResult = null;
   document.getElementById('emptyState').style.display = '';
