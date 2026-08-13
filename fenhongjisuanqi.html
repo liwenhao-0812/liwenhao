@@ -1217,7 +1217,11 @@ function destroyChart(key) {
 function renderAllCharts() {
   renderEarningsChart();
   renderCompareChart();
-  updateBarChart();
+  // SJJ模式下跳过三档柱状图
+  var isSJJ = calcResult.params.dividendMode === 'sjj';
+  if (!isSJJ) {
+    updateBarChart();
+  }
   // 年龄对比图
   var ageContainer = document.getElementById('ageCompareChartContainer');
   if (ageContainer) {
@@ -1231,7 +1235,6 @@ function renderAllCharts() {
   // 不启用红利或SJJ模式时隐藏三档对比柱状图
   var barContainer = document.getElementById('barChartContainer');
   if (barContainer) {
-    var isSJJ = calcResult.params.dividendMode === 'sjj';
     barContainer.style.display = (calcResult.params.enableDividend && !isSJJ) ? '' : 'none';
   }
   // 更新柱状图标题
@@ -1420,6 +1423,8 @@ function renderAgeCompareChart() {
 
 // 图表4: 三档情景对比柱状图
 function updateBarChart() {
+  // SJJ模式下无须渲染三档对比
+  if (calcResult.params.dividendMode === 'sjj') return;
   destroyChart('bar');
   var slider = document.getElementById('yearSlider');
   var yearIdx = parseInt(slider.value) - 1;
