@@ -2466,7 +2466,6 @@
       "address": "广东省清远市清城区广清大道88号云山诗意云山居5栋A梯701房",
       "policies": [
         {
-          "_idx": 0,
           "remark": "",
           "status": "有效",
           "insured": "陈准",
@@ -2476,33 +2475,20 @@
           "policyCode": "2003442011S43000004492",
           "sumInsured": "",
           "extraFields": {},
-          "hasDividend": false,
-          "paymentBank": "",
           "paymentTerm": "20",
           "insuredPhone": "18603045930",
-          "maturityDate": "",
           "annualPremium": "1700",
           "beneficiaries": [
             {
               "name": "吴华",
-              "quota": "100"
+              "quota": 100
             }
           ],
           "effectiveDate": "20030429",
           "insuranceName": "康宁定期保险",
           "paymentMethod": "年缴",
-          "insuredAddress": "广东省清远市清城区广清大道88号云山诗意云山居5栋A梯701房",
           "serviceRecords": [],
           "insuredRelation": "儿子",
-          "paymentBankCard": "",
-          "survivalBenefit": {
-            "note": "",
-            "type": "",
-            "amount": "",
-            "lastDate": "",
-            "nextDate": "",
-            "startDate": ""
-          },
           "parentPolicyCode": ""
         }
       ],
@@ -3085,7 +3071,6 @@
       "address": "广东省清远市清城区凤翔大道东方天城9栋B梯2707",
       "policies": [
         {
-          "_idx": 0,
           "remark": "",
           "status": "有效",
           "insured": "严伟聪",
@@ -3095,46 +3080,27 @@
           "policyCode": "1998442011S09000003903",
           "sumInsured": "",
           "extraFields": {},
-          "hasDividend": false,
-          "paymentBank": "",
           "paymentTerm": "20",
           "insuredPhone": "18933647215",
-          "maturityDate": "",
           "annualPremium": "610",
           "beneficiaries": [
             {
               "name": "未指定",
-              "quota": "100"
+              "quota": 100
             }
           ],
           "effectiveDate": "19981001",
           "insuranceName": "99鸿福终身保险(97版)",
           "paymentMethod": "年缴",
-          "insuredAddress": "广东省清远市清城区凤翔大道东方天城9栋B梯2707",
           "serviceRecords": [],
           "insuredRelation": "儿子",
-          "paymentBankCard": "",
-          "survivalBenefit": {
-            "note": "",
-            "type": "",
-            "amount": "",
-            "lastDate": "",
-            "nextDate": "",
-            "startDate": ""
-          },
           "parentPolicyCode": ""
         }
       ],
       "workAddress": "",
       "workCompany": "",
       "familyMembers": [],
-      "contactHistory": [
-        {
-          "date": "20260807",
-          "note": "电话未联系上",
-          "status": "未联系上"
-        }
-      ]
+      "contactHistory": []
     },
     {
       "name": "叶海燕",
@@ -3745,6 +3711,11 @@
       "familyMembers": [],
       "contactHistory": [
         {
+          "status": "面见客户",
+          "date": "20260813",
+          "note": "面见约访，修改职业信息"
+        },
+        {
           "date": "20260806",
           "note": "已联系，申请加微信，8月10日再约见面",
           "status": "已电话联系"
@@ -4044,7 +4015,7 @@
       "insuranceName": "康宁定期保险"
     }
   ],
-  "_timestamp": "1786104563666",
+  "_timestamp": "1786600893048",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
