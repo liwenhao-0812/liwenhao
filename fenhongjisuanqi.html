@@ -1242,7 +1242,15 @@ function renderAllCharts() {
 }
 
 function getScenarioData() {
-  return calcResult.scenarios[currentScenario].data;
+  var scenario = calcResult.scenarios[currentScenario];
+  if (!scenario || !scenario.data) {
+    // Fallback to first available scenario
+    var keys = Object.keys(calcResult.scenarios);
+    if (keys.length > 0) {
+      scenario = calcResult.scenarios[keys[0]];
+    }
+  }
+  return scenario ? (scenario.data || []) : [];
 }
 
 function getYearLabels() {
@@ -1275,7 +1283,7 @@ function renderEarningsChart() {
           ds.push({ label: '万能账户（追加部分）', data: data.map(function(d) { return d.universalAddAccount; }), borderColor: '#a855f7', backgroundColor: 'rgba(168,85,247,.06)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2, borderDash: [2,2] });
         }
         ds.push(
-          { label: '银行存款', data: data.map(function(d) { return d.bankAccount; }), borderColor: '#06b6d4', borderWidth: 2, tension: .3, pointRadius: 0, borderDash: [5,3] }
+          { label: '银行存款利息', data: data.map(function(d) { return d.bankInterest; }), borderColor: '#06b6d4', borderWidth: 2, tension: .3, pointRadius: 0, borderDash: [5,3] }
         );
         return ds;
       })()
@@ -1479,6 +1487,10 @@ function updateBarChart() {
 // ======== 数据表格 ========
 function renderDataTable() {
   var data = getScenarioData();
+  if (!data || data.length === 0) {
+    document.getElementById('dataTableWrap').innerHTML = '<p style="text-align:center;padding:20px;color:var(--gray-500);">暂无数据</p>';
+    return;
+  }
   var enableDiv = calcResult.params.enableDividend;
   var hasAdd = calcResult.params.addMethod !== 'none';
   var enableIdle = calcResult.params.enableIdleFundCalc;
@@ -1510,7 +1522,7 @@ function renderDataTable() {
       html += '<td style="color:#7c3aed;font-weight:600;">' + formatMoney(d.universalAddThisYear) + '</td>';
     }
     html += '<td style="font-weight:700;">' + formatMoney(d.secondaryAccount) + '</td>';
-    html += '<td>' + formatMoney(d.bankAccount) + '</td>';
+    html += '<td>' + formatMoney(d.bankInterest) + '</td>';
     if (enableIdle) {
       html += '<td style="color:#0d9488;">' + formatMoney(d.idleFundInterest) + '</td>';
       html += '<td style="color:#0d9488;font-weight:600;">' + formatMoney(d.idleFundAccount) + '</td>';
