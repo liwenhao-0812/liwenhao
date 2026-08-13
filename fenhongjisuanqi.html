@@ -560,6 +560,14 @@ body {
       </div>
       <div id="dividendSection">
       <div class="form-group">
+        <label>红利模式</label>
+        <div class="radio-group" id="dividendModeGroup">
+          <label><input type="radio" name="dividendMode" value="manual" checked onchange="toggleDividendMode()"><span>手动输入</span></label>
+          <label><input type="radio" name="dividendMode" value="sjj" onchange="toggleDividendMode()"><span>SJJ红利模型</span></label>
+        </div>
+      </div>
+      <div id="manualDividendInputs">
+      <div class="form-group">
         <label>保障利率</label>
         <div class="input-suffix"><input type="number" id="guaranteedRate" value="2.5" min="1.5" max="3.0" step="0.1"><span class="suffix">%</span></div>
       </div>
@@ -574,6 +582,15 @@ body {
       <div class="form-group">
         <label>高档红利 <span style="color:#6b7280;font-weight:400;">— 第一年红利（理想情景）</span></label>
         <div class="input-suffix"><input type="number" id="dividendRateHigh" value="800" min="0" max="1000000" step="100"><span class="suffix">元</span></div>
+      </div>
+      </div>
+      <div id="sjjDividendInfo" style="display:none;">
+        <div class="form-hint" style="padding:10px;background:#fffbeb;border-radius:6px;font-size:12px;color:var(--gray-600);line-height:1.6;">
+          <strong style="color:#f59e0b;">SJJ红利模型</strong><br>
+          缴费期内：红利 = 年缴保费 × f(p)，p=当前年/缴费年限<br>
+          缴费期满后：红利按年缓慢增长<br>
+          <span style="color:var(--gray-500);">基于公司SJJ产品计划书数据拟合</span>
+        </div>
       </div>
       </div>
     </div>
@@ -740,6 +757,36 @@ function toggleDividendSection() {
   }
 }
 
+// ======== SJJ红利模式 ========
+function isSJJMode() {
+  return getRadioVal('dividendMode') === 'sjj';
+}
+function toggleDividendMode() {
+  var isSJJ = isSJJMode();
+  document.getElementById('manualDividendInputs').style.display = isSJJ ? 'none' : '';
+  document.getElementById('sjjDividendInfo').style.display = isSJJ ? '' : 'none';
+}
+
+// SJJ红利计算 - 返回当年红利金额
+function computeSJJDividend(year, paymentYears, annualPremium) {
+  var D = Decimal;
+  var ratio;
+  if (year <= paymentYears) {
+    // 缴费期内：4次多项式拟合
+    var p = year / paymentYears;
+    // ratio = 58.916084*p^4 - 150.388500*p^3 + 129.903263*p^2 - 13.580206*p + 1.181667
+    var p2 = p * p;
+    var p3 = p2 * p;
+    var p4 = p3 * p;
+    ratio = 58.916084 * p4 - 150.388500 * p3 + 129.903263 * p2 - 13.580206 * p + 1.181667;
+  } else {
+    // 缴费期满后：线性增长
+    // ratio = 0.073394 * year + 25.255394
+    ratio = 0.073394 * year + 25.255394;
+  }
+  return new D(annualPremium).times(ratio).div(100);
+}
+
 // ======== 投入收益计算开关 ========
 function isIdleFundEnabled() {
   var cb = document.getElementById('enableIdleFundCalc');
@@ -835,33 +882,54 @@ function calculate() {
 
   Decimal.set({ precision: 20, rounding: Decimal.ROUND_HALF_UP });
 
-  var scenarios = {
-    low: params.dividendRateLow,
-    medium: params.dividendRateMedium,
-    high: params.dividendRateHigh
-  };
+  var isSJJ = isSJJMode();
+  if (isSJJ) {
+    // SJJ模式：只计算一个场景
+    var sjjParams = Object.assign({}, params);
+    sjjParams.dividendMode = 'sjj';
+    var result = { scenarios: {}, params: sjjParams };
+    result.scenarios.sjj = computeScenario(sjjParams, 0);
+    calcResult = result;
+    currentScenario = 'sjj';
 
-  var result = { scenarios: {}, params: params };
-
-  Object.keys(scenarios).forEach(function(key) {
-    var firstYearDiv = scenarios[key];
-    result.scenarios[key] = computeScenario(params, firstYearDiv);
-  });
-
-  calcResult = result;
-  currentScenario = 'medium';
-
-  // 年龄对比：如果启用，计算对比年龄场景
-  if (params.enableAgeCompare) {
-    var compareParams = Object.assign({}, params);
-    compareParams.insuredAge = params.compareAge;
-    compareParams.annualSurvivalBenefit = params.compareSurvivalBenefit;
-    calcResult.ageCompare = {
-      ageA: params.insuredAge,
-      ageB: params.compareAge,
-      scenarioA: computeScenario(params, params.dividendRateMedium),
-      scenarioB: computeScenario(compareParams, params.dividendRateMedium)
+    // 年龄对比
+    if (params.enableAgeCompare) {
+      var compareParams = Object.assign({}, sjjParams);
+      compareParams.insuredAge = params.compareAge;
+      compareParams.annualSurvivalBenefit = params.compareSurvivalBenefit;
+      calcResult.ageCompare = {
+        ageA: params.insuredAge,
+        ageB: params.compareAge,
+        scenarioA: computeScenario(sjjParams, 0),
+        scenarioB: computeScenario(compareParams, 0)
+      };
+    }
+  } else {
+    var scenarios = {
+      low: params.dividendRateLow,
+      medium: params.dividendRateMedium,
+      high: params.dividendRateHigh
     };
+    var result = { scenarios: {}, params: params };
+    Object.keys(scenarios).forEach(function(key) {
+      var firstYearDiv = scenarios[key];
+      result.scenarios[key] = computeScenario(params, firstYearDiv);
+    });
+    calcResult = result;
+    currentScenario = 'medium';
+
+    // 年龄对比
+    if (params.enableAgeCompare) {
+      var compareParams = Object.assign({}, params);
+      compareParams.insuredAge = params.compareAge;
+      compareParams.annualSurvivalBenefit = params.compareSurvivalBenefit;
+      calcResult.ageCompare = {
+        ageA: params.insuredAge,
+        ageB: params.compareAge,
+        scenarioA: computeScenario(params, params.dividendRateMedium),
+        scenarioB: computeScenario(compareParams, params.dividendRateMedium)
+      };
+    }
   }
 
   document.getElementById('emptyState').style.display = 'none';
@@ -930,9 +998,14 @@ function computeScenario(params, firstYearDividend) {
     // 4. 当年分红
     var dividend = new D(0);
     if (enableDiv) {
-      var fyDiv = new D(firstYearDividend);
-      if (!firstYearCumPremium.isZero()) {
-        dividend = fyDiv.times(cumPremium).div(firstYearCumPremium);
+      if (params.dividendMode === 'sjj') {
+        // SJJ模型：按拟合公式计算当年红利
+        dividend = computeSJJDividend(y, params.paymentYears, params.annualPremium);
+      } else {
+        var fyDiv = new D(firstYearDividend);
+        if (!firstYearCumPremium.isZero()) {
+          dividend = fyDiv.times(cumPremium).div(firstYearCumPremium);
+        }
       }
     }
 
@@ -1069,7 +1142,7 @@ function computeScenario(params, firstYearDividend) {
 
 // ======== 汇总卡片 ========
 function renderSummaryCards() {
-  var s = calcResult.scenarios.medium;
+  var s = calcResult.scenarios[currentScenario];
   var p = calcResult.params;
   var html = '';
 
@@ -1116,8 +1189,10 @@ function renderSummaryCards() {
 function updateScenarioTabs() {
   var tabs = document.querySelectorAll('#scenarioTabs .scenario-tab');
   var enableDiv = calcResult.params.enableDividend;
+  var isSJJ = calcResult.params.dividendMode === 'sjj';
   var container = document.getElementById('scenarioTabs');
-  container.style.display = enableDiv ? '' : 'none';
+  // SJJ模式或未启用红利时隐藏情景切换
+  container.style.display = (enableDiv && !isSJJ) ? '' : 'none';
   tabs.forEach(function(t) {
     t.classList.toggle('active', t.dataset.scenario === currentScenario);
   });
@@ -1153,10 +1228,11 @@ function renderAllCharts() {
       ageContainer.style.display = 'none';
     }
   }
-  // 不启用红利时隐藏三档对比柱状图
+  // 不启用红利或SJJ模式时隐藏三档对比柱状图
   var barContainer = document.getElementById('barChartContainer');
   if (barContainer) {
-    barContainer.style.display = calcResult.params.enableDividend ? '' : 'none';
+    var isSJJ = calcResult.params.dividendMode === 'sjj';
+    barContainer.style.display = (calcResult.params.enableDividend && !isSJJ) ? '' : 'none';
   }
   // 更新柱状图标题
   var barTitle = document.getElementById('barChartTitle');
@@ -1479,6 +1555,10 @@ function resetAll() {
   document.getElementById('ageCompareSection').style.display = 'none';
   document.getElementById('enableDividend').checked = true;
   document.getElementById('dividendSection').style.display = '';
+  // 重置红利模式为手动
+  document.querySelector('input[name="dividendMode"][value="manual"]').checked = true;
+  document.getElementById('manualDividendInputs').style.display = '';
+  document.getElementById('sjjDividendInfo').style.display = 'none';
 
   calcResult = null;
   document.getElementById('emptyState').style.display = '';
