@@ -2357,7 +2357,7 @@
           "sumInsured": "200000",
           "extraFields": {},
           "hasDividend": false,
-          "paymentBank": "",
+          "paymentBank": "工商银行",
           "paymentTerm": "19",
           "insuredPhone": "18666691877",
           "maturityDate": "",
@@ -2374,7 +2374,7 @@
           "insuredAddress": "广东省清远市清城区朝阳花苑19座首层#",
           "serviceRecords": [],
           "insuredRelation": "女儿",
-          "paymentBankCard": "",
+          "paymentBankCard": "3305",
           "survivalBenefit": {
             "note": "",
             "type": "",
@@ -2518,6 +2518,7 @@
       "address": "广东省清远市清城区广清大道88号云山诗意云山居5栋A梯701房",
       "policies": [
         {
+          "_idx": 0,
           "remark": "",
           "status": "有效",
           "insured": "陈准",
@@ -2527,20 +2528,33 @@
           "policyCode": "2003442011S43000004492",
           "sumInsured": "",
           "extraFields": {},
+          "hasDividend": false,
+          "paymentBank": "",
           "paymentTerm": "20",
           "insuredPhone": "18603045930",
+          "maturityDate": "",
           "annualPremium": "1700",
           "beneficiaries": [
             {
               "name": "吴华",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "effectiveDate": "20030429",
           "insuranceName": "康宁定期保险",
           "paymentMethod": "年缴",
+          "insuredAddress": "广东省清远市清城区广清大道88号云山诗意云山居5栋A梯701房",
           "serviceRecords": [],
           "insuredRelation": "儿子",
+          "paymentBankCard": "",
+          "survivalBenefit": {
+            "note": "",
+            "type": "",
+            "amount": "",
+            "lastDate": "",
+            "nextDate": "",
+            "startDate": ""
+          },
           "parentPolicyCode": ""
         }
       ],
@@ -4091,7 +4105,7 @@
       "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险(庆典版，B款)"
     }
   ],
-  "_timestamp": "1786688574249",
+  "_timestamp": "1786689691100",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
