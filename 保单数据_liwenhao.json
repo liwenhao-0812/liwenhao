@@ -2543,7 +2543,7 @@
           "effectiveDate": "20030429",
           "insuranceName": "康宁定期保险",
           "paymentMethod": "年缴",
-          "insuredAddress": "广东省清远市清城区广清大道88号云山诗意云山居5栋A梯701房",
+          "insuredAddress": "广东省汕头市金砂路95号金色家园2幢14楼01房",
           "serviceRecords": [],
           "insuredRelation": "儿子",
           "paymentBankCard": "",
@@ -4105,7 +4105,7 @@
       "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险(庆典版，B款)"
     }
   ],
-  "_timestamp": "1786689691100",
+  "_timestamp": "1786689825050",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
