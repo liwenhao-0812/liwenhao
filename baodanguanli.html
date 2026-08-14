@@ -570,14 +570,13 @@ button {
   word-break: break-all;
 }
 .policy-detail-header .pdh-code {
-  font-size: 14px;
-  color: rgba(255,255,255,0.75);
-  font-weight: 500;
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+  font-weight: 400;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 400px;
-  letter-spacing: 0.03em;
+  max-width: 200px;
 }
 .policy-detail-header .policy-meta {
   font-size: 14px;
@@ -3964,6 +3963,11 @@ function renderDetailPanel(idx) {
       var pIdx = p._idx;
       var detail = '';
 
+      /* 被保人年龄计算 - 提前计算，供标题区使用 */
+      var insuredId = p.insuredId || c.idCard || '';
+      var currentAge = calcAgeFromIdCard(insuredId, null);
+      var effAge = calcAgeFromIdCard(insuredId, p.effectiveDate);
+
       /* 保单标题与操作 */
       var typeLabel = p.mainType === '附加险' ? '附加险' : p.mainType === '万能险' ? '万能险' : '主险';
       detail += '<div id="policyDetail_' + pIdx + '" class="policy-detail-card">';
@@ -3973,7 +3977,7 @@ function renderDetailPanel(idx) {
         '<div class="pdh-name">' + (p.insuranceName || '') + '</div>' +
         '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px;">' +
         '<span class="pdh-code" title="' + (p.policyCode || '') + '">' + (p.policyCode || '-') + '</span>' +
-        (p.codeType ? '<span style="color:rgba(255,255,255,0.5);font-size:10px;">' + p.codeType + '</span>' : '') +
+        (p.codeType ? '<span style="color:rgba(255,255,255,0.5);font-size:13px;font-weight:500;">' + p.codeType + '</span>' : '') +
         '</div></div>' +
         '<div style="display:flex;gap:4px;align-items:center;flex-shrink:0;">' +
         '<span class="tag ' + (typeLabel === '附加险' ? 'tag-yellow' : typeLabel === '万能险' ? 'tag-purple' : 'tag-blue') + '" style="font-size:10px;padding:2px 6px;">' + typeLabel + '</span>' +
@@ -3991,9 +3995,6 @@ function renderDetailPanel(idx) {
       detail += '<div class="policy-detail-body">';
 
       /* 被保人信息 - 加大字体 */
-      var insuredId = p.insuredId || c.idCard || '';
-      var currentAge = calcAgeFromIdCard(insuredId, null);
-      var effAge = calcAgeFromIdCard(insuredId, p.effectiveDate);
       detail += '<div class="info-block insured-block">' +
         '<h6>被保人信息</h6>' +
         '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:16px;color:#0f172a;font-weight:500;">' +
