@@ -285,6 +285,8 @@ body {
 .node-action-btn:hover { background: #f5f3ef; border-color: #ccc; }
 .node-action-btn.add { color: var(--green); }
 .node-action-btn.add:hover { background: var(--green-bg); border-color: var(--green); }
+.node-action-btn.edit { color: var(--blue); }
+.node-action-btn.edit:hover { background: var(--blue-bg); border-color: var(--blue); }
 .node-action-btn.del { color: var(--red); }
 .node-action-btn.del:hover { background: var(--red-bg); border-color: var(--red); }
 
@@ -437,6 +439,40 @@ body {
   opacity: .5;
   pointer-events: none;
 }
+
+/* 回答项行 + 内联编辑 */
+.response-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.inline-edit-btn {
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #93c5fd;
+  background: #eff6ff;
+  color: #2563eb;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-family: var(--font-body);
+}
+.inline-edit-btn:hover { background: #dbeafe; }
+.inline-edit-sm {
+  padding: 2px 6px;
+  font-size: 11px;
+  border-radius: 4px;
+}
+.step-indicator .inline-edit-btn {
+  background: transparent;
+  border: 1px solid #d4a017;
+  color: #8b6914;
+  padding: 2px 8px;
+  font-size: 11px;
+}
+.step-indicator .inline-edit-btn:hover { background: rgba(212,160,23,0.15); }
 
 /* Navigation */
 .nav-row {
@@ -899,15 +935,15 @@ function renderNode(node, isRoot) {
   html += '<div class="tree-node-card">';
   html += '<div class="tree-node-title">' + escapeHtml(node.title) + '</div>';
   html += '<div class="tree-node-preview">' + escapeHtml(truncate(node.script, 50)) + '</div>';
+  html += '<div class="node-actions">';
+  html += '<button class="node-action-btn edit" onclick="event.stopPropagation();editNode(\'' + node.id + '\')" title="编辑节点">✎</button>';
   if (editMode) {
-    html += '<div class="node-actions">';
     html += '<button class="node-action-btn add" onclick="event.stopPropagation();addChildNode(\'' + node.id + '\')" title="添加子节点">＋</button>';
     if (!isRoot) {
       html += '<button class="node-action-btn del" onclick="event.stopPropagation();deleteNode(\'' + node.id + '\')" title="删除节点">✕</button>';
     }
-    html += '</div>';
   }
-  html += '</div></div>';
+  html += '</div></div></div>';
 
   if (node.children && node.children.length > 0) {
     html += '<div class="tree-node-group">';
@@ -951,7 +987,9 @@ function renderScriptPanel() {
   html += '</div>';
 
   // Step indicator
-  html += '<div class="step-indicator"><span class="dot"></span>当前话术</div>';
+  html += '<div class="step-indicator"><span class="dot"></span>当前话术 ';
+  html += '<button class="inline-edit-btn" onclick="editNode(\'' + node.id + '\')" title="编辑此节点">✎ 编辑</button>';
+  html += '</div>';
 
   // Category badge
   if (node.category) {
@@ -973,27 +1011,23 @@ function renderScriptPanel() {
     html += '<div class="response-section">';
     html += '<div class="script-label">客户可能的回答</div>';
     html += '<div class="response-buttons">';
-    var categories = ['positive', 'neutral', 'negative'];
     node.children.forEach(function(child, i) {
       var cat = child.category || '';
       var cls = 'response-btn';
-      if (cat.includes('异议') || cat.includes('拒绝') || cat.includes('结束')) {
-        cls += ' negative';
-      } else if (cat.includes('推荐') || cat.includes('认同')) {
+      if (cat === '产品推荐' || cat === '结束') {
         cls += ' positive';
+      } else if (cat === '异议处理') {
+        cls += ' negative';
       } else {
         cls += ' neutral';
       }
-      var icon = '💬';
-      if (cat.includes('异议')) icon = '🤔';
-      else if (cat.includes('拒绝')) icon = '👋';
-      else if (cat.includes('推荐')) icon = '✨';
-      else if (cat.includes('认同')) icon = '✅';
-      else if (cat.includes('结束')) icon = '🏁';
-      html += '<button class="' + cls + '" onclick="selectNode(\'' + child.id + '\')">';
-      html += '<span class="icon">' + icon + '</span>';
+      var targetId = child.jumpTo || child.id;
+      html += '<div class="response-item">';
+      html += '<button class="' + cls + '" onclick="selectNode(\'' + targetId + '\')">';
       html += '<span>' + escapeHtml(child.title) + '</span>';
       html += '</button>';
+      html += '<button class="inline-edit-btn inline-edit-sm" onclick="event.stopPropagation();editNode(\'' + child.id + '\')" title="编辑此回答">✎</button>';
+      html += '</div>';
     });
     html += '</div></div>';
   } else {
@@ -1080,12 +1114,21 @@ function deleteNode(nodeId) {
 function showNodeModal(parentId, editNodeId) {
   var isEdit = !!editNodeId;
   var node = isEdit ? nodeMap[editNodeId] : null;
-  var title = isEdit ? '编辑节点' : '添加节点';
+  var isChild = !!parentId && !isEdit;
+  var title = isEdit ? '编辑节点' : (parentId ? '添加客户回答' : '添加根节点');
 
   var html = '<h3>' + title + '</h3>';
-  html += '<div class="form-group"><label>节点标题（客户回答类型）</label>';
-  html += '<input type="text" id="modalTitle" value="' + (isEdit ? escapeHtml(node.title) : '') + '" placeholder="如：客户感兴趣">';
-  html += '</div>';
+
+  // 添加子节点时：标题就是客户回答文本
+  if (isChild) {
+    html += '<div class="form-group"><label>客户回答文本</label>';
+    html += '<input type="text" id="modalTitle" value="" placeholder="如：是 / 客户感兴趣 / 预算有限...">';
+    html += '</div>';
+  } else {
+    html += '<div class="form-group"><label>节点标题</label>';
+    html += '<input type="text" id="modalTitle" value="' + (isEdit ? escapeHtml(node.title) : '') + '" placeholder="如：客户感兴趣">';
+    html += '</div>';
+  }
 
   html += '<div class="form-group"><label>话术内容</label>';
   html += '<textarea id="modalScript" rows="4" placeholder="你要说的话术…">' + (isEdit ? escapeHtml(node.script) : '') + '</textarea>';
@@ -1095,14 +1138,38 @@ function showNodeModal(parentId, editNodeId) {
   html += '<textarea id="modalNotes" rows="2" placeholder="给销售人员的提示…">' + (isEdit ? escapeHtml(node.notes || '') : '') + '</textarea>';
   html += '</div>';
 
-  html += '<div class="form-group"><label>分类</label>';
-  html += '<select id="modalCategory">';
-  var cats = ['开场', '需求挖掘', '产品介绍', '产品推荐', '异议处理', '结束', '其他'];
-  var currentCat = isEdit ? (node.category || '') : '';
-  cats.forEach(function(c) {
-    html += '<option value="' + c + '"' + (c === currentCat ? ' selected' : '') + '>' + c + '</option>';
-  });
-  html += '</select></div>';
+  // 添加子节点时不显示分类
+  if (!isChild) {
+    html += '<div class="form-group"><label>分类</label>';
+    html += '<select id="modalCategory">';
+    var cats = ['开场', '需求挖掘', '产品介绍', '产品推荐', '异议处理', '结束', '其他'];
+    var currentCat = isEdit ? (node.category || '') : '';
+    cats.forEach(function(c) {
+      html += '<option value="' + c + '"' + (c === currentCat ? ' selected' : '') + '>' + c + '</option>';
+    });
+    html += '</select></div>';
+  }
+
+  // 编辑模式时显示跳转目标
+  if (isEdit) {
+    html += '<div class="form-group"><label>回答后跳转到（可选）</label>';
+    html += '<select id="modalJumpTo">';
+    html += '<option value="">— 默认（子节点本身）—</option>';
+    var jumpTo = node.jumpTo || '';
+    function collectOptions(n, depth) {
+      if (!n) return;
+      var prefix = '';
+      for (var d = 0; d < depth; d++) prefix += '  ';
+      if (n.id !== editNodeId) {
+        html += '<option value="' + n.id + '"' + (jumpTo === n.id ? ' selected' : '') + '>' + prefix + escapeHtml(n.title) + '</option>';
+      }
+      if (n.children) n.children.forEach(function(c) { collectOptions(c, depth + 1); });
+    }
+    collectOptions(scriptData, 0);
+    html += '</select>';
+    html += '<div style="font-size:11px;color:#9c9590;margin-top:4px;">默认跳转到子节点本身，可指定跳转到树中任意节点</div>';
+    html += '</div>';
+  }
 
   html += '<div class="form-actions">';
   html += '<button class="btn" onclick="closeModal()">取消</button>';
@@ -1121,7 +1188,10 @@ function saveNodeModal(parentId, editNodeId) {
   var title = document.getElementById('modalTitle').value.trim();
   var script = document.getElementById('modalScript').value.trim();
   var notes = document.getElementById('modalNotes').value.trim();
-  var category = document.getElementById('modalCategory').value;
+  var categoryEl = document.getElementById('modalCategory');
+  var category = categoryEl ? categoryEl.value : '';
+  var jumpToEl = document.getElementById('modalJumpTo');
+  var jumpTo = jumpToEl ? jumpToEl.value : '';
 
   if (!title || !script) {
     alert('标题和话术内容不能为空');
@@ -1134,8 +1204,14 @@ function saveNodeModal(parentId, editNodeId) {
     node.title = title;
     node.script = script;
     node.notes = notes;
-    node.category = category;
+    if (category) node.category = category;
+    node.jumpTo = jumpTo || undefined;
   } else {
+    // 添加子节点时，自动继承父节点分类
+    if (parentId && !category) {
+      var pNode = nodeMap[parentId];
+      if (pNode && pNode.category) category = pNode.category;
+    }
     // Add new
     var newNode = {
       id: 'n_' + Date.now(),
@@ -1145,7 +1221,6 @@ function saveNodeModal(parentId, editNodeId) {
       category: category,
       children: []
     };
-
     if (parentId) {
       var parent = nodeMap[parentId];
       if (!parent.children) parent.children = [];

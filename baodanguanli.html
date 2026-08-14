@@ -825,7 +825,24 @@ button {
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
+  gap: 6px;
 }
+.ss-tree-toggle {
+  display: none; /* 桌面端不显示 */
+  width: 28px;
+  height: 28px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #6b6560;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+  line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
+}
+.ss-tree-toggle:hover { background: #f3f4f6; }
 .script-tree-scroll {
   flex: 1;
   overflow-y: auto;
@@ -1149,8 +1166,26 @@ button {
 @media (max-width: 768px) {
   .script-panel { width: 100vw; max-width: 100vw; }
   .script-panel-body { flex-direction: column; }
-  .script-tree { width: 100%; max-height: 35vh; border-right: none; border-bottom: 1px solid #e8e5df; }
-  .script-content-area { padding: 16px; }
+  .script-tree { width: 100%; min-width: 0; border-right: none; border-bottom: 1px solid #e8e5df; flex-shrink: 0; }
+  /* 默认折叠：只显示标题栏 */
+  .script-tree .script-tree-scroll { display: none; }
+  .script-tree .script-tree-header { border-bottom: none; }
+  .script-tree .script-tree-header .ss-tree-toggle { display: flex; align-items: center; justify-content: center; }
+  /* 展开状态 */
+  .script-tree.expanded .script-tree-scroll { display: block; max-height: 30vh; overflow-y: auto; }
+  .script-tree.expanded .script-tree-header { border-bottom: 1px solid #e8e5df; }
+  .script-tree.expanded .ss-tree-toggle { transform: rotate(180deg); }
+  .script-content-area { padding: 16px; flex: 1; }
+  /* 移动端面板头部紧凑 */
+  .script-panel-header { padding: 8px 12px; }
+  .script-panel-header .sp-btn { font-size: 11px; padding: 4px 8px; }
+  /* 移动端回答按钮堆叠 */
+  .ss-response-btns { flex-direction: column; }
+  .ss-response-item { width: 100%; }
+  .ss-response-btn { flex: 1; text-align: left; }
+  /* 移动端节点卡片 */
+  .ss-node-card { padding: 10px; }
+  .ss-node-title { font-size: 13px; }
 }
 
 /* ======== 保单分组样式 ======== */
@@ -5623,6 +5658,19 @@ function ssSelectNode(nodeId) {
   ssRenderScriptContent();
 }
 
+/* 移动端：折叠/展开话术树 */
+function ssToggleTree() {
+  var treePanel = document.getElementById('ssTreePanel');
+  var toggle = document.getElementById('ssTreeToggle');
+  if (!treePanel || !toggle) return;
+  treePanel.classList.toggle('expanded');
+  if (treePanel.classList.contains('expanded')) {
+    toggle.textContent = '▲';
+  } else {
+    toggle.textContent = '▼';
+  }
+}
+
 /* 渲染话术内容 */
 function ssRenderScriptContent() {
   var area = document.getElementById('ssScriptContent');
@@ -6026,6 +6074,7 @@ checkLogin();
       <div class="script-tree" id="ssTreePanel">
         <div class="script-tree-header">
           <span>话术流程</span>
+          <button class="ss-tree-toggle" id="ssTreeToggle" onclick="ssToggleTree()" title="展开/折叠">▼</button>
           <button class="sp-btn" id="ssBtnAddRoot" onclick="ssAddRootNode()" style="display:none;font-size:16px;padding:4px 8px;">＋</button>
         </div>
         <div class="script-tree-scroll" id="ssTreeContainer"></div>
