@@ -722,14 +722,13 @@ button {
 .script-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
+  background: transparent;
   z-index: 2000;
   display: none;
   justify-content: flex-end;
-  animation: fadeInOverlay 0.25s ease;
+  pointer-events: none;
 }
 .script-overlay.open { display: flex; }
-@keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
 
 .script-panel {
   width: 820px;
@@ -741,6 +740,7 @@ button {
   flex-direction: column;
   animation: slideInRight 0.3s var(--ease-out);
   overflow: hidden;
+  pointer-events: auto;
 }
 @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
@@ -5770,20 +5770,22 @@ function toggleScriptPanel() {
   ssPanelOpen = !ssPanelOpen;
   if (ssPanelOpen) {
     overlay.classList.add('open');
+    var panelW = window.innerWidth > 768 ? Math.min(820, window.innerWidth * 0.95) : 0;
+    if (panelW > 0) {
+      document.body.style.paddingRight = panelW + 'px';
+      document.body.style.transition = 'padding-right 0.3s var(--ease-out)';
+    }
     if (!ssData) ssInit();
     else { ssRenderTree(); ssRenderScriptContent(); }
-    document.body.style.overflow = 'hidden';
   } else {
     overlay.classList.remove('open');
-    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+    document.body.style.transition = 'padding-right 0.3s var(--ease-out)';
   }
 }
 
-/* 关闭面板（点击遮罩） */
+/* 关闭弹窗（点击遮罩） */
 document.addEventListener('click', function(e) {
-  if (e.target.id === 'scriptOverlay') {
-    toggleScriptPanel();
-  }
   if (e.target.id === 'ssModalOverlay') {
     ssCloseModal();
   }
@@ -5815,6 +5817,14 @@ function ssEscapeHtml(str) {
   if (!str) return '';
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
+
+/* 窗口大小变化时自适应面板留白 */
+window.addEventListener('resize', function() {
+  if (ssPanelOpen) {
+    var panelW = window.innerWidth > 768 ? Math.min(820, window.innerWidth * 0.95) : 0;
+    document.body.style.paddingRight = panelW > 0 ? panelW + 'px' : '';
+  }
+});
 
 /* ======== 初始化 ======== */
 
