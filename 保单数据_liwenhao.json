@@ -3687,22 +3687,35 @@
           "mainType": "主险",
           "insuredId": "44180219730929001X",
           "policyCode": "2000442009S43000002074",
-          "sumInsured": "",
+          "sumInsured": "30000",
           "extraFields": {},
+          "hasDividend": false,
+          "paymentBank": "",
           "paymentTerm": "20",
           "insuredPhone": "18948935743",
+          "maturityDate": "20430814",
           "annualPremium": "690",
           "beneficiaries": [
             {
               "name": "钟文浩",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "effectiveDate": "20001124",
           "insuranceName": "康宁定期保险",
           "paymentMethod": "年缴",
+          "insuredAddress": "广东省清远市清城区凤城街道城北路二路西9座雅居乐苑1号楼402",
           "serviceRecords": [],
           "insuredRelation": "本人",
+          "paymentBankCard": "",
+          "survivalBenefit": {
+            "note": "",
+            "type": "",
+            "amount": "",
+            "lastDate": "",
+            "nextDate": "",
+            "startDate": ""
+          },
           "parentPolicyCode": ""
         }
       ],
@@ -3711,9 +3724,9 @@
       "familyMembers": [],
       "contactHistory": [
         {
-          "status": "面见客户",
           "date": "20260813",
-          "note": "面见约访，修改职业信息"
+          "note": "面见约访，修改职业信息",
+          "status": "面见客户"
         },
         {
           "date": "20260806",
@@ -4015,7 +4028,7 @@
       "insuranceName": "康宁定期保险"
     }
   ],
-  "_timestamp": "1786600893048",
+  "_timestamp": "1786668795290",
   "_user": "liwenhao",
-  "_passwordHash": "Hg10hvh"
+  "_passwordHash": "H143aad"
 }
