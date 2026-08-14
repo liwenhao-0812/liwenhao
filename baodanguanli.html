@@ -570,21 +570,22 @@ button {
   word-break: break-all;
 }
 .policy-detail-header .pdh-code {
-  font-size: 11px;
-  color: rgba(255,255,255,0.6);
-  font-weight: 400;
+  font-size: 14px;
+  color: rgba(255,255,255,0.75);
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 200px;
+  max-width: 400px;
+  letter-spacing: 0.03em;
 }
 .policy-detail-header .policy-meta {
-  font-size: 12px;
-  color: rgba(255,255,255,0.75);
-  margin-top: 3px;
+  font-size: 14px;
+  color: rgba(255,255,255,0.85);
+  margin-top: 6px;
   font-weight: 500;
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
   align-items: center;
 }
@@ -2471,6 +2472,41 @@ function formatMoney(val) {
   return parseFloat(val).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+/* 从身份证号提取出生日期并计算年龄 */
+function calcAgeFromIdCard(idCard, referenceDateStr) {
+  if (!idCard) return null;
+  var s = String(idCard);
+  if (s.length < 14) return null;
+  /* 提取出生年月日 */
+  var birthYear = parseInt(s.substring(6, 10));
+  var birthMonth = parseInt(s.substring(10, 12));
+  var birthDay = parseInt(s.substring(12, 14));
+  if (isNaN(birthYear) || isNaN(birthMonth) || isNaN(birthDay)) return null;
+
+  /* 参考日期 */
+  var refDate;
+  if (referenceDateStr && referenceDateStr.length >= 8) {
+    var ry = parseInt(referenceDateStr.substring(0, 4));
+    var rm = parseInt(referenceDateStr.substring(4, 6));
+    var rd = parseInt(referenceDateStr.substring(6, 8));
+    refDate = new Date(ry, rm - 1, rd);
+  } else {
+    refDate = new Date();
+  }
+  refDate.setHours(0, 0, 0, 0);
+
+  var birthDate = new Date(birthYear, birthMonth - 1, birthDay);
+  var age = refDate.getFullYear() - birthDate.getFullYear();
+
+  /* 判断是否已过生日 */
+  var refMonth = refDate.getMonth();
+  var refDay = refDate.getDate();
+  if (refMonth < birthMonth - 1 || (refMonth === birthMonth - 1 && refDay < birthDay)) {
+    age--;
+  }
+  return age;
+}
+
 /* 敏感信息脱敏 */
 function maskIdCard(id) {
   if (!id) return '-';
@@ -3947,20 +3983,24 @@ function renderDetailPanel(idx) {
         '<button class="btn-sm btn-danger" onclick="deletePolicy(' + idx + ',' + pIdx + ')">删除</button>' +
         '</div></div>' +
         '<div class="policy-meta">' +
-        '<span style="background:rgba(34,197,94,0.2);color:#4ade80;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:700;">生效：' + formatDate(p.effectiveDate) + '</span>' +
-        (p.maturityDate ? '<span style="background:rgba(251,191,36,0.2);color:#fbbf24;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:700;">满期：' + formatDate(p.maturityDate) + '</span>' : '') +
+        '<span style="background:rgba(34,197,94,0.2);color:#4ade80;padding:2px 10px;border-radius:10px;font-size:14px;font-weight:700;">生效：' + formatDate(p.effectiveDate) + (effAge !== null ? '（' + effAge + '岁）' : '') + '</span>' +
+        (p.maturityDate ? '<span style="background:rgba(251,191,36,0.2);color:#fbbf24;padding:2px 10px;border-radius:10px;font-size:14px;font-weight:700;">满期：' + formatDate(p.maturityDate) + '</span>' : '') +
         '</div>' +
         '</div>';
 
       detail += '<div class="policy-detail-body">';
 
       /* 被保人信息 - 加大字体 */
+      var insuredId = p.insuredId || c.idCard || '';
+      var currentAge = calcAgeFromIdCard(insuredId, null);
+      var effAge = calcAgeFromIdCard(insuredId, p.effectiveDate);
       detail += '<div class="info-block insured-block">' +
         '<h6>被保人信息</h6>' +
         '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-size:16px;color:#0f172a;font-weight:500;">' +
         '<p><strong>姓名：</strong>' + (p.insured || c.name || '-') + '</p>' +
         '<p><strong>关系：</strong>' + (p.insuredRelation || '-') + '</p>' +
-        '<p><strong>身份证号：</strong>' + (showSensitiveData ? (p.insuredId || c.idCard || '-') : maskIdCard(p.insuredId || c.idCard)) + '</p>' +
+        '<p><strong>身份证号：</strong>' + (showSensitiveData ? (insuredId || '-') : maskIdCard(insuredId)) + '</p>' +
+        '<p><strong>今年岁数：</strong>' + (currentAge !== null ? '<span style="color:#1d4ed8;font-weight:800;font-size:18px;">' + currentAge + '</span> 岁' : '-') + '</p>' +
         '<p><strong>联系方式：</strong>' + (showSensitiveData ? (p.insuredPhone || c.phone || '-') : maskPhone(p.insuredPhone || c.phone)) + '</p>' +
         '<p><strong>联系地址：</strong>' + (p.insuredAddress || c.address || '-') + '</p>' +
         '</div></div>';
