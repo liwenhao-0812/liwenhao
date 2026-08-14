@@ -3071,6 +3071,7 @@
       "address": "广东省清远市清城区凤翔大道东方天城9栋B梯2707",
       "policies": [
         {
+          "_idx": 0,
           "remark": "",
           "status": "有效",
           "insured": "严伟聪",
@@ -3100,7 +3101,13 @@
       "workAddress": "",
       "workCompany": "",
       "familyMembers": [],
-      "contactHistory": []
+      "contactHistory": [
+        {
+          "date": "20260811",
+          "note": "",
+          "status": "未联系上"
+        }
+      ]
     },
     {
       "name": "叶海燕",
@@ -3719,8 +3726,8 @@
           "parentPolicyCode": ""
         }
       ],
-      "workAddress": "",
-      "workCompany": "",
+      "workAddress": "康怡小区",
+      "workCompany": "个体",
       "familyMembers": [],
       "contactHistory": [
         {
@@ -4028,7 +4035,7 @@
       "insuranceName": "康宁定期保险"
     }
   ],
-  "_timestamp": "1786668795290",
+  "_timestamp": "1786688366329",
   "_user": "liwenhao",
-  "_passwordHash": "H143aad"
+  "_passwordHash": "Hg10hvh"
 }
