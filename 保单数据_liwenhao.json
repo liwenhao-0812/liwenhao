@@ -2356,20 +2356,33 @@
           "policyCode": "2020442001SK6015046434",
           "sumInsured": "",
           "extraFields": {},
+          "hasDividend": false,
+          "paymentBank": "",
           "paymentTerm": "19",
           "insuredPhone": "18666691877",
+          "maturityDate": "",
           "annualPremium": "1620",
           "beneficiaries": [
             {
               "name": "吴帆",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "effectiveDate": "20200401",
           "insuranceName": "国寿少儿国寿福终身寿险(庆典版)",
           "paymentMethod": "年缴",
+          "insuredAddress": "广东省清远市清城区朝阳花苑19座首层#",
           "serviceRecords": [],
           "insuredRelation": "女儿",
+          "paymentBankCard": "",
+          "survivalBenefit": {
+            "note": "",
+            "type": "",
+            "amount": "",
+            "lastDate": "",
+            "nextDate": "",
+            "startDate": ""
+          },
           "parentPolicyCode": ""
         },
         {
@@ -2383,20 +2396,33 @@
           "policyCode": "2020442001R45300063875",
           "sumInsured": "",
           "extraFields": {},
+          "hasDividend": false,
+          "paymentBank": "",
           "paymentTerm": "19",
           "insuredPhone": "18666691877",
+          "maturityDate": "",
           "annualPremium": "1120",
           "beneficiaries": [
             {
               "name": "吴帆",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "effectiveDate": "20200401",
           "insuranceName": "国寿附加少儿国寿福提前给付重大疾病保险(庆典版)",
           "paymentMethod": "年缴",
+          "insuredAddress": "广东省清远市清城区朝阳花苑19座首层#",
           "serviceRecords": [],
           "insuredRelation": "女儿",
+          "paymentBankCard": "",
+          "survivalBenefit": {
+            "note": "",
+            "type": "",
+            "amount": "",
+            "lastDate": "",
+            "nextDate": "",
+            "startDate": ""
+          },
           "parentPolicyCode": "2020442001SK6015046434"
         },
         {
@@ -2410,20 +2436,33 @@
           "policyCode": "2020442001R46300063894",
           "sumInsured": "",
           "extraFields": {},
+          "hasDividend": false,
+          "paymentBank": "",
           "paymentTerm": "19",
           "insuredPhone": "18666691877",
+          "maturityDate": "",
           "annualPremium": "18.36",
           "beneficiaries": [
             {
               "name": "吴帆",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "effectiveDate": "20200401",
           "insuranceName": "国寿附加少儿国寿福豁免保险费疾病保险(庆典版)",
           "paymentMethod": "年缴",
+          "insuredAddress": "广东省清远市清城区朝阳花苑19座首层#",
           "serviceRecords": [],
           "insuredRelation": "女儿",
+          "paymentBankCard": "",
+          "survivalBenefit": {
+            "note": "",
+            "type": "",
+            "amount": "",
+            "lastDate": "",
+            "nextDate": "",
+            "startDate": ""
+          },
           "parentPolicyCode": "2020442001SK6015046434"
         },
         {
@@ -2437,20 +2476,33 @@
           "policyCode": "2020442001R44300063885",
           "sumInsured": "",
           "extraFields": {},
+          "hasDividend": false,
+          "paymentBank": "",
           "paymentTerm": "19",
           "insuredPhone": "18666691877",
+          "maturityDate": "",
           "annualPremium": "86.86",
           "beneficiaries": [
             {
               "name": "吴帆",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "effectiveDate": "20200401",
           "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险(庆典版，B款)",
           "paymentMethod": "年缴",
+          "insuredAddress": "广东省清远市清城区朝阳花苑19座首层#",
           "serviceRecords": [],
           "insuredRelation": "女儿",
+          "paymentBankCard": "",
+          "survivalBenefit": {
+            "note": "",
+            "type": "",
+            "amount": "",
+            "lastDate": "",
+            "nextDate": "",
+            "startDate": ""
+          },
           "parentPolicyCode": "2020442001SK6015046434"
         }
       ],
@@ -4033,9 +4085,13 @@
     {
       "codeType": "S43",
       "insuranceName": "康宁定期保险"
+    },
+    {
+      "codeType": "R44",
+      "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险(庆典版，B款)"
     }
   ],
-  "_timestamp": "1786688366329",
+  "_timestamp": "1786688505887",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
