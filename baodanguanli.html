@@ -5632,11 +5632,10 @@ function ssRenderScriptContent() {
       var cls = 'ss-neutral';
       if (child.category === '产品推荐' || child.category === '结束') cls = 'ss-positive';
       else if (child.category === '异议处理') cls = 'ss-negative';
-      var icon = cls === 'ss-positive' ? '✓' : cls === 'ss-negative' ? '✗' : '?';
       var targetId = child.jumpTo || child.id;
       html += '<div class="ss-response-item">' +
         '<button class="ss-response-btn ' + cls + '" onclick="ssSelectNode(\'' + targetId + '\')">' +
-        '<span>' + icon + '</span> ' + ssEscapeHtml(child.title) + '</button>' +
+        ssEscapeHtml(child.title) + '</button>' +
         '<button class="ss-inline-edit-btn ss-inline-edit-sm" onclick="event.stopPropagation();ssEditNode(\'' + child.id + '\')" title="编辑此回答">✏️</button>' +
         '</div>';
     });
