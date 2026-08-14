@@ -2354,7 +2354,7 @@
           "mainType": "主险",
           "insuredId": "44180220150329016X",
           "policyCode": "2020442001SK6015046434",
-          "sumInsured": "",
+          "sumInsured": "200000",
           "extraFields": {},
           "hasDividend": false,
           "paymentBank": "",
@@ -4091,7 +4091,7 @@
       "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险(庆典版，B款)"
     }
   ],
-  "_timestamp": "1786688505887",
+  "_timestamp": "1786688574249",
   "_user": "liwenhao",
   "_passwordHash": "Hg10hvh"
 }
