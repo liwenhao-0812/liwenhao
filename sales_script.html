@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>话术导航</title>
+<style>
+:root {
+  --bg: #fafaf8;
+  --surface: #ffffff;
+  --border: #e8e5df;
+  --text: #2d2b28;
+  --text-secondary: #6b6560;
+  --text-muted: #9c9590;
+  --accent: #d4a017;
+  --accent-light: #fdf3d6;
+  --accent-dim: #faf0d7;
+  --green: #5b8c5a;
+  --green-bg: #eef7ee;
+  --red: #c0392b;
+  --red-bg: #fdf0ef;
+  --blue: #3b6fb6;
+  --blue-bg: #eef4fb;
+  --node-color: #5b7553;
+  --node-bg: #f0f4ee;
+  --line-color: #d5d0c8;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.08);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,.12);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --font-display: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'SimSun', serif;
+  --font-body: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --transition: .25s cubic-bezier(.4,0,.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 56px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 10;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.logo {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: .02em;
+}
+.logo span { color: var(--accent); }
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.btn:hover { background: #f5f3ef; border-color: #ccc; }
+.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-primary:hover { background: #c49015; border-color: #c49015; }
+.btn-icon { padding: 8px; min-width: 36px; justify-content: center; }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-danger { color: var(--red); border-color: #e8d0cf; }
+.btn-danger:hover { background: var(--red-bg); }
+
+/* Main Layout */
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Left Panel - Tree */
+.tree-panel {
+  width: 420px;
+  min-width: 320px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.tree-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  flex-shrink: 0;
+}
+.tree-panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.tree-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 20px 20px;
+}
+.tree-scroll::-webkit-scrollbar { width: 4px; }
+.tree-scroll::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
+/* Right Panel - Script */
+.script-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+.script-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 40px;
+}
+.script-content::-webkit-scrollbar { width: 4px; }
+.script-content::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
+/* Tree Node Styles */
+.tree-root {
+  position: relative;
+  padding-left: 0;
+}
+.tree-node-group {
+  position: relative;
+  padding-left: 28px;
+}
+.tree-node-group::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--line-color);
+}
+.tree-node-item {
+  position: relative;
+  padding: 2px 0;
+  cursor: pointer;
+  user-select: none;
+}
+.tree-node-item::before {
+  content: '';
+  position: absolute;
+  left: -22px;
+  top: 50%;
+  width: 16px;
+  height: 1px;
+  background: var(--line-color);
+}
+.tree-node-card {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  transition: all var(--transition);
+  position: relative;
+}
+.tree-node-item:hover .tree-node-card {
+  background: #f9f8f5;
+  border-color: var(--border);
+}
+.tree-node-item.active .tree-node-card {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(212,160,23,.12);
+}
+.tree-node-item.active .tree-node-card::after {
+  content: '';
+  position: absolute;
+  right: -7px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.tree-node-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+}
+.tree-node-item.active .tree-node-title {
+  color: #8b6914;
+}
+.tree-node-preview {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+}
+
+/* Root node special */
+.tree-node-item.root-node .tree-node-card {
+  background: var(--node-bg);
+  border: 1px solid var(--line-color);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+}
+.tree-node-item.root-node .tree-node-title {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tree-node-item.root-node .tree-node-title::before {
+  content: '🏠';
+  font-size: 14px;
+}
+.tree-node-item.root-node .tree-node-preview {
+  font-size: 12px;
+  max-width: 320px;
+}
+
+/* Node actions (edit mode) */
+.node-actions {
+  display: none;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  gap: 4px;
+}
+.tree-node-card:hover .node-actions,
+.edit-mode .node-actions { display: flex; }
+.node-action-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+.node-action-btn:hover { background: #f5f3ef; border-color: #ccc; }
+.node-action-btn.add { color: var(--green); }
+.node-action-btn.add:hover { background: var(--green-bg); border-color: var(--green); }
+.node-action-btn.del { color: var(--red); }
+.node-action-btn.del:hover { background: var(--red-bg); border-color: var(--red); }
+
+/* Script Panel Styles */
+.script-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  gap: 12px;
+}
+.script-empty-icon { font-size: 48px; opacity: .5; }
+.script-empty-text { font-size: 14px; }
+
+.step-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--accent-dim);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8b6914;
+  margin-bottom: 20px;
+}
+.step-indicator .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .5; transform: scale(1.3); }
+}
+
+.script-section {
+  margin-bottom: 28px;
+}
+.script-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 8px;
+}
+.script-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+.script-box::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--accent);
+  border-radius: var(--radius) 0 0 var(--radius);
+}
+.script-text {
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 1.8;
+  color: var(--text);
+  letter-spacing: .02em;
+}
+.script-text:empty::after {
+  content: '（未填写话术内容）';
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.notes-box {
+  background: #fdfbec;
+  border: 1px solid #f0e5a0;
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  font-size: 13px;
+  color: #8b7d14;
+  line-height: 1.6;
+  margin-top: 16px;
+}
+.notes-box:empty { display: none; }
+.notes-box::before {
+  content: '💡 提示：';
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Response Buttons */
+.response-section {
+  margin-top: 24px;
+}
+.response-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.response-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 22px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+.response-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.response-btn .icon {
+  font-size: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.response-btn.positive { border-color: #c8e0c8; }
+.response-btn.positive:hover { background: var(--green-bg); border-color: var(--green); }
+.response-btn.positive .icon { background: var(--green-bg); color: var(--green); }
+.response-btn.neutral { border-color: #d0d8e8; }
+.response-btn.neutral:hover { background: var(--blue-bg); border-color: var(--blue); }
+.response-btn.neutral .icon { background: var(--blue-bg); color: var(--blue); }
+.response-btn.negative { border-color: #e8d0cf; }
+.response-btn.negative:hover { background: var(--red-bg); border-color: var(--red); }
+.response-btn.negative .icon { background: var(--red-bg); color: var(--red); }
+.response-btn.no-children {
+  opacity: .5;
+  pointer-events: none;
+}
+
+/* Navigation */
+.nav-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.nav-row .btn {
+  font-size: 13px;
+}
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+.breadcrumb span {
+  cursor: pointer;
+  transition: color var(--transition);
+}
+.breadcrumb span:hover { color: var(--accent); }
+.breadcrumb .sep { cursor: default; color: var(--text-muted); }
+.breadcrumb .sep:hover { color: var(--text-muted); }
+
+/* Edit Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn .2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 28px;
+  width: 480px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp .25s ease;
+}
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  margin-bottom: 20px;
+  color: var(--text);
+}
+.form-group {
+  margin-bottom: 16px;
+}
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: var(--font-body);
+  color: var(--text);
+  background: var(--bg);
+  transition: border-color var(--transition);
+}
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(212,160,23,.1);
+}
+.form-group textarea { resize: vertical; min-height: 80px; }
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+/* Sync status */
+.sync-status {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.sync-status.synced { color: var(--green); }
+.sync-status.error { color: var(--red); }
+
+/* Empty state */
+.empty-tree {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  gap: 12px;
+  text-align: center;
+}
+.empty-tree-icon { font-size: 40px; opacity: .4; }
+.empty-tree-text { font-size: 13px; line-height: 1.6; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main { flex-direction: column; }
+  .tree-panel { width: 100%; min-width: 0; max-height: 35vh; border-right: none; border-bottom: 1px solid var(--border); }
+  .script-content { padding: 20px 16px; }
+  .script-text { font-size: 16px; }
+  .response-btn { padding: 10px 16px; font-size: 13px; }
+}
+
+/* GitHub sync panel */
+.sync-panel {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  background: #f9f8f5;
+  flex-shrink: 0;
+}
+.sync-panel-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.sync-panel input {
+  flex: 1;
+  min-width: 140px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: var(--font-body);
+  background: var(--surface);
+}
+.sync-panel input:focus { outline: none; border-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">话术<span>导航</span></div>
+    <span style="font-size:12px;color:var(--text-muted);">Script Navigator</span>
+  </div>
+  <div class="header-right">
+    <span class="sync-status" id="syncStatus">本地</span>
+    <button class="btn btn-sm" id="btnEditMode" onclick="toggleEditMode()">✏️ 编辑模式</button>
+    <button class="btn btn-sm" onclick="resetToRoot()">🏠 回到起点</button>
+    <button class="btn btn-sm" id="btnExport" onclick="exportData()">📥 导出</button>
+    <button class="btn btn-sm" id="btnImport" onclick="document.getElementById('importFile').click()">📤 导入</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+  </div>
+</div>
+
+<div class="main">
+  <!-- Left: Tree Panel -->
+  <div class="tree-panel" id="treePanel">
+    <div class="tree-panel-header">
+      <span class="tree-panel-title">话术流程</span>
+      <button class="btn btn-sm btn-icon" id="btnAddRoot" onclick="addRootNode()" title="添加根节点" style="display:none">＋</button>
+    </div>
+    <div class="tree-scroll" id="treeContainer">
+      <div class="empty-tree">
+        <div class="empty-tree-icon">🌳</div>
+        <div class="empty-tree-text">点击「编辑模式」开始<br>构建你的话术流程</div>
+      </div>
+    </div>
+    <!-- GitHub Sync -->
+    <div class="sync-panel" id="syncPanel" style="display:none">
+      <div class="sync-panel-inner">
+        <input type="text" id="githubToken" placeholder="GitHub Token">
+        <input type="text" id="githubRepo" placeholder="用户名/仓库名">
+        <input type="text" id="githubPath" placeholder="文件路径 (如 data/scripts.json)">
+        <button class="btn btn-sm btn-primary" onclick="syncToGitHub()">🔄 同步</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Script Panel -->
+  <div class="script-panel">
+    <div class="script-content" id="scriptContent">
+      <div class="script-empty">
+        <div class="script-empty-icon">💬</div>
+        <div class="script-empty-text">选择一个话术节点开始</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="modalOverlay" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalBox"></div>
+</div>
+
+<script>
+// ============================================
+// 数据管理
+// ============================================
+const STORAGE_KEY = 'sales_script_data';
+var scriptData = null;  // root node
+var currentNodeId = null;
+var editMode = false;
+var nodeMap = {}; // id -> node reference (for quick lookup)
+
+// Default demo data
+function getDefaultData() {
+  return {
+    id: 'root',
+    title: '开场白',
+    script: '您好，我是XX保险公司的理财顾问。今天联系您是想了解一下，您目前对家庭保障和财富规划方面有没有什么需求或想法？',
+    notes: '语气要自然亲切，不要急于推销。先建立信任，了解客户基本情况。',
+    category: '开场',
+    children: [
+      {
+        id: 'c1',
+        title: '客户感兴趣',
+        script: '太好了！那我先简单了解一下您的情况。请问您目前家里有几口人？主要是想为自己还是家人了解保障？',
+        notes: '记录客户家庭结构，这是后续推荐产品的基础。',
+        category: '需求挖掘',
+        children: [
+          {
+            id: 'c1_1',
+            title: '已有保险',
+            script: '方便告诉我您之前买过哪些类型的保险吗？这样我可以帮您看看有没有重复或者缺口。',
+            notes: '了解已有保障，避免重复推荐。重点关注保额是否足够。',
+            category: '需求挖掘',
+            children: [
+              {
+                id: 'c1_1_1',
+                title: '重疾险',
+                script: '重疾险很重要。请问您当时买的保额是多少？现在很多人觉得50万起步才够用，您觉得呢？',
+                notes: '引导客户意识到保额不足的问题。',
+                category: '异议处理',
+                children: [
+                  {
+                    id: 'c1_1_1_1',
+                    title: '客户认同保额不足',
+                    script: '我们公司最近有一款补充型重疾产品，保费不高但保额可以叠加，我帮您做个方案对比看看？',
+                    notes: '顺势推荐产品，用数据说话。',
+                    category: '产品推荐',
+                    children: []
+                  },
+                  {
+                    id: 'c1_1_1_2',
+                    title: '客户觉得够了',
+                    script: '好的，那我帮您整理一下现有保单。另外想了解一下，您有没有考虑过医疗险呢？重疾险是确诊给付，医疗险是报销型，两者互补效果更好。',
+                    notes: '不要强行否定客户，转而推荐互补产品。',
+                    category: '产品推荐',
+                    children: []
+                  }
+                ]
+              },
+              {
+                id: 'c1_1_2',
+                title: '医疗险/意外险',
+                script: '医疗险和意外险是基础保障。请问您当时买的是消费型还是返还型？',
+                notes: '了解产品类型，消费型保费低但无返还，返还型贵但有储蓄功能。',
+                category: '需求挖掘',
+                children: []
+              }
+            ]
+          },
+          {
+            id: 'c1_2',
+            title: '没有保险',
+            script: '那您很有保险意识！现在开始规划刚刚好。我先帮您梳理一下，一般家庭保障主要分几块：意外险、医疗险、重疾险、寿险，还有年金类产品做养老和子女教育规划。您最关心哪一块？',
+            notes: '给客户一个全面的框架，让他自己选择方向，增加参与感。',
+            category: '产品介绍',
+            children: [
+              {
+                id: 'c1_2_1',
+                title: '关注健康保障',
+                script: '健康保障是基础。我们公司有一款综合健康险，覆盖重疾和医疗，性价比很高。我简单介绍一下？',
+                category: '产品推荐',
+                children: []
+              },
+              {
+                id: 'c1_2_2',
+                title: '关注养老规划',
+                script: '养老规划确实要趁早。我们有一款年金产品，从退休开始每年固定领取，活多久领多久。我帮您算一下不同年龄投保的收益对比？',
+                category: '产品推荐',
+                children: []
+              },
+              {
+                id: 'c1_2_3',
+                title: '关注子女教育',
+                script: '子女教育金是很多家庭的重点。我们有一款教育年金，可以在孩子上大学时开始领取，确保教育费用无忧。',
+                category: '产品推荐',
+                children: []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'c2',
+        title: '客户犹豫/再考虑',
+        script: '完全理解，买保险确实需要慎重考虑。方便告诉我您主要是担心哪方面吗？是预算问题，还是对产品不太了解？',
+        notes: '不要催促，先了解顾虑。常见的顾虑：价格、对保险不信任、觉得不需要。',
+        category: '异议处理',
+        children: [
+          {
+            id: 'c2_1',
+            title: '预算有限',
+            script: '预算方面我们可以灵活调整。其实保险不一定要一次性买全，可以先从最紧急的保障入手，比如一年几百块的医疗险，先把基础风险覆盖掉。',
+            notes: '强调"先有后优"的理念，降低决策门槛。',
+            category: '异议处理',
+            children: []
+          },
+          {
+            id: 'c2_2',
+            title: '对产品不放心',
+            script: '这个我很理解。我们公司是正规持牌机构，所有产品都在银保监会备案。如果您不放心，我可以把产品条款发给您，您自己也可以在网上查到备案信息。',
+            notes: '用事实打消疑虑，提供可验证的信息。',
+            category: '异议处理',
+            children: []
+          },
+          {
+            id: 'c2_3',
+            title: '家人不同意',
+            script: '家人意见很重要。要不要我帮您整理一份简单的方案说明，您拿回去和家人一起看看？里面会写清楚保费、保障范围、收益对比，一目了然。',
+            notes: '主动提供书面材料，方便客户和家人沟通。',
+            category: '异议处理',
+            children: []
+          }
+        ]
+      },
+      {
+        id: 'c3',
+        title: '客户拒绝/不需要',
+        script: '好的，没关系。那我不打扰您了。不过方便的话可以加个微信，以后有需要或者想了解保险方面的问题随时找我。',
+        notes: '保持礼貌，留好退路。不要强推，但也不要断了联系。',
+        category: '结束',
+        children: [
+          {
+            id: 'c3_1',
+            title: '客户同意加微信',
+            script: '太好了，我扫您还是您扫我？以后有什么保险方面的问题随时问我，我不推销，纯帮忙解答。',
+            notes: '强调"不推销"，降低客户防备心理。',
+            category: '结束',
+            children: []
+          },
+          {
+            id: 'c3_2',
+            title: '客户拒绝加微信',
+            script: '没关系，那祝您生活愉快！如果以后有需要，可以打这个电话找我。再见！',
+            notes: '体面结束，保持专业形象。',
+            category: '结束',
+            children: []
+          }
+        ]
+      }
+    ]
+  };
+}
+
+// ============================================
+// 初始化
+// ============================================
+function init() {
+  loadData();
+  renderTree();
+  if (scriptData) {
+    selectNode(scriptData.id);
+  }
+}
+
+function loadData() {
+  var raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    try {
+      scriptData = JSON.parse(raw);
+    } catch(e) {
+      scriptData = getDefaultData();
+    }
+  } else {
+    scriptData = getDefaultData();
+    saveData();
+  }
+  buildNodeMap();
+}
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(scriptData));
+  document.getElementById('syncStatus').textContent = '已保存';
+  document.getElementById('syncStatus').className = 'sync-status synced';
+  setTimeout(function() {
+    document.getElementById('syncStatus').textContent = '本地';
+    document.getElementById('syncStatus').className = 'sync-status';
+  }, 2000);
+}
+
+function buildNodeMap() {
+  nodeMap = {};
+  function walk(node) {
+    nodeMap[node.id] = node;
+    if (node.children) node.children.forEach(walk);
+  }
+  if (scriptData) walk(scriptData);
+}
+
+function getNodePath(targetId) {
+  var path = [];
+  function find(node, trail) {
+    var t = trail.concat([node]);
+    if (node.id === targetId) { path = t; return true; }
+    if (node.children) {
+      for (var i = 0; i < node.children.length; i++) {
+        if (find(node.children[i], t)) return true;
+      }
+    }
+    return false;
+  }
+  if (scriptData) find(scriptData, []);
+  return path;
+}
+
+// ============================================
+// 渲染树
+// ============================================
+function renderTree() {
+  var container = document.getElementById('treeContainer');
+  if (!scriptData) {
+    container.innerHTML = '<div class="empty-tree"><div class="empty-tree-icon">🌳</div><div class="empty-tree-text">点击「编辑模式」开始<br>构建你的话术流程</div></div>';
+    return;
+  }
+  container.innerHTML = '<div class="tree-root">' + renderNode(scriptData, true) + '</div>';
+}
+
+function renderNode(node, isRoot) {
+  var html = '';
+  var isActive = node.id === currentNodeId;
+  var cls = 'tree-node-item';
+  if (isRoot) cls += ' root-node';
+  if (isActive) cls += ' active';
+
+  html += '<div class="' + cls + '" data-id="' + node.id + '" onclick="selectNode(\'' + node.id + '\')">';
+  html += '<div class="tree-node-card">';
+  html += '<div class="tree-node-title">' + escapeHtml(node.title) + '</div>';
+  html += '<div class="tree-node-preview">' + escapeHtml(truncate(node.script, 50)) + '</div>';
+  if (editMode) {
+    html += '<div class="node-actions">';
+    html += '<button class="node-action-btn add" onclick="event.stopPropagation();addChildNode(\'' + node.id + '\')" title="添加子节点">＋</button>';
+    if (!isRoot) {
+      html += '<button class="node-action-btn del" onclick="event.stopPropagation();deleteNode(\'' + node.id + '\')" title="删除节点">✕</button>';
+    }
+    html += '</div>';
+  }
+  html += '</div></div>';
+
+  if (node.children && node.children.length > 0) {
+    html += '<div class="tree-node-group">';
+    node.children.forEach(function(child) {
+      html += renderNode(child, false);
+    });
+    html += '</div>';
+  }
+  return html;
+}
+
+// ============================================
+// 节点选择与脚本面板
+// ============================================
+function selectNode(nodeId) {
+  currentNodeId = nodeId;
+  buildNodeMap();
+  renderTree();
+  renderScriptPanel();
+}
+
+function renderScriptPanel() {
+  var container = document.getElementById('scriptContent');
+  var node = nodeMap[currentNodeId];
+  if (!node) {
+    container.innerHTML = '<div class="script-empty"><div class="script-empty-icon">💬</div><div class="script-empty-text">选择一个话术节点开始</div></div>';
+    return;
+  }
+
+  var hasChildren = node.children && node.children.length > 0;
+  var path = getNodePath(node.id);
+
+  var html = '';
+
+  // Breadcrumb
+  html += '<div class="breadcrumb">';
+  path.forEach(function(n, i) {
+    if (i > 0) html += '<span class="sep">›</span>';
+    html += '<span onclick="selectNode(\'' + n.id + '\')">' + escapeHtml(n.title) + '</span>';
+  });
+  html += '</div>';
+
+  // Step indicator
+  html += '<div class="step-indicator"><span class="dot"></span>当前话术</div>';
+
+  // Category badge
+  if (node.category) {
+    html += '<div class="script-label">' + escapeHtml(node.category) + '</div>';
+  }
+
+  // Script box
+  html += '<div class="script-box">';
+  html += '<div class="script-text">' + escapeHtml(node.script).replace(/\n/g, '<br>') + '</div>';
+  html += '</div>';
+
+  // Notes
+  if (node.notes) {
+    html += '<div class="notes-box">' + escapeHtml(node.notes) + '</div>';
+  }
+
+  // Response buttons
+  if (hasChildren) {
+    html += '<div class="response-section">';
+    html += '<div class="script-label">客户可能的回答</div>';
+    html += '<div class="response-buttons">';
+    var categories = ['positive', 'neutral', 'negative'];
+    node.children.forEach(function(child, i) {
+      var cat = child.category || '';
+      var cls = 'response-btn';
+      if (cat.includes('异议') || cat.includes('拒绝') || cat.includes('结束')) {
+        cls += ' negative';
+      } else if (cat.includes('推荐') || cat.includes('认同')) {
+        cls += ' positive';
+      } else {
+        cls += ' neutral';
+      }
+      var icon = '💬';
+      if (cat.includes('异议')) icon = '🤔';
+      else if (cat.includes('拒绝')) icon = '👋';
+      else if (cat.includes('推荐')) icon = '✨';
+      else if (cat.includes('认同')) icon = '✅';
+      else if (cat.includes('结束')) icon = '🏁';
+      html += '<button class="' + cls + '" onclick="selectNode(\'' + child.id + '\')">';
+      html += '<span class="icon">' + icon + '</span>';
+      html += '<span>' + escapeHtml(child.title) + '</span>';
+      html += '</button>';
+    });
+    html += '</div></div>';
+  } else {
+    html += '<div class="response-section">';
+    html += '<div class="script-label">话术终点</div>';
+    html += '<p style="color:var(--text-muted);font-size:13px;">此节点为话术终点，没有更多分支。</p>';
+    html += '</div>';
+  }
+
+  // Navigation
+  html += '<div class="nav-row">';
+  html += '<button class="btn" onclick="resetToRoot()">🏠 回到起点</button>';
+  if (path.length > 1) {
+    var parent = path[path.length - 2];
+    html += '<button class="btn" onclick="selectNode(\'' + parent.id + '\')">⬅ 返回上一级</button>';
+  }
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+// ============================================
+// 编辑模式
+// ============================================
+function toggleEditMode() {
+  editMode = !editMode;
+  var btn = document.getElementById('btnEditMode');
+  var rootBtn = document.getElementById('btnAddRoot');
+  if (editMode) {
+    btn.textContent = '✅ 退出编辑';
+    btn.classList.add('btn-primary');
+    rootBtn.style.display = '';
+    if (!scriptData) {
+      rootBtn.style.display = 'inline-flex';
+    }
+  } else {
+    btn.textContent = '✏️ 编辑模式';
+    btn.classList.remove('btn-primary');
+    rootBtn.style.display = 'none';
+  }
+  document.getElementById('treePanel').classList.toggle('edit-mode', editMode);
+  renderTree();
+}
+
+function addRootNode() {
+  showNodeModal(null, null);
+}
+
+function addChildNode(parentId) {
+  showNodeModal(parentId, null);
+}
+
+function editNode(nodeId) {
+  showNodeModal(null, nodeId);
+}
+
+function deleteNode(nodeId) {
+  if (nodeId === 'root') { alert('不能删除根节点'); return; }
+  if (!confirm('确定删除这个节点及其所有子节点吗？')) return;
+
+  function remove(node, targetId) {
+    if (node.children) {
+      for (var i = 0; i < node.children.length; i++) {
+        if (node.children[i].id === targetId) {
+          node.children.splice(i, 1);
+          return true;
+        }
+        if (remove(node.children[i], targetId)) return true;
+      }
+    }
+    return false;
+  }
+
+  remove(scriptData, nodeId);
+  saveData();
+  if (currentNodeId === nodeId) {
+    currentNodeId = scriptData.id;
+  }
+  buildNodeMap();
+  renderTree();
+  renderScriptPanel();
+}
+
+function showNodeModal(parentId, editNodeId) {
+  var isEdit = !!editNodeId;
+  var node = isEdit ? nodeMap[editNodeId] : null;
+  var title = isEdit ? '编辑节点' : '添加节点';
+
+  var html = '<h3>' + title + '</h3>';
+  html += '<div class="form-group"><label>节点标题（客户回答类型）</label>';
+  html += '<input type="text" id="modalTitle" value="' + (isEdit ? escapeHtml(node.title) : '') + '" placeholder="如：客户感兴趣">';
+  html += '</div>';
+
+  html += '<div class="form-group"><label>话术内容</label>';
+  html += '<textarea id="modalScript" rows="4" placeholder="你要说的话术…">' + (isEdit ? escapeHtml(node.script) : '') + '</textarea>';
+  html += '</div>';
+
+  html += '<div class="form-group"><label>提示/备注</label>';
+  html += '<textarea id="modalNotes" rows="2" placeholder="给销售人员的提示…">' + (isEdit ? escapeHtml(node.notes || '') : '') + '</textarea>';
+  html += '</div>';
+
+  html += '<div class="form-group"><label>分类</label>';
+  html += '<select id="modalCategory">';
+  var cats = ['开场', '需求挖掘', '产品介绍', '产品推荐', '异议处理', '结束', '其他'];
+  var currentCat = isEdit ? (node.category || '') : '';
+  cats.forEach(function(c) {
+    html += '<option value="' + c + '"' + (c === currentCat ? ' selected' : '') + '>' + c + '</option>';
+  });
+  html += '</select></div>';
+
+  html += '<div class="form-actions">';
+  html += '<button class="btn" onclick="closeModal()">取消</button>';
+  html += '<button class="btn btn-primary" onclick="saveNodeModal(\'' + (parentId || '') + '\', \'' + (editNodeId || '') + '\')">保存</button>';
+  html += '</div>';
+
+  document.getElementById('modalBox').innerHTML = html;
+  document.getElementById('modalOverlay').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').style.display = 'none';
+}
+
+function saveNodeModal(parentId, editNodeId) {
+  var title = document.getElementById('modalTitle').value.trim();
+  var script = document.getElementById('modalScript').value.trim();
+  var notes = document.getElementById('modalNotes').value.trim();
+  var category = document.getElementById('modalCategory').value;
+
+  if (!title || !script) {
+    alert('标题和话术内容不能为空');
+    return;
+  }
+
+  if (editNodeId) {
+    // Edit existing
+    var node = nodeMap[editNodeId];
+    node.title = title;
+    node.script = script;
+    node.notes = notes;
+    node.category = category;
+  } else {
+    // Add new
+    var newNode = {
+      id: 'n_' + Date.now(),
+      title: title,
+      script: script,
+      notes: notes,
+      category: category,
+      children: []
+    };
+
+    if (parentId) {
+      var parent = nodeMap[parentId];
+      if (!parent.children) parent.children = [];
+      parent.children.push(newNode);
+    } else {
+      // Adding root node
+      scriptData = newNode;
+    }
+  }
+
+  saveData();
+  buildNodeMap();
+  closeModal();
+  renderTree();
+  if (currentNodeId) renderScriptPanel();
+}
+
+// ============================================
+// 导航
+// ============================================
+function resetToRoot() {
+  if (scriptData) {
+    selectNode(scriptData.id);
+  }
+}
+
+// ============================================
+// 导入导出
+// ============================================
+function exportData() {
+  var data = scriptData || getDefaultData();
+  var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'sales_scripts_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      if (!data.id || !data.title) {
+        alert('文件格式不正确');
+        return;
+      }
+      scriptData = data;
+      saveData();
+      buildNodeMap();
+      currentNodeId = scriptData.id;
+      renderTree();
+      renderScriptPanel();
+      alert('导入成功！');
+    } catch(err) {
+      alert('导入失败：' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ============================================
+// GitHub Sync
+// ============================================
+function syncToGitHub() {
+  var token = document.getElementById('githubToken').value.trim();
+  var repo = document.getElementById('githubRepo').value.trim();
+  var path = document.getElementById('githubPath').value.trim();
+
+  if (!token || !repo || !path) {
+    alert('请填写完整的 GitHub 配置信息');
+    return;
+  }
+
+  var status = document.getElementById('syncStatus');
+  status.textContent = '同步中...';
+  status.className = 'sync-status';
+
+  var content = btoa(unescape(encodeURIComponent(JSON.stringify(scriptData, null, 2))));
+  var url = 'https://api.github.com/repos/' + repo + '/contents/' + path;
+  var message = 'Update sales scripts ' + new Date().toISOString();
+
+  // First try to get the file to get its SHA
+  fetch(url, {
+    headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+  })
+  .then(function(res) {
+    if (res.status === 404) return null; // File doesn't exist yet
+    if (!res.ok) throw new Error('GitHub API error: ' + res.status);
+    return res.json();
+  })
+  .then(function(data) {
+    var body = {
+      message: message,
+      content: content
+    };
+    if (data && data.sha) {
+      body.sha = data.sha;
+    }
+    return fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'token ' + token,
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github.v3+json'
+      },
+      body: JSON.stringify(body)
+    });
+  })
+  .then(function(res) {
+    if (!res.ok) throw new Error('上传失败: ' + res.status);
+    status.textContent = '已同步 ✓';
+    status.className = 'sync-status synced';
+    setTimeout(function() { status.textContent = '本地'; status.className = 'sync-status'; }, 3000);
+  })
+  .catch(function(err) {
+    status.textContent = '同步失败';
+    status.className = 'sync-status error';
+    console.error(err);
+  });
+}
+
+// Load GitHub config from localStorage
+function loadGitHubConfig() {
+  var config = localStorage.getItem('sales_script_github_config');
+  if (config) {
+    try {
+      var c = JSON.parse(config);
+      document.getElementById('githubToken').value = c.token || '';
+      document.getElementById('githubRepo').value = c.repo || '';
+      document.getElementById('githubPath').value = c.path || '';
+    } catch(e) {}
+  }
+}
+
+function saveGitHubConfig() {
+  var config = {
+    token: document.getElementById('githubToken').value.trim(),
+    repo: document.getElementById('githubRepo').value.trim(),
+    path: document.getElementById('githubPath').value.trim()
+  };
+  localStorage.setItem('sales_script_github_config', JSON.stringify(config));
+}
+
+// Auto-save GitHub config on blur
+['githubToken', 'githubRepo', 'githubPath'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('blur', saveGitHubConfig);
+});
+
+// ============================================
+// 工具函数
+// ============================================
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function truncate(str, len) {
+  if (!str) return '';
+  return str.length > len ? str.substring(0, len) + '…' : str;
+}
+
+// ============================================
+// 启动
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+  loadGitHubConfig();
+  init();
+  // Show sync panel
+  document.getElementById('syncPanel').style.display = '';
+});
+</script>
+</body>
+</html>
