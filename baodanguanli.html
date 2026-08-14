@@ -697,6 +697,7 @@ button {
   top: 50%;
   transform: translateY(-50%);
   z-index: 999;
+  display: block;
   background: linear-gradient(135deg, #1a2744, #d4a017);
   color: #fff;
   border: none;
@@ -5791,13 +5792,13 @@ document.addEventListener('click', function(e) {
 /* 显示话术工具按钮 */
 function showScriptToggleBtn() {
   var btn = document.getElementById('scriptToggleBtn');
-  if (btn) btn.classList.remove('hidden');
+  if (btn) { btn.classList.remove('hidden'); btn.style.display = 'block'; }
 }
 
 /* 隐藏话术工具按钮 */
 function hideScriptToggleBtn() {
   var btn = document.getElementById('scriptToggleBtn');
-  if (btn) btn.classList.add('hidden');
+  if (btn) { btn.classList.add('hidden'); btn.style.display = 'none'; }
 }
 
 /* 简单的 toast 提示 */
