@@ -186,13 +186,15 @@ async function supabaseLoadData() {
 }
 
 async function supabaseSaveData() {
-  if (!currentSessionToken || !currentUserId) return;
+  if (!currentSessionToken || !currentUserId) {
+    return { ok: false, error: '未登录或缺少 user_id' };
+  }
   try {
     var payload = {
       user_id: currentUserId,
-      username: currentUser,
-      data: clientData,
-      insurance_types: getInsuranceTypeLib()
+      username: currentUser || '',
+      data: clientData || [],
+      insurance_types: getInsuranceTypeLib() || []
     };
     var checkResp = await fetch(SUPABASE_REST_URL + '/user_data?select=id&user_id=eq.' + encodeURIComponent(currentUserId), {
       headers: {
@@ -213,10 +215,13 @@ async function supabaseSaveData() {
         body: JSON.stringify(payload)
       });
       if (!patchResp.ok) {
-        supabaseLastError = '更新失败: HTTP ' + patchResp.status;
-        console.error('[Supabase] patch error:', patchResp.status, await patchResp.text());
+        var patchErr = await patchResp.text();
+        supabaseLastError = '更新失败: HTTP ' + patchResp.status + ' ' + patchErr.substring(0, 200);
+        console.error('[Supabase] patch error:', patchResp.status, patchErr);
+        return { ok: false, http: patchResp.status, error: supabaseLastError };
       } else {
         console.log('[Supabase] 数据更新成功');
+        return { ok: true, http: patchResp.status, mode: 'patch' };
       }
     } else {
       var postResp = await fetch(SUPABASE_REST_URL + '/user_data', {
@@ -230,15 +235,19 @@ async function supabaseSaveData() {
         body: JSON.stringify(payload)
       });
       if (!postResp.ok) {
-        supabaseLastError = '插入失败: HTTP ' + postResp.status;
-        console.error('[Supabase] post error:', postResp.status, await postResp.text());
+        var postErr = await postResp.text();
+        supabaseLastError = '插入失败: HTTP ' + postResp.status + ' ' + postErr.substring(0, 200);
+        console.error('[Supabase] post error:', postResp.status, postErr);
+        return { ok: false, http: postResp.status, error: supabaseLastError };
       } else {
         console.log('[Supabase] 数据插入成功');
+        return { ok: true, http: postResp.status, mode: 'insert' };
       }
     }
   } catch (e) {
     supabaseLastError = '保存异常: ' + (e.message || e);
     console.error('[Supabase] save exception:', e);
+    return { ok: false, error: supabaseLastError };
   }
 }
 
