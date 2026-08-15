@@ -1325,7 +1325,23 @@
       "workAddress": "",
       "workCompany": "",
       "familyMembers": [],
-      "contactHistory": []
+      "contactHistory": [],
+      "scriptTracking": {
+        "currentNodeId": "n_1786687627825",
+        "lastUsedAt": "2026-08-15T11:51:32.384Z",
+        "pathHistory": [
+          {
+            "id": "n_1786687488874",
+            "title": "开场白",
+            "at": "2026-08-15T11:51:25.455Z"
+          },
+          {
+            "id": "n_1786687627825",
+            "title": "是",
+            "at": "2026-08-15T11:51:32.384Z"
+          }
+        ]
+      }
     },
     {
       "name": "雷美兴",
@@ -4119,7 +4135,87 @@
       "codeType": "S43"
     }
   ],
-  "_timestamp": "1786776869434",
+  "salesScripts": {
+    "id": "n_1786687488874",
+    "title": "开场白",
+    "script": "请问是否是 XXX先生/女士？",
+    "notes": "",
+    "category": "开场",
+    "children": [
+      {
+        "id": "n_1786687627825",
+        "title": "是",
+        "script": "你好，我是中国人寿售后人员李文浩，工号9754 。您在我司XX年购买的XX保险，现在根据公司安排，需要定期对客户信息进行更新",
+        "notes": "",
+        "category": "开场",
+        "children": [
+          {
+            "id": "n_1786689469687",
+            "title": "没有更新",
+            "script": "XX先生/女士，那请问您这边对你的保单内容清晰吗？",
+            "notes": "",
+            "category": "开场",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "n_1786688746558",
+        "title": "否",
+        "script": "您好请问您认识XX先生/女士吗？",
+        "notes": "",
+        "category": "开场",
+        "children": [
+          {
+            "id": "n_1786688805789",
+            "title": "不认识",
+            "script": "好的，很抱歉打扰您了，谢谢",
+            "notes": "",
+            "category": "开场",
+            "children": []
+          },
+          {
+            "id": "n_1786689014730",
+            "title": "认识 / 你找他什么事",
+            "script": "我这边是中国人寿售后专员，公司这边安排了我为他做专人服务，需要他本人亲自确认。请问他现在在您身边吗？",
+            "notes": "",
+            "category": "开场",
+            "children": [
+              {
+                "id": "n_1786689085975",
+                "title": "在",
+                "script": "好的，麻烦您将电话交给ta 接听一下。",
+                "notes": "",
+                "category": "开场",
+                "children": [
+                  {
+                    "id": "n_1786689514116",
+                    "title": "您好",
+                    "script": "你好",
+                    "notes": "",
+                    "category": "开场",
+                    "children": [],
+                    "jumpTo": "n_1786687488874"
+                  }
+                ],
+                "jumpTo": "n_1786687488874"
+              },
+              {
+                "id": "n_1786689113806",
+                "title": "不在",
+                "script": "请问你这边有他的联系方式吗？",
+                "notes": "",
+                "category": "开场",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "jumpTo": "n_1786687627825"
+  },
+  "_timestamp": "1786794692968",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
