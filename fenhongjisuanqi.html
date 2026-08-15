@@ -1708,7 +1708,7 @@ function renderDataTable() {
   if (enableDiv) headers.push('分红');
   headers.push('原账户', '当年提取');
   if (hasAdd) headers.push('追加账户', '当年追加');
-  headers.push('万能账户总计', '银行存款');
+  headers.push('万能账户总计', '保单价值', '银行存款');
   if (enableIdle) headers.push('闲置资金利息', '闲置资金余额');
   headers.forEach(function(h) { html += '<th>' + h + '</th>'; });
   html += '</tr></thead><tbody>';
@@ -1730,7 +1730,8 @@ function renderDataTable() {
       html += '<td style="color:#7c3aed;font-weight:600;">' + formatMoney(d.universalAddThisYear) + '</td>';
     }
     html += '<td style="font-weight:700;">' + formatMoney(d.secondaryAccount) + '</td>';
-    html += '<td>' + formatMoney(d.bankInterest) + '</td>';
+    html += '<td style="font-weight:700;color:#16a34a;">' + formatMoney(d.secondaryAccount + d.cumPremium + (enableIdle ? d.cumIdleFundInterest : 0)) + '</td>';
+    html += '<td>' + formatMoney(d.bankAccount) + '</td>';
     if (enableIdle) {
       html += '<td style="color:#0d9488;">' + formatMoney(d.idleFundInterest) + '</td>';
       html += '<td style="color:#0d9488;font-weight:600;">' + formatMoney(d.idleFundAccount) + '</td>';
