@@ -366,9 +366,22 @@ function mergeOldDataToCurrent(recovered, options) {
 }
 
 /* ★ Supabase 手动拉取（按"从云端拉取"按钮时调用）
- * silent=true 时不弹 Toast（仅自动触发场景），默认 false 给用户反馈
+ * silent=true 时不弹确认框（用于自动触发 / 代码内部调用）
  */
 async function sbManualPull(silent) {
+  // 非 silent（用户点击）加二次确认
+  if (!silent) {
+    var policyCount = Array.isArray(clientData) ? clientData.length : 0;
+    showConfirm(
+      '确定要从 Supabase 云端拉取最新数据吗？\n\n' +
+      '当前本地约有 ' + policyCount + ' 条保单记录。\n' +
+      '• 如果云端数据比本地新 → 覆盖本地\n' +
+      '• 如果云端空但本地有数据 → 保留本地并自动推回云端\n' +
+      '（建议先【导出数据（JSON）】快照，防止误操作）',
+      function() { sbManualPull(true); }
+    );
+    return;
+  }
   if (!currentUser && !currentUserId) { if (!silent) showToast('请先登录', 'warning'); return; }
   if (!hasSupabaseConfig()) { if (!silent) showToast('未配置 Supabase', 'warning'); return; }
   if (!initSupabase() || !isSupabaseConnected()) {
@@ -429,14 +442,27 @@ async function sbManualPull(silent) {
   }
 }
 
-/* Supabase 手动推送（按"推送到云端"按钮时调用 — savePolicyData 会自动 push 到 Supabase + GitHub）*/
+/* Supabase 手动推送（按"推送到云端"按钮时调用）*/
 function sbManualPush() {
+  var policyCount = Array.isArray(clientData) ? clientData.length : 0;
+  var insCount;
+  try { insCount = (getInsuranceTypeLib()||[]).length; } catch(e) { insCount = 0; }
+  showConfirm(
+    '确定要把当前本地数据推送到 Supabase 云端吗？\n\n' +
+    '本次推送将更新云端为：\n' +
+    '  · 客户/保单 ' + policyCount + ' 条\n' +
+    '  · 险种库 ' + insCount + ' 个\n\n' +
+    '其他设备之后点【拉取】就能同步到这份最新数据。',
+    function() { _sbManualPushDo(); }
+  );
+}
+function _sbManualPushDo() {
   if (!currentUser && !currentUserId) { showToast('请先登录', 'warning'); return; }
   if (!hasSupabaseConfig() || !initSupabase()) { showToast('Supabase 未配置', 'warning'); return; }
   showToast('正在推送到 Supabase 云端...', 'info');
   supabaseSaveData().then(function(result) {
     if (result && result.ok) {
-      showToast('推送成功！', 'success');
+      showToast('✅ 推送成功！', 'success');
       updateLocalTimestamp();
       autoSyncPush(); /* 顺便同步 GitHub（若配置了Token） */
     } else {
@@ -447,10 +473,23 @@ function sbManualPush() {
   });
 }
 
-/* ★ 强制恢复本机旧数据（暴力扫描 localStorage 所有 key，不限于 policy_data_ 前缀）
- * 用于从老系统 localStorage 或早期版本加密密文里兜底救回数据
- */
-async function sbForceRestoreLocalData() {
+/* ★ 强制恢复本机旧数据（暴力扫描 localStorage 所有 key）— 先 confirm 再执行 */
+function sbForceRestoreLocalData() {
+  var policyCount = Array.isArray(clientData) ? clientData.length : 0;
+  showConfirm(
+    '🔧 这是高风险恢复操作！\n\n' +
+    '将扫描本机浏览器 localStorage 全部历史加密数据，尝试多种旧密钥组合解密\n' +
+    '后，把找到的最大一份保单数据【覆盖】到当前用户数据。\n\n' +
+    '当前本地：' + policyCount + ' 条保单\n\n' +
+    '⚠ 建议先【导出数据（JSON）】做快照备份，确认执行吗？',
+    function() {
+      showToast('正在扫描 localStorage 全部历史数据...', 'info');
+      setTimeout(function() { _sbForceRestoreLocalDataDo(); }, 50);
+    }
+  );
+}
+/* 真正执行强制恢复（从 async 重命名，避免 async/await 混用旧调用链）*/
+async function _sbForceRestoreLocalDataDo() {
   if (!currentUser && !currentUserId) { showToast('请先登录', 'warning'); return; }
   showToast('正在扫描本机 localStorage 所有历史数据...', 'info');
 
@@ -755,13 +794,22 @@ var autoPullFromCloud = function() {
   .catch(function() {});
 };
 
-/* 从 GitHub 拉取（使用候选文件名，兼容老备份文件） */
+/* 从 GitHub 冷备份恢复（高风险，先二次确认） */
 function manualPull() {
   if (!currentUser && !currentUserId) { showToast('请先登录', 'warning'); return; }
   if (!hasGitHubToken()) { showToast('请先在设置页配置GitHub Token', 'warning'); return; }
+  var localCount = Array.isArray(clientData) ? clientData.length : 0;
+  showConfirm(
+    '确定要从 GitHub 冷备份【覆盖】本地数据吗？\n\n' +
+    '当前本地：' + localCount + ' 条保单\n' +
+    '冷备份中如果时间戳更新，将直接替换本地。\n\n' +
+    '⚠ 建议先【导出数据（JSON）】做快照备份，确认执行吗？',
+    function() { _manualPullDo(); }
+  );
+}
+function _manualPullDo() {
   setSyncStatus('syncing');
   showToast('正在从 GitHub 冷备份恢复数据...', 'info');
-
   _ghFetchContentsFirstFound(getDataFileNameCandidates())
   .then(function(result) {
     if (!result) throw new Error('云端暂无备份数据（已尝试文件名：' + getDataFileNameCandidates().join('/') + '）');
@@ -794,18 +842,28 @@ function manualPull() {
   });
 }
 
-/* 手动推送 */
+/* 手动推送到 GitHub 冷备份（加 confirm 防误触） */
 function manualPush() {
   if (!currentUser && !currentUserId) { showToast('请先登录', 'warning'); return; }
   if (!hasGitHubToken()) { showToast('请先在设置页配置 GitHub Token 才能开启冷备份', 'warning'); return; }
+  var policyCount = Array.isArray(clientData) ? clientData.length : 0;
+  var fileNames = getDataFileNameCandidates();
+  showConfirm(
+    '确定要把当前本地数据备份到 GitHub 仓库吗？\n\n' +
+    '备份内容：保单 ' + policyCount + ' 条 + 险种库\n' +
+    '主文件名：' + (fileNames[0] || '保单数据_xxx.json') + '\n\n' +
+    '备份后，后续即使 Supabase 异常，也能从 GitHub 完整恢复。',
+    function() { _manualPushDo(); }
+  );
+}
+function _manualPushDo() {
   showToast('正在备份到 GitHub 仓库...', 'info');
   pushToCloud().then(function() {
-    // pushToCloud 已经处理了状态和 updateSettingSyncStatus，这里只补 Toast 确认
     setTimeout(function() {
       if (document.getElementById('settingSyncDot') && document.getElementById('settingSyncDot').style.background === 'rgb(34, 197, 94)') {
         showToast('✅ 已备份到 GitHub 冷备份（双保险）', 'success');
       }
-    }, 300);
+    }, 400);
   });
 }
 
