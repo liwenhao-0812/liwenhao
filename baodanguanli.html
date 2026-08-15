@@ -11,7 +11,7 @@
 <script src="js/01-config.js?v=20260815c"></script>
 <script src="js/02-utils.js?v=20260815c"></script>
 <script src="js/03-auth.js?v=20260815c"></script>
-<script src="js/04-storage.js?v=20260815d"></script>
+<script src="js/04-storage.js?v=20260815e"></script>
 <script src="js/05-render.js?v=20260815c"></script>
 <script src="js/06-crud.js?v=20260815c"></script>
 <script src="js/07-importexport.js?v=20260815c"></script>
@@ -212,10 +212,11 @@
               <div id="sbAuthStatus" style="color:#15803d;margin-top:2px;">登录后自动启用云端同步</div>
               <div id="sbAuthUser" style="color:#166534;margin-top:2px;"></div>
             </div>
-            <div style="display:flex;gap:8px;">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
               <button class="btn-outline btn-sm" id="sbTestConnBtn" onclick="testSupabaseConnectionUI()">测试同步</button>
               <button class="btn-outline btn-sm" id="sbPullBtn" onclick="sbManualPull(false)">☁ 从云端拉取</button>
               <button class="btn-outline btn-sm" id="sbPushBtn" onclick="sbManualPush()">⤴ 推送到云端</button>
+              <button class="btn-warning btn-sm" onclick="sbForceRestoreLocalData()" style="background:#fef3c7;color:#92400e;border-color:#fbbf24;" title="如果云端为空，尝试从本机旧版本扫描并强制导入所有数据">🔧 强制恢复本机旧数据</button>
             </div>
           </div>
         </div>

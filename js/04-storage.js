@@ -310,39 +310,57 @@ function scanAndRecoverOldData() {
   return recovered;
 }
 
-/* ★ 将扫描到的旧数据合并到当前用户 */
-function mergeOldDataToCurrent(recovered, silent) {
+/* ★ 将扫描到的旧数据合并到当前用户
+ * options: { force: 是否强制导入(忽略去重/忽略空数据保护), silent: 不弹Toast }
+ * 默认策略按 id 去重；force=true 时 clientData 为空 → 直接把 recovered.policies 整份覆盖导入
+ */
+function mergeOldDataToCurrent(recovered, options) {
   if (!recovered) return 0;
+  var opts = typeof options === 'boolean' ? { silent: options } : (options || {});
   var merged = 0;
   if (recovered.policies && recovered.policies.length > 0) {
     var existing = Array.isArray(clientData) ? clientData : [];
-    var existingIds = {};
-    existing.forEach(function(p) { if(p && p.id) existingIds[p.id] = true; });
-    recovered.policies.forEach(function(p) {
-      if (p && p.id && !existingIds[p.id]) {
-        existing.push(p);
-        merged++;
-      }
-    });
-    clientData = existing;
+    if (opts.force && existing.length === 0 && recovered.policies.length > 0) {
+      // 强制导入且本地空 → 直接全量覆盖（原有的去重逻辑在 recovered 数据自己 id 都不同时会全导，但这里避免极端情况漏导）
+      clientData = recovered.policies.slice();
+      merged = recovered.policies.length;
+    } else {
+      var existingIds = {};
+      existing.forEach(function(p) { if(p && p.id) existingIds[p.id] = true; });
+      recovered.policies.forEach(function(p) {
+        if (p && !existingIds[p.id || ('__gen_' + JSON.stringify(p))]) {
+          existing.push(p);
+          merged++;
+          if (p && p.id) existingIds[p.id] = true;
+        }
+      });
+      clientData = existing;
+    }
     secureSetItem('policy_data_' + _idKey(), clientData, _ENC_HINT);
   }
   if (recovered.insuranceTypes && recovered.insuranceTypes.length > 0) {
     var lib = getInsuranceTypeLib();
     var existingCodes = {};
     lib.forEach(function(it) { if(it && it.codeType) existingCodes[it.codeType] = true; });
+    var insAdded = 0;
     recovered.insuranceTypes.forEach(function(it) {
       if (it && it.codeType && !existingCodes[it.codeType]) {
         lib.push(it);
         existingCodes[it.codeType] = true;
+        insAdded++;
       }
     });
+    // 强制导入且保险库空的场景：直接全量
+    if (opts.force && lib.length === 0 && recovered.insuranceTypes.length > 0 && insAdded === 0) {
+      lib = recovered.insuranceTypes.slice();
+      insAdded = lib.length;
+    }
     secureSetItem('insurance_type_lib_' + _idKey(), lib, _ENC_HINT);
   }
   if (merged > 0 || (recovered.insuranceTypes && recovered.insuranceTypes.length > 0)) {
     syncExistingPoliciesToLib();
     refreshCurrentTab();
-    if (!silent) showToast('已恢复旧数据：' + merged + ' 条策略 + ' + (recovered.insuranceTypes ? recovered.insuranceTypes.length : 0) + ' 个险种', 'success');
+    if (!opts.silent) showToast('已恢复旧数据：' + merged + ' 条策略 + ' + (recovered.insuranceTypes ? recovered.insuranceTypes.length : 0) + ' 个险种', 'success');
   }
   return merged;
 }
@@ -427,6 +445,114 @@ function sbManualPush() {
   }).catch(function(e) {
     showToast('推送失败: ' + (e.message || e), 'error');
   });
+}
+
+/* ★ 强制恢复本机旧数据（暴力扫描 localStorage 所有 key，不限于 policy_data_ 前缀）
+ * 用于从老系统 localStorage 或早期版本加密密文里兜底救回数据
+ */
+async function sbForceRestoreLocalData() {
+  if (!currentUser && !currentUserId) { showToast('请先登录', 'warning'); return; }
+  showToast('正在扫描本机 localStorage 所有历史数据...', 'info');
+
+  var candidates = [];  // [{ key, length, data: []|{}, isPolicies, isInsLib }]
+  var allKeys = [];
+  try {
+    for (var i = 0; i < localStorage.length; i++) allKeys.push(localStorage.key(i));
+  } catch(e) { allKeys = []; }
+
+  // 生成所有可能的 keyHint 组合（多尝试）
+  var allHints = [];
+  for (var i = 0; i < allKeys.length; i++) {
+    var k = allKeys[i];
+    if (!k) continue;
+    if (k.indexOf('_') !== -1) {
+      // policy_data_xxx → xxx 可能是旧 keyHint
+      var parts = k.split('_');
+      allHints.push(parts[parts.length - 1]);
+    }
+  }
+  allHints = allHints.concat([
+    currentUser, 'baodan_storage_v1_salt', 'liwenhao',
+    currentUserEmail, (currentUserEmail || '').split('@')[0],
+    'admin', 'user', ''
+  ]);
+  // 去重
+  var seen = {};
+  var hints = [];
+  for (var i = 0; i < allHints.length; i++) {
+    if (allHints[i] === undefined) continue;
+    var h = String(allHints[i]);
+    if (!seen[h]) { seen[h] = true; hints.push(h); }
+  }
+
+  var bestPolicies = null;
+  var bestInsurance = null;
+  var bestPolicyLen = 0;
+  var bestInsuranceLen = 0;
+
+  for (var ki = 0; ki < allKeys.length; ki++) {
+    var k = allKeys[ki];
+    if (!k) continue;
+    // 明显跳过：timestamp/session/token 相关
+    if (/timestamp$|sb_session|gh_token|display_name|users_/.test(k)) continue;
+    for (var hi = 0; hi < hints.length; hi++) {
+      var hint = hints[hi];
+      try {
+        var val = secureGetItem(k, hint);
+        if (Array.isArray(val) && val.length > 0) {
+          // 判断是不是保单数据（有 policies，常见字段：id / clientName / policyCode）
+          var isPolicies = false, isInsurance = false;
+          for (var vi = 0; vi < Math.min(val.length, 5); vi++) {
+            var item = val[vi];
+            if (item && typeof item === 'object') {
+              if ((item.id && (item.clientName || item.policyCode || item.policyName))) isPolicies = true;
+              if ((item.codeType && item.insuranceName)) isInsurance = true;
+            }
+          }
+          // 长度足够大的数组直接当候选（提醒机制）
+          candidates.push({
+            key: k, hint: hint, length: val.length,
+            isPolicies: isPolicies, isInsurance: isInsurance
+          });
+          if (isPolicies && val.length > bestPolicyLen) {
+            bestPolicies = val; bestPolicyLen = val.length;
+          }
+          if (isInsurance && val.length > bestInsuranceLen) {
+            bestInsurance = val; bestInsuranceLen = val.length;
+          }
+        }
+      } catch(e) {}
+    }
+  }
+
+  console.log('[强制恢复] 扫描到候选数据:', candidates);
+
+  var merged = 0;
+  if (bestPolicies) {
+    clientData = bestPolicies.slice();
+    secureSetItem('policy_data_' + _idKey(), clientData, _ENC_HINT);
+    merged = bestPolicies.length;
+  }
+  if (bestInsurance) {
+    secureSetItem('insurance_type_lib_' + _idKey(), bestInsurance, _ENC_HINT);
+  }
+
+  if (merged > 0 || (bestInsurance && bestInsurance.length > 0)) {
+    syncExistingPoliciesToLib();
+    refreshCurrentTab();
+    showToast('✅ 强制恢复：策略 ' + merged + ' 条 + 险种库 ' + (bestInsurance ? bestInsurance.length : 0) + ' 个，已自动推送到云端', 'success');
+    updateLocalTimestamp();
+    await supabaseSaveData();
+  } else {
+    // 实在找不到，给 Console 一个更详细的导出表
+    console.warn('[强制恢复] 未识别到任何有效策略数据候选。所有候选 key：', candidates);
+    if (candidates.length === 0) {
+      showToast('⚠ 没找到任何历史数据：请确认这是「之前录入保单的同一台电脑/浏览器」', 'error');
+    } else {
+      showToast('⚠ 没找到可用数据：请把 Console 的 [强制恢复] 日志截图发给开发者', 'error');
+    }
+  }
+  return { merged: merged, insuranceLen: bestInsuranceLen, candidates: candidates };
 }
 
 /* 获取当前用户的数据文件名 */
