@@ -11,7 +11,7 @@
 <script src="js/01-config.js?v=20260815f"></script>
 <script src="js/02-utils.js?v=20260815c"></script>
 <script src="js/03-auth.js?v=20260815c"></script>
-<script src="js/04-storage.js?v=20260815e"></script>
+<script src="js/04-storage.js?v=20260815g"></script>
 <script src="js/05-render.js?v=20260815c"></script>
 <script src="js/06-crud.js?v=20260815c"></script>
 <script src="js/07-importexport.js?v=20260815c"></script>
@@ -167,23 +167,27 @@
     <!-- ====== 设置页 ====== -->
     <div class="tab-content" id="tabSettings">
       <div class="card">
-        <div class="card-title">自动云同步</div>
+        <div class="card-title">🗂 GitHub 冷备份（第二保险，异地冗余备份）</div>
+        <p style="font-size:12px;color:#64748b;margin-bottom:8px;line-height:1.6;">
+          <strong>Supabase 是主同步</strong>（实时、按账号隔离、支持多设备）；本卡片控制 <strong>GitHub 仓库冷备份</strong>（灾难恢复保险）。<br>
+          建议开启：即使 Supabase 项目异常，也能从 GitHub 仓库完整恢复保单数据。文件名：<code>保单数据_{邮箱前缀}.json</code>。
+        </p>
         <div style="display:flex;align-items:center;gap:12px;padding:8px 0;">
           <div class="sync-dot" id="settingSyncDot" style="width:12px;height:12px;border-radius:50%;background:#22c55e;flex-shrink:0;"></div>
           <div>
-            <div style="font-size:14px;font-weight:600;color:#1a2744;" id="settingSyncStatus">自动同步已启用</div>
+            <div style="font-size:14px;font-weight:600;color:#1a2744;" id="settingSyncStatus">登录后自动启用主同步 + 冷备份</div>
             <div style="font-size:12px;color:#64748b;" id="settingSyncTime">数据变更时自动保存到云端</div>
           </div>
         </div>
-        <div class="btn-group" style="margin-top:8px;">
-          <button class="btn-success" onclick="manualPush()">立即同步到云端</button>
-          <button class="btn-outline" onclick="manualPull()">从云端恢复数据</button>
+        <div class="btn-group" style="margin-top:8px;flex-wrap:wrap;gap:8px;">
+          <button class="btn-success" onclick="manualPush()">💾 立即备份到 GitHub</button>
+          <button class="btn-outline" onclick="manualPull()">↩ 从 GitHub 冷备份恢复</button>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">&#128273; GitHub Token 配置</div>
+        <div class="card-title">&#128273; GitHub Token 配置（冷备份专用）</div>
         <p style="font-size:12px;color:#64748b;margin-bottom:8px;line-height:1.5;">
-          为实现数据云端同步，需要配置您的 GitHub Personal Access Token。<br>
+          <strong>仅用于冷备份</strong>，不配置 Token 不影响 Supabase 主同步使用。<br>
           请前往 <a href="https://github.com/settings/tokens" target="_blank" style="color:#2563eb;">GitHub Token设置页</a> 创建一个 <strong>Tokens (classic)</strong>，勾选 <code>repo</code> 权限后粘贴到下方。<br>
           Token 将加密存储在您的浏览器本地，不会上传到任何第三方。
         </p>
