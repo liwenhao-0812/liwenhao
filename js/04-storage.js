@@ -555,9 +555,32 @@ async function sbForceRestoreLocalData() {
   return { merged: merged, insuranceLen: bestInsuranceLen, candidates: candidates };
 }
 
-/* 获取当前用户的数据文件名 */
+/* 获取当前用户的数据文件名
+ * 主文件名用邮箱前缀（稳定），兼容老文件名（显示名）
+ */
 function getDataFileName() {
+  // 邮箱前缀优先（更稳定），无邮箱则 fallback 到显示名
+  var emailPrefix = '';
+  try { emailPrefix = (currentUserEmail || '').split('@')[0]; } catch(e) {}
+  return emailPrefix ? ('保单数据_' + emailPrefix + '.json') : ('保单数据_' + currentUser + '.json');
+}
+/* 兼容老文件名（从显示名生成），用于拉取兜底 */
+function getDataFileNameLegacy() {
   return '保单数据_' + currentUser + '.json';
+}
+/* 返回多个候选文件名数组，拉取时依次尝试 */
+function getDataFileNameCandidates() {
+  var names = [];
+  var main = getDataFileName();
+  var legacy = getDataFileNameLegacy();
+  if (main) names.push(main);
+  if (legacy && legacy !== main && !names.includes(legacy)) names.push(legacy);
+  // 用户 UUID 作为第三个兜底
+  if (currentUserId) {
+    var uuidName = '保单数据_' + currentUserId.substring(0, 8) + '.json';
+    if (!names.includes(uuidName)) names.push(uuidName);
+  }
+  return names;
 }
 
 /* 获取所有用户数据（用于 GitHub 云端备份存储） */
@@ -589,12 +612,68 @@ function restoreFromCloudData(cloudData) {
   }
 }
 
-/* 推送到 GitHub */
+/* ============================================================
+ *  内部：GitHub GET contents API（可指定文件名，返回 {fileInfo, fileName} 或 null）
+ * ============================================================ */
+function _ghFetchContents(fileName) {
+  if (!fileName) return Promise.reject(new Error('无文件名'));
+  return fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName) + '?ref=' + GITHUB_BRANCH, {
+    headers: { 'Authorization': 'token ' + getGitHubToken() }
+  })
+  .then(function(r) {
+    if (r.status === 404) return null;
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  });
+}
+
+/* 内部：尝试按候选文件名顺序 GET，返回第一个命中的 { fileInfo, fileName } */
+function _ghFetchContentsFirstFound(fileNameCandidates) {
+  var idx = 0;
+  function next() {
+    if (idx >= fileNameCandidates.length) return Promise.resolve(null);
+    var name = fileNameCandidates[idx++];
+    return _ghFetchContents(name)
+      .then(function(info) {
+        if (info) return { fileInfo: info, fileName: name };
+        return next();
+      });
+  }
+  return next();
+}
+
+/* ============================================================
+ *  内部：一次 PUT（带指定 sha），返回 Promise<{status, text}>
+ *  如果 409 返回 { status:409, needRefetchSha: true, ... }
+ * ============================================================ */
+function _ghPutOnce(fileName, content, sha) {
+  var body = {
+    message: '自动同步保单数据 - ' + (currentUserEmail || currentUser || 'anonymous'),
+    content: content,
+    branch: GITHUB_BRANCH
+  };
+  if (sha) body.sha = sha;
+  return fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName), {
+    method: 'PUT',
+    headers: {
+      'Authorization': 'token ' + getGitHubToken(),
+      'Content-Type': 'application/json',
+      'Accept': 'application/vnd.github.v3+json'
+    },
+    body: JSON.stringify(body)
+  })
+  .then(function(r) {
+    if (r.ok) return { ok: true, status: r.status };
+    return r.text().then(function(t) { return { ok: false, status: r.status, body: t }; });
+  });
+}
+
+/* 推送到 GitHub（修复 409：遇到冲突自动重取 SHA 重试，最多 3 次）*/
 function pushToCloud() {
-  if (!currentUser) return Promise.resolve();
+  if (!currentUser && !currentUserId) return Promise.resolve();
   if (!hasGitHubToken()) {
     setSyncStatus('offline');
-    updateSettingSyncStatus(false, '未配置Token');
+    updateSettingSyncStatus(false, '未配置Token（GitHub 冷备份未启用，Supabase 主同步正常）');
     return Promise.resolve();
   }
   setSyncStatus('syncing');
@@ -602,43 +681,51 @@ function pushToCloud() {
   var data = getAllUserData();
   var content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
 
-  /* 先获取当前文件 SHA（如果存在） */
-  return fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName) + '?ref=' + GITHUB_BRANCH, {
-    headers: { 'Authorization': 'token ' + getGitHubToken() }
-  })
-  .then(function(r) {
-    if (r.status === 404) return null; /* 文件不存在 */
-    if (!r.ok) throw new Error('查询失败: ' + r.status);
-    return r.json();
-  })
-  .then(function(fileInfo) {
-    var body = {
-      message: '自动同步保单数据 - ' + currentUser,
-      content: content,
-      branch: GITHUB_BRANCH
-    };
-    if (fileInfo && fileInfo.sha) {
-      body.sha = fileInfo.sha;
-    }
-    return fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName), {
-      method: 'PUT',
-      headers: {
-        'Authorization': 'token ' + getGitHubToken(),
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-  })
-  .then(function(r) {
-    if (!r.ok) throw new Error('推送失败: ' + r.status);
-    secureSetItem('policy_data_' + currentUser + '_timestamp', Date.now().toString());
-    setSyncStatus('synced');
-    updateSettingSyncStatus(true);
-  })
-  .catch(function(e) {
-    console.error('云同步推送失败:', e);
+  var attempts = 0;
+  var maxAttempts = 3;
+
+  function doPush() {
+    attempts++;
+    return _ghFetchContents(fileName)
+      .then(function(fileInfo) {
+        var sha = (fileInfo && fileInfo.sha) ? fileInfo.sha : null;
+        return _ghPutOnce(fileName, content, sha);
+      })
+      .then(function(result) {
+        if (result.ok) {
+          // 成功
+          secureSetItem('policy_data_' + _idKey() + '_timestamp', Date.now().toString(), _ENC_HINT);
+          setSyncStatus('synced');
+          updateSettingSyncStatus(true);
+          return;
+        }
+        if (result.status === 409 && attempts < maxAttempts) {
+          // 冲突 → 重取 sha 重试
+          console.warn('[GitHub 备份] SHA 冲突(409)，重取最新 SHA 重试（第 ' + attempts + '/' + maxAttempts + ' 次）');
+          return doPush();
+        }
+        if (result.status === 409) {
+          // 尝试最后一搏：不带 sha，单独做一次 fetch 拿真正最新 sha 再 put
+          return _ghFetchContents(fileName).then(function(latest) {
+            return _ghPutOnce(fileName, content, latest ? latest.sha : null);
+          }).then(function(lastR) {
+            if (lastR.ok) {
+              secureSetItem('policy_data_' + _idKey() + '_timestamp', Date.now().toString(), _ENC_HINT);
+              setSyncStatus('synced');
+              updateSettingSyncStatus(true);
+              return;
+            }
+            throw new Error('推送失败: HTTP ' + lastR.status + ' ' + (lastR.body || '').substring(0, 200));
+          });
+        }
+        throw new Error('推送失败: HTTP ' + result.status + ' ' + (result.body || '').substring(0, 200));
+      });
+  }
+
+  return doPush().catch(function(e) {
+    console.error('[GitHub 冷备份] 推送失败:', e);
     setSyncStatus('offline');
-    updateSettingSyncStatus(false);
+    updateSettingSyncStatus(false, 'GitHub 冷备份失败（Supabase 主同步仍正常）: ' + (e.message || e));
   });
 }
 
@@ -650,21 +737,13 @@ var autoPullFromCloud = function() {
     return;
   }
   if (!hasGitHubToken()) return;
-  var fileName = getDataFileName();
-  fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName) + '?ref=' + GITHUB_BRANCH, {
-    headers: { 'Authorization': 'token ' + getGitHubToken() },
-    cache: 'no-store'
-  })
-  .then(function(r) {
-    if (r.status === 404) return null;
-    if (!r.ok) return null;
-    return r.json();
-  })
-  .then(function(fileInfo) {
-     if (!fileInfo) return;
+  _ghFetchContentsFirstFound(getDataFileNameCandidates())
+  .then(function(result) {
+     if (!result) return;
+     var fileInfo = result.fileInfo;
      var jsonStr = decodeURIComponent(escape(atob(fileInfo.content.replace(/\s/g, ''))));
      var cloudData = JSON.parse(jsonStr);
-     var localTs = secureGetItem('policy_data_' + currentUser + '_timestamp') || '0';
+     var localTs = secureGetItem('policy_data_' + _idKey() + '_timestamp', _ENC_HINT) || '0';
      if (!cloudData._timestamp || cloudData._timestamp > localTs) {
        restoreFromCloudData(cloudData);
        syncExistingPoliciesToLib();
@@ -676,37 +755,33 @@ var autoPullFromCloud = function() {
   .catch(function() {});
 };
 
-/* 从 GitHub 拉取 */
+/* 从 GitHub 拉取（使用候选文件名，兼容老备份文件） */
 function manualPull() {
-  if (!currentUser) { showToast('请先登录', 'warning'); return; }
+  if (!currentUser && !currentUserId) { showToast('请先登录', 'warning'); return; }
   if (!hasGitHubToken()) { showToast('请先在设置页配置GitHub Token', 'warning'); return; }
   setSyncStatus('syncing');
-  showToast('正在从云端恢复数据...', 'info');
-  var fileName = getDataFileName();
+  showToast('正在从 GitHub 冷备份恢复数据...', 'info');
 
-  fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName) + '?ref=' + GITHUB_BRANCH, {
-    headers: { 'Authorization': 'token ' + getGitHubToken() }
-  })
-  .then(function(r) {
-    if (r.status === 404) throw new Error('云端暂无备份数据');
-    if (!r.ok) throw new Error('拉取失败: ' + r.status);
-    return r.json();
-  })
-  .then(function(fileInfo) {
+  _ghFetchContentsFirstFound(getDataFileNameCandidates())
+  .then(function(result) {
+    if (!result) throw new Error('云端暂无备份数据（已尝试文件名：' + getDataFileNameCandidates().join('/') + '）');
+    var fileInfo = result.fileInfo;
     var jsonStr = decodeURIComponent(escape(atob(fileInfo.content.replace(/\s/g, ''))));
     var cloudData = JSON.parse(jsonStr);
-    var localTs = secureGetItem('policy_data_' + currentUser + '_timestamp') || '0';
+    var localTs = secureGetItem('policy_data_' + _idKey() + '_timestamp', _ENC_HINT) || '0';
+    var restored = false;
     if (cloudData._timestamp && cloudData._timestamp > localTs) {
       restoreFromCloudData(cloudData);
-      syncExistingPoliciesToLib();
-      showToast('数据已从云端恢复', 'success');
-      refreshCurrentTab();
-    } else if (cloudData._timestamp && cloudData._timestamp <= localTs) {
-      showToast('本地数据已是最新', 'info');
-    } else {
+      restored = true;
+    } else if (!cloudData._timestamp) {
       restoreFromCloudData(cloudData);
+      restored = true;
+    } else if (cloudData._timestamp && cloudData._timestamp <= localTs) {
+      showToast('本地数据已是最新（GitHub 冷备份较旧）', 'info');
+    }
+    if (restored) {
       syncExistingPoliciesToLib();
-      showToast('数据已从云端恢复', 'success');
+      showToast('✅ 已从 GitHub 冷备份恢复，共 ' + ((cloudData.policies && cloudData.policies.length) || 0) + ' 条保单', 'success');
       refreshCurrentTab();
     }
     setSyncStatus('synced');
@@ -715,85 +790,90 @@ function manualPull() {
   .catch(function(e) {
     showToast('恢复失败: ' + e.message, 'error');
     setSyncStatus('offline');
-    updateSettingSyncStatus(false);
+    updateSettingSyncStatus(false, 'GitHub 冷备份恢复失败（Supabase 主同步仍正常）');
   });
 }
 
 /* 手动推送 */
 function manualPush() {
-  if (!currentUser) { showToast('请先登录', 'warning'); return; }
-  showToast('正在同步到云端...', 'info');
+  if (!currentUser && !currentUserId) { showToast('请先登录', 'warning'); return; }
+  if (!hasGitHubToken()) { showToast('请先在设置页配置 GitHub Token 才能开启冷备份', 'warning'); return; }
+  showToast('正在备份到 GitHub 仓库...', 'info');
   pushToCloud().then(function() {
-    showToast('同步成功', 'success');
+    // pushToCloud 已经处理了状态和 updateSettingSyncStatus，这里只补 Toast 确认
+    setTimeout(function() {
+      if (document.getElementById('settingSyncDot') && document.getElementById('settingSyncDot').style.background === 'rgb(34, 197, 94)') {
+        showToast('✅ 已备份到 GitHub 冷备份（双保险）', 'success');
+      }
+    }, 300);
   });
 }
 
 /* 自动推送（数据变更时调用，使用防抖避免频繁请求） */
 var _autoSyncTimer = null;
 function autoSyncPush() {
-  if (!currentUser) return;
+  if (!currentUser && !currentUserId) return;
   if (!hasGitHubToken()) return;
-  secureSetItem('policy_data_' + currentUser + '_timestamp', Date.now().toString());
+  secureSetItem('policy_data_' + _idKey() + '_timestamp', Date.now().toString(), _ENC_HINT);
   if (_autoSyncTimer) clearTimeout(_autoSyncTimer);
   _autoSyncTimer = setTimeout(function() {
     pushToCloud();
-  }, 3000); /* 3秒防抖，连续操作只触发一次 */
+  }, 5000); /* 5秒防抖（给 Supabase 先推完，避免 GitHub sha 冲突） */
 }
 
-/* 定时自动拉取云端数据（多设备同步） */
+/* 定时自动拉取云端数据（多设备同步）—— 兜底通道，Supabase Realtime 优先 */
 var _autoPullTimer = null;
 function startAutoPull() {
   if (_autoPullTimer) clearInterval(_autoPullTimer);
   _autoPullTimer = setInterval(function() {
-    if (!currentUser) return;
+    if (!currentUser && !currentUserId) return;
+    if (hasSupabaseConfig() && isSupabaseConnected()) return;  // 有 Supabase 就不轮询 GitHub 了
     if (!hasGitHubToken()) return;
-    var fileName = getDataFileName();
-    fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName) + '?ref=' + GITHUB_BRANCH, {
-      headers: { 'Authorization': 'token ' + getGitHubToken() },
-      cache: 'no-store'
-    })
-    .then(function(r) {
-      if (r.status === 404) return null;
-      if (!r.ok) return null;
-      return r.json();
-    })
-    .then(function(fileInfo) {
-      if (!fileInfo) return;
+    _ghFetchContentsFirstFound(getDataFileNameCandidates())
+    .then(function(result) {
+      if (!result) return;
+      var fileInfo = result.fileInfo;
       var jsonStr = decodeURIComponent(escape(atob(fileInfo.content.replace(/\s/g, ''))));
       var cloudData = JSON.parse(jsonStr);
-      var localTs = secureGetItem('policy_data_' + currentUser + '_timestamp') || '0';
+      var localTs = secureGetItem('policy_data_' + _idKey() + '_timestamp', _ENC_HINT) || '0';
       if (cloudData._timestamp && cloudData._timestamp > localTs) {
         restoreFromCloudData(cloudData);
         syncExistingPoliciesToLib();
-        console.log('自动同步：云端数据已更新到本地');
+        console.log('[GitHub 冷备份] 检测到远端更新，已自动同步到本地');
         refreshCurrentTab();
       }
     })
     .catch(function() {});
-  }, 5 * 60 * 1000); /* 每5分钟检查一次 */
+  }, 15 * 60 * 1000); /* 15分钟一次，Supabase Realtime 才是主通道 */
 }
 
-/* 更新设置页的同步状态（GitHub 备用通道状态 + Supabase 会话状态栏）*/
+/* 更新设置页的同步状态（GitHub 冷备份 + Supabase 主同步，双保险）*/
 function updateSettingSyncStatus(ok, customMsg) {
   var dot = document.getElementById('settingSyncDot');
   var status = document.getElementById('settingSyncStatus');
   var time = document.getElementById('settingSyncTime');
+  var sbOK = hasSupabaseConfig() && isSupabaseConnected() && currentSessionToken;
   if (dot) {
     if (!hasGitHubToken()) {
-      dot.style.background = hasSupabaseConfig() ? '#22c55e' : '#f59e0b';
+      dot.style.background = sbOK ? '#22c55e' : '#f59e0b';
     } else {
-      dot.style.background = ok ? '#22c55e' : '#ef4444';
+      // 有 GitHub Token：只有 GitHub + Supabase 双 OK → 绿；GitHub 失败但 Supabase OK → 黄；都不行 → 红
+      if (ok && sbOK) dot.style.background = '#22c55e';
+      else if (!ok && sbOK) dot.style.background = '#f59e0b';
+      else dot.style.background = '#ef4444';
     }
   }
   if (status) {
     if (customMsg) {
       status.textContent = customMsg;
-    } else if (hasSupabaseConfig()) {
-      status.textContent = ok ? '云端实时同步已启用（Supabase Auth）' : 'Supabase 同步失败，但本地数据安全';
-    } else if (!hasGitHubToken()) {
-      status.textContent = '登录后自动启用 Supabase 云同步';
+    } else if (hasGitHubToken()) {
+      if (ok && sbOK) status.textContent = '✓ 双保险（Supabase 实时同步 + GitHub 冷备份）均正常';
+      else if (ok && !sbOK) status.textContent = 'GitHub 冷备份正常（Supabase 主同步未启用）';
+      else if (!ok && sbOK) status.textContent = 'Supabase 主同步正常 ✓；GitHub 冷备份失败（不影响使用）';
+      else status.textContent = '同步失败，请检查网络/Token 权限';
     } else {
-      status.textContent = ok ? 'GitHub 自动同步已启用' : '同步失败，请检查网络';
+      if (sbOK) status.textContent = '✓ Supabase 实时同步已启用（可额外配置 GitHub 做冷备份）';
+      else status.textContent = '登录后自动启用 Supabase 云同步';
     }
   }
   if (time) {
