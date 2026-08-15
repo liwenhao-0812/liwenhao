@@ -37,11 +37,24 @@ async function loadUserData() {
       if (cloudData) {
         var localTs = secureGetItem('policy_data_' + _idKey() + '_timestamp', _ENC_HINT);
         var cloudTs = cloudData.updated_at || '';
+
+        // 关键保护：禁止用本地空数据覆盖云端非空数据
+        var cloudDlen = (cloudData.data && Array.isArray(cloudData.data)) ? cloudData.data.length : -1;
+        var localDlen = Array.isArray(clientData) ? clientData.length : -1;
+
         if (!localTs || cloudTs > localTs) {
-          console.log('[Supabase] 云端数据较新，拉取中...');
-          if (cloudData.data) {
+          console.log('[Supabase] 云端数据较新，拉取中... (cloud=' + cloudDlen + ', local=' + localDlen + ')');
+          if (cloudData.data && Array.isArray(cloudData.data) && cloudDlen > 0) {
             clientData = cloudData.data;
             secureSetItem('policy_data_' + _idKey(), clientData, _ENC_HINT);
+          } else if (cloudData.data && Array.isArray(cloudData.data) && cloudDlen === 0 && localDlen > 0) {
+            // ★ 云端是空数组但本地有数据 → 不覆盖，保留本地数据
+            console.warn('[Supabase] 云端 data 为空但本地有数据(' + localDlen + ')，保留本地并推送');
+            updateLocalTimestamp();
+            await supabaseSaveData();
+            syncExistingPoliciesToLib();
+            refreshCurrentTab();
+            return;
           }
           if (cloudData.insurance_types) {
             secureSetItem('insurance_type_lib_' + _idKey(), cloudData.insurance_types, _ENC_HINT);
@@ -56,7 +69,12 @@ async function loadUserData() {
         }
       } else {
         console.log('[Supabase] 云端无数据，首次推送');
-        await supabaseSaveData();
+        // 首次推送保护：如果本地也没数据，直接跳过（等用户导入或录数据）
+        if (clientData.length === 0) {
+          console.log('[Supabase] 本地也无数据，跳过首次推送（避免覆盖云端已有行）');
+        } else {
+          await supabaseSaveData();
+        }
       }
       supabaseSubscribeRealtime();
     } else {
@@ -236,6 +254,99 @@ function testSupabaseConnectionUI() {
   });
 }
 
+/* ★ 扫描 localStorage 中所有 policy_data_* 旧数据并尝试恢复
+ * 旧系统使用 keyHint=username 加密，新系统用 _ENC_HINT
+ * 如果用户之前在此浏览器使用过老系统，老数据可能仍然存在
+ */
+function scanAndRecoverOldData() {
+  var recovered = { policies: [], insuranceTypes: [], sources: [] };
+  var keysToTry = [];
+  try {
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k && (k.startsWith('policy_data_') || k.startsWith('insurance_type_lib_'))) {
+        // 跳过当前用户的 key
+        if (k === 'policy_data_' + _idKey() || k === 'insurance_type_lib_' + _idKey()) continue;
+        // 跳过 timestamp key
+        if (k.endsWith('_timestamp')) continue;
+        keysToTry.push(k);
+      }
+    }
+  } catch(e) {}
+
+  // 尝试多种 keyHint 解密
+  var hintsToTry = [
+    currentUser,                  // 旧系统：keyHint = 用户名
+    'baodan_storage_v1_salt',     // 新系统
+    'liwenhao',                   // 硬编码用户名兜底
+    ''                            // 空字符串兜底
+  ];
+
+  for (var ki = 0; ki < keysToTry.length; ki++) {
+    var key = keysToTry[ki];
+    for (var hi = 0; hi < hintsToTry.length; hi++) {
+      var hint = hintsToTry[hi];
+      try {
+        var val = secureGetItem(key, hint);
+        if (val !== null && val !== undefined && val !== false) {
+          if (Array.isArray(val)) {
+            var isInsType = key.startsWith('insurance_type_lib_');
+            if (isInsType) {
+              recovered.insuranceTypes = val;
+              recovered.sources.push(key + ': insurTypes=' + val.length + ' (hint=' + (hint || 'empty') + ')');
+            } else {
+              recovered.policies = val;
+              recovered.sources.push(key + ': policies=' + val.length + ' (hint=' + (hint || 'empty') + ')');
+            }
+            break;  // 成功解密就不再试其他 hint
+          }
+        }
+      } catch(e) { /* 继续 */ }
+    }
+  }
+
+  console.log('[恢复扫描] 发现旧key数=' + keysToTry.length + ', 成功恢复策略=' + recovered.policies.length + ', 险种=' + recovered.insuranceTypes.length);
+  recovered._allKeysFound = keysToTry;
+  return recovered;
+}
+
+/* ★ 将扫描到的旧数据合并到当前用户 */
+function mergeOldDataToCurrent(recovered, silent) {
+  if (!recovered) return 0;
+  var merged = 0;
+  if (recovered.policies && recovered.policies.length > 0) {
+    var existing = Array.isArray(clientData) ? clientData : [];
+    var existingIds = {};
+    existing.forEach(function(p) { if(p && p.id) existingIds[p.id] = true; });
+    recovered.policies.forEach(function(p) {
+      if (p && p.id && !existingIds[p.id]) {
+        existing.push(p);
+        merged++;
+      }
+    });
+    clientData = existing;
+    secureSetItem('policy_data_' + _idKey(), clientData, _ENC_HINT);
+  }
+  if (recovered.insuranceTypes && recovered.insuranceTypes.length > 0) {
+    var lib = getInsuranceTypeLib();
+    var existingCodes = {};
+    lib.forEach(function(it) { if(it && it.codeType) existingCodes[it.codeType] = true; });
+    recovered.insuranceTypes.forEach(function(it) {
+      if (it && it.codeType && !existingCodes[it.codeType]) {
+        lib.push(it);
+        existingCodes[it.codeType] = true;
+      }
+    });
+    secureSetItem('insurance_type_lib_' + _idKey(), lib, _ENC_HINT);
+  }
+  if (merged > 0 || (recovered.insuranceTypes && recovered.insuranceTypes.length > 0)) {
+    syncExistingPoliciesToLib();
+    refreshCurrentTab();
+    if (!silent) showToast('已恢复旧数据：' + merged + ' 条策略 + ' + (recovered.insuranceTypes ? recovered.insuranceTypes.length : 0) + ' 个险种', 'success');
+  }
+  return merged;
+}
+
 /* ★ Supabase 手动拉取（按"从云端拉取"按钮时调用）
  * silent=true 时不弹 Toast（仅自动触发场景），默认 false 给用户反馈
  */
@@ -249,29 +360,49 @@ async function sbManualPull(silent) {
   if (!silent) showToast('正在从 Supabase 拉取数据...', 'info');
   try {
     var cloudData = await supabaseLoadData();
-    if (!cloudData) {
-      if (!silent) showToast('云端暂无数据（先在这边推送一次）', 'warning');
-      return;
-    }
-    var touched = false;
-    if (cloudData.data && Array.isArray(cloudData.data)) {
+    var gotFromCloud = false;
+    if (cloudData && cloudData.data && Array.isArray(cloudData.data) && cloudData.data.length > 0) {
       clientData = cloudData.data;
       secureSetItem('policy_data_' + _idKey(), clientData, _ENC_HINT);
-      touched = true;
+      gotFromCloud = true;
     }
-    if (cloudData.insurance_types) {
+    if (cloudData && cloudData.insurance_types && Array.isArray(cloudData.insurance_types) && cloudData.insurance_types.length > 0) {
       secureSetItem('insurance_type_lib_' + _idKey(), cloudData.insurance_types, _ENC_HINT);
-      touched = true;
+      gotFromCloud = true;
     }
-    if (cloudData.updated_at) {
+    if (cloudData && cloudData.updated_at) {
       secureSetItem('policy_data_' + _idKey() + '_timestamp', cloudData.updated_at, _ENC_HINT);
     }
-    if (touched) {
+
+    // ★ 兜底：如果云端没拿到数据，尝试从旧 localStorage 恢复
+    var recovered = scanAndRecoverOldData();
+    var recoveryMerged = 0;
+    if ((!gotFromCloud || clientData.length === 0) && recovered.sources.length > 0) {
+      if (!silent) showToast('云端为空，正在从本地旧数据恢复...', 'info');
+      recoveryMerged = mergeOldDataToCurrent(recovered, silent);
+      // 恢复成功后立刻推送到云端
+      if (recoveryMerged > 0) {
+        console.log('[恢复] 恢复 ' + recoveryMerged + ' 条数据，推送到云端');
+        await supabaseSaveData();
+      }
+    }
+
+    if (gotFromCloud && !silent) {
       syncExistingPoliciesToLib();
       refreshCurrentTab();
-      if (!silent) showToast('拉取成功！共 ' + clientData.length + ' 个客户', 'success');
-    } else {
-      if (!silent) showToast('云端数据已同步到本地，但数据为空或未识别', 'info');
+      showToast('拉取成功！共 ' + clientData.length + ' 个客户', 'success');
+    } else if (recoveryMerged > 0 && !silent) {
+      showToast('✅ 已从本地旧数据恢复 ' + recoveryMerged + ' 条记录，并同步到云端', 'success');
+    } else if (!silent) {
+      // 最后兜底：显示 localStorage 有什么
+      var lc = Array.isArray(clientData) ? clientData.length : 0;
+      if (lc > 0) {
+        syncExistingPoliciesToLib();
+        refreshCurrentTab();
+        showToast('拉取完成：本地已有 ' + lc + ' 条数据', 'info');
+      } else {
+        showToast('暂未找到任何数据，请先录入或导入', 'info');
+      }
     }
     supabaseSubscribeRealtime();
   } catch(e) {
