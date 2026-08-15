@@ -458,6 +458,8 @@ function selectClient(idx) {
   document.getElementById('clientDetailView').style.display = 'block';
   renderDetailPanel(idx);
   showScriptToggleBtn();
+  /* ★ 话术面板若已打开，切换到新客户的话术进度 */
+  if (typeof ssOnClientChanged === 'function') ssOnClientChanged();
   window.scrollTo(0, 0);
 }
 

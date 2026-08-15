@@ -626,9 +626,16 @@ function getDataFileNameCandidates() {
 function getAllUserData() {
   var users = getUsers();
   var me = users.find(function(u) { return u.username === currentUser; });
+  /* 话术数据一并备份（若存在） */
+  var salesScripts = null;
+  try {
+    var ssRaw = localStorage.getItem('sales_script_data');
+    if (ssRaw) salesScripts = JSON.parse(ssRaw);
+  } catch(e) {}
   return {
     policies: clientData,
     insuranceTypes: getInsuranceTypeLib(),
+    salesScripts: salesScripts,
     _timestamp: Date.now().toString(),
     _user: currentUser,
     _userId: currentUserId || '',
@@ -645,6 +652,15 @@ function restoreFromCloudData(cloudData) {
   }
   if (cloudData.insuranceTypes) {
     secureSetItem('insurance_type_lib_' + _idKey(), cloudData.insuranceTypes, _ENC_HINT);
+  }
+  /* 话术数据恢复（GitHub 冷备份兜底通道） */
+  if (cloudData.salesScripts && cloudData.salesScripts.id) {
+    try {
+      var localSsTs = localStorage.getItem('sales_script_data_ts') || '';
+      if (!localSsTs || !localStorage.getItem('sales_script_data')) {
+        localStorage.setItem('sales_script_data', JSON.stringify(cloudData.salesScripts));
+      }
+    } catch(e) {}
   }
   if (cloudData._timestamp) {
     secureSetItem('policy_data_' + _idKey() + '_timestamp', cloudData._timestamp, _ENC_HINT);

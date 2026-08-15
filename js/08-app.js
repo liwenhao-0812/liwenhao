@@ -207,7 +207,7 @@ function ssGetNodePath(targetId) {
   return path;
 }
 
-/* 加载数据 */
+/* 加载数据（云端优先，本地兜底） */
 function ssLoadData() {
   var raw = localStorage.getItem(SS_STORAGE_KEY);
   if (raw) {
@@ -219,9 +219,56 @@ function ssLoadData() {
   ssBuildNodeMap();
 }
 
-/* 保存数据 */
-function ssSaveData() {
+/* 云端话术拉取（登录后调用一次：云端较新则覆盖本地） */
+async function ssSyncFromCloud() {
+  try {
+    if (typeof supabaseLoadScripts !== 'function') return;
+    if (!currentSessionToken || !currentUserId) return;
+    var cloud = await supabaseLoadScripts();
+    if (!cloud || !cloud.id) return;
+    /* 云端有数据：比较版本，云端新则覆盖本地 */
+    var cloudTs = cloud._syncTs || '';
+    var localTs = localStorage.getItem(SS_STORAGE_KEY + '_ts') || '';
+    if (cloudTs && cloudTs > localTs) {
+      var backup = { id: cloud.id, title: cloud.title, script: cloud.script, notes: cloud.notes, category: cloud.category, children: cloud.children || [] };
+      /* 保留云端附带的元数据字段 */
+      Object.keys(cloud).forEach(function(k) {
+        if (k === 'children') return;
+        backup[k] = cloud[k];
+      });
+      ssData = backup;
+      ssSaveData(true);
+      ssBuildNodeMap();
+      if (ssPanelOpen) { ssRenderTree(); ssRenderScriptContent(); }
+      console.log('[话术] 已从云端同步最新话术数据');
+    } else if (!localStorage.getItem(SS_STORAGE_KEY)) {
+      /* 本地为空直接采用云端 */
+      ssData = cloud;
+      ssSaveData(true);
+      ssBuildNodeMap();
+    }
+  } catch (e) {
+    console.warn('[话术] 云端同步失败（本地存储不受影响）:', e.message);
+  }
+}
+
+/* 保存数据（本地立即 + 云端防抖） */
+var _ssCloudSyncTimer = null;
+function ssSaveData(skipCloud) {
   localStorage.setItem(SS_STORAGE_KEY, JSON.stringify(ssData));
+  localStorage.setItem(SS_STORAGE_KEY + '_ts', new Date().toISOString());
+  if (skipCloud) return;
+  /* 防抖推送云端：编辑密集时 3 秒内只推一次 */
+  if (_ssCloudSyncTimer) clearTimeout(_ssCloudSyncTimer);
+  _ssCloudSyncTimer = setTimeout(function() {
+    if (typeof supabaseSaveScripts === 'function') {
+      try {
+        var payload = JSON.parse(JSON.stringify(ssData));
+        payload._syncTs = new Date().toISOString();
+        supabaseSaveScripts(payload);
+      } catch (e) { console.warn('[话术] 云端推送失败:', e.message); }
+    }
+  }, 3000);
 }
 
 /* 初始化话术工具 */
@@ -274,12 +321,137 @@ function ssRenderNode(node, parent, isRoot) {
   }
 }
 
-/* 选中节点 */
+/* 选中节点（若在客户详情页，自动记忆该客户的进度） */
 function ssSelectNode(nodeId) {
   ssCurrentNodeId = nodeId;
   ssBuildNodeMap();
   ssRenderTree();
   ssRenderScriptContent();
+  ssSaveClientTracking(nodeId);
+}
+
+/* ======== 客户绑定：话术进度记忆 ======== */
+
+/* 判断当前是否在客户详情视图 */
+function ssInClientDetail() {
+  try {
+    return selectedClientIdx >= 0 &&
+           currentTab === 'query' &&
+           document.getElementById('clientDetailView') &&
+           document.getElementById('clientDetailView').style.display !== 'none';
+  } catch (e) { return false; }
+}
+
+/* 记录当前客户的话术进度（本地立即保存，云端走 savePolicyData 防抖） */
+var _ssTrackingTimer = null;
+function ssSaveClientTracking(nodeId) {
+  if (!ssInClientDetail()) return;
+  var c = clientData[selectedClientIdx];
+  if (!c) return;
+  if (!c.scriptTracking) c.scriptTracking = {};
+  c.scriptTracking.currentNodeId = nodeId;
+  c.scriptTracking.lastUsedAt = new Date().toISOString();
+
+  /* 路径历史：记录最近走过的节点标题链（最多20条） */
+  var node = ssNodeMap[nodeId];
+  if (node) {
+    if (!c.scriptTracking.pathHistory) c.scriptTracking.pathHistory = [];
+    /* 避免重复连续记录同一节点 */
+    var last = c.scriptTracking.pathHistory[c.scriptTracking.pathHistory.length - 1];
+    if (!last || last.id !== nodeId) {
+      c.scriptTracking.pathHistory.push({ id: nodeId, title: node.title, at: c.scriptTracking.lastUsedAt });
+      if (c.scriptTracking.pathHistory.length > 20) {
+        c.scriptTracking.pathHistory = c.scriptTracking.pathHistory.slice(-20);
+      }
+    }
+  }
+
+  /* 防抖持久化：每次点击节点只延迟保存一次，避免频繁触发云同步 */
+  if (_ssTrackingTimer) clearTimeout(_ssTrackingTimer);
+  _ssTrackingTimer = setTimeout(function() {
+    try { savePolicyData(); } catch (e) { console.warn('[话术] 进度保存失败:', e.message); }
+  }, 2500);
+}
+
+/* 恢复客户的话术进度（打开面板/切换客户时调用） */
+function ssRestoreClientTracking() {
+  if (!ssInClientDetail() || !ssData) return;
+  var c = clientData[selectedClientIdx];
+  if (!c || !c.scriptTracking || !c.scriptTracking.currentNodeId) return;
+  var remembered = c.scriptTracking.currentNodeId;
+  ssBuildNodeMap();
+  /* 记忆的节点仍存在才恢复，否则回到根节点 */
+  if (ssNodeMap[remembered]) {
+    ssCurrentNodeId = remembered;
+    ssRenderTree();
+    ssRenderScriptContent();
+    /* ssInit 可能刚把进度重置为根节点，这里补写回记忆值 */
+    ssSaveClientTracking(remembered);
+  }
+}
+
+/* 客户详情页切换时：话术面板若已打开，跟随切换到新客户的进度 */
+function ssOnClientChanged() {
+  if (!ssPanelOpen || !ssData) return;
+  ssRestoreClientTracking();
+}
+
+/* ======== 一键插入跟进记录 ======== */
+
+/* 话术分类 → 联系状态推荐映射 */
+function ssCategoryToStatus(category) {
+  switch (category) {
+    case '开场': return '已电话联系';
+    case '需求挖掘': return '已电话联系';
+    case '产品介绍': return '已电话联系';
+    case '产品推荐': return '已加微信';
+    case '异议处理': return '已电话联系';
+    case '结束': return '已电话联系';
+    default: return '已电话联系';
+  }
+}
+
+/* 生成话术跟进备注文本 */
+function ssBuildFollowUpNote(node) {
+  var path = ssGetNodePath(node.id);
+  var pathTitles = path.map(function(n) { return n.title; });
+  var lines = [];
+  lines.push('【话术跟进】' + (node.category || '') + ' - ' + node.title);
+  if (pathTitles.length > 1) {
+    lines.push('路径：' + pathTitles.join(' › '));
+  }
+  if (node.script) {
+    var summary = node.script.length > 80 ? node.script.substring(0, 80) + '...' : node.script;
+    lines.push('核心内容：' + summary);
+  }
+  return lines.join('\n');
+}
+
+/* 点击「记录本次话术跟进」：预填联系记录模态框 */
+function ssInsertFollowUpRecord() {
+  if (!ssInClientDetail()) { ssShowToast('请先在客户详情页操作'); return; }
+  var node = ssNodeMap[ssCurrentNodeId];
+  if (!node) { ssShowToast('未选择话术节点'); return; }
+
+  /* 预填现有联系记录模态框 */
+  var statusEl = document.getElementById('contactStatus');
+  var noteEl = document.getElementById('contactNote');
+  var dateEl = document.getElementById('contactDate');
+  if (!statusEl || !noteEl || !dateEl) { ssShowToast('联系记录组件未就绪'); return; }
+
+  dateEl.value = new Date().toISOString().slice(0, 10);
+  var recommended = ssCategoryToStatus(node.category);
+  /* 若下拉框有该选项则选中 */
+  var hasOption = false;
+  for (var i = 0; i < statusEl.options.length; i++) {
+    if (statusEl.options[i].value === recommended) { hasOption = true; break; }
+  }
+  statusEl.value = hasOption ? recommended : statusEl.options[0].value;
+  noteEl.value = ssBuildFollowUpNote(node);
+
+  openModal('contactModal');
+  /* 聚焦备注方便微调 */
+  setTimeout(function() { try { noteEl.focus(); noteEl.setSelectionRange(noteEl.value.length, noteEl.value.length); } catch(e) {} }, 100);
 }
 
 /* 移动端：折叠/展开话术树 */
@@ -336,6 +508,24 @@ function ssRenderScriptContent() {
   /* 备注 */
   if (node.notes) {
     html += '<div class="ss-section"><div class="ss-notes-box">' + ssEscapeHtml(node.notes) + '</div></div>';
+  }
+
+  /* ★ 一键插入跟进记录（仅在客户详情视图显示） */
+  if (ssInClientDetail()) {
+    var clientName = '';
+    try { clientName = clientData[selectedClientIdx] ? (clientData[selectedClientIdx].clientName || clientData[selectedClientIdx].name || '客户') : ''; } catch(e) {}
+    var hasHistory = false;
+    try {
+      var cc = clientData[selectedClientIdx];
+      hasHistory = !!(cc && cc.scriptTracking && cc.scriptTracking.pathHistory && cc.scriptTracking.pathHistory.length);
+    } catch(e) {}
+    html += '<div class="ss-section">' +
+      '<button class="ss-insert-followup-btn" onclick="ssInsertFollowUpRecord()">' +
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' +
+      '记录本次话术跟进' + (clientName ? '（' + ssEscapeHtml(clientName) + '）' : '') +
+      '</button>' +
+      (hasHistory ? '<div class="ss-followup-hint">已为该客户记录过话术进度，插入后可在联系记录时间线查看</div>' : '') +
+      '</div>';
   }
 
   /* 客户回答按钮 */
@@ -578,8 +768,14 @@ function toggleScriptPanel() {
       document.body.style.paddingRight = panelW + 'px';
       document.body.style.transition = 'padding-right 0.3s var(--ease-out)';
     }
-    if (!ssData) ssInit();
-    else { ssRenderTree(); ssRenderScriptContent(); }
+    if (!ssData) {
+      ssInit();
+    } else {
+      ssRenderTree();
+      ssRenderScriptContent();
+    }
+    /* ★ 打开面板时恢复当前客户的话术进度 */
+    ssRestoreClientTracking();
   } else {
     overlay.classList.remove('open');
     document.body.style.paddingRight = '';

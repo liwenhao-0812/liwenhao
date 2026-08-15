@@ -6,6 +6,8 @@
 <title>收益试算计算器</title>
 <script src="https://cdn.jsdelivr.net/npm/decimal.js@10.4.3/decimal.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
 :root {
   --blue-50: #eff6ff; --blue-100: #dbeafe; --blue-500: #3b82f6; --blue-600: #2563eb; --blue-700: #1d4ed8;
@@ -386,6 +388,188 @@ body {
 .section-teal { border-left: 3px solid var(--teal-500); }
 .section-amber { border-left: 3px solid var(--amber-500); }
 .section-purple { border-left: 3px solid var(--purple-500); }
+/* Share feature */
+.share-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.share-btn {
+  flex: 1;
+  min-width: 140px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.12);
+}
+.share-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.18); }
+.share-btn:active { transform: translateY(0); }
+.share-btn.share-img {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: #fff;
+}
+.share-btn.share-url {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #fff;
+}
+.share-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+/* URL loaded notice */
+.url-loaded-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 1px solid #93c5fd;
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: #1e40af;
+  animation: slideIn .3s ease;
+}
+.url-loaded-notice svg { flex-shrink: 0; }
+.url-loaded-notice .notice-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #1e40af;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+.url-loaded-notice .notice-close:hover { background: rgba(30,64,175,.1); }
+/* Share link modal */
+.share-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17,24,39,.5);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn .2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.share-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 560px;
+  width: 100%;
+  box-shadow: 0 20px 50px rgba(0,0,0,.3);
+  animation: popIn .25s ease;
+}
+@keyframes popIn { from { transform: scale(.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.share-modal h3 {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.share-modal .modal-desc {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.share-modal .link-box {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.share-modal .link-box textarea {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1.5px solid var(--gray-300);
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--gray-700);
+  resize: none;
+  height: 68px;
+  line-height: 1.5;
+  word-break: break-all;
+}
+.share-modal .link-box textarea:focus { outline: none; border-color: var(--blue-500); }
+.share-modal .copy-btn {
+  align-self: flex-end;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.share-modal .copy-btn:hover { filter: brightness(1.1); }
+.share-modal .qr-area {
+  text-align: center;
+  padding: 12px;
+  background: var(--gray-50);
+  border-radius: 8px;
+  border: 1px dashed var(--gray-300);
+}
+.share-modal .qr-area img { width: 160px; height: 160px; image-rendering: pixelated; }
+.share-modal .qr-area .qr-hint { font-size: 11px; color: var(--gray-500); margin-top: 6px; }
+.share-modal .modal-close-bar {
+  margin-top: 16px;
+  text-align: right;
+}
+.share-modal .modal-close-btn {
+  padding: 10px 20px;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+.share-modal .modal-close-btn:hover { background: var(--gray-200); }
+/* Share image generation loading */
+.share-loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17,24,39,.6);
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+.share-loading-overlay .spinner {
+  width: 42px;
+  height: 42px;
+  border: 4px solid rgba(255,255,255,.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 /* Mobile responsive */
 @media (max-width: 768px) {
   .summary-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
@@ -634,6 +818,25 @@ body {
       <p>系统将自动生成完整的收益对比分析报告</p>
     </div>
     <div id="resultContent" style="display:none;">
+      <!-- 分享操作栏 -->
+      <div class="share-bar" id="shareBar">
+        <button class="share-btn share-img" onclick="generateShareImage()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" stroke="none"/><polyline points="21 15 16 10 5 21" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          生成分享图片
+        </button>
+        <button class="share-btn share-url" onclick="openShareLinkModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          复制分享链接
+        </button>
+      </div>
+
+      <!-- URL加载提示 -->
+      <div class="url-loaded-notice" id="urlLoadedNotice" style="display:none;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <span>已从分享链接加载试算参数，结果已自动计算</span>
+        <button class="notice-close" onclick="dismissUrlNotice()" title="关闭">×</button>
+      </div>
+
       <!-- 汇总卡片 -->
       <div class="summary-grid" id="summaryCards"></div>
 
@@ -1538,6 +1741,418 @@ function renderDataTable() {
   html += '</tbody></table>';
   document.getElementById('dataTableWrap').innerHTML = html;
 }
+
+// ======== 分享功能：URL参数编解码 ========
+var SHARE_KEYS = ['insuredAge','insuredGender','annualPremium','paymentYears','paymentMethod','guaranteePeriod','guaranteedRate','dividendRateLow','dividendRateMedium','dividendRateHigh','annualSurvivalBenefit','survivalBenefitStartAge','extraDividendRate','secondaryInterestRate','annualWithdrawal','bankRate','addMethod','universalAddAmount','universalAddCapRatio','enableDividend','enableIdleFundCalc','idleFundRate','enableAgeCompare','compareAge','compareSurvivalBenefit','dividendMode','productName','company'];
+
+// 收集当前表单所有参数
+function collectShareParams() {
+  return {
+    insuredAge: getVal('insuredAge'),
+    insuredGender: getRadioVal('gender'),
+    annualPremium: getVal('annualPremium'),
+    paymentYears: parseInt(document.getElementById('paymentYears').value) || 20,
+    paymentMethod: getRadioVal('payMethod'),
+    guaranteePeriod: getVal('guaranteePeriod'),
+    guaranteedRate: getVal('guaranteedRate'),
+    dividendRateLow: getVal('dividendRateLow'),
+    dividendRateMedium: getVal('dividendRateMedium'),
+    dividendRateHigh: getVal('dividendRateHigh'),
+    annualSurvivalBenefit: getVal('annualSurvivalBenefit'),
+    survivalBenefitStartAge: getVal('survivalBenefitStartAge'),
+    extraDividendRate: getVal('extraDividendRate'),
+    secondaryInterestRate: getVal('secondaryInterestRate'),
+    annualWithdrawal: getVal('annualWithdrawal'),
+    bankRate: getVal('bankRate'),
+    addMethod: getRadioVal('addMethod'),
+    universalAddAmount: getVal('universalAddAmount'),
+    universalAddCapRatio: getVal('universalAddCapRatio'),
+    enableDividend: isDividendEnabled() ? 1 : 0,
+    enableIdleFundCalc: isIdleFundEnabled() ? 1 : 0,
+    idleFundRate: getVal('idleFundRate'),
+    enableAgeCompare: isAgeCompareEnabled() ? 1 : 0,
+    compareAge: getVal('compareAge'),
+    compareSurvivalBenefit: getVal('compareSurvivalBenefit'),
+    dividendMode: isSJJMode() ? 'sjj' : 'manual',
+    productName: document.getElementById('productName').value || '',
+    company: document.getElementById('company').value || ''
+  };
+}
+
+// 参数编码为hash（Base64URL压缩）
+function encodeParamsToHash(params) {
+  var json = JSON.stringify(params);
+  // 使用 UTF-8 安全的 Base64URL 编码
+  var b64 = btoa(unescape(encodeURIComponent(json)));
+  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+// hash解码为参数
+function decodeHashToParams(hash) {
+  try {
+    var b64 = hash.replace(/-/g, '+').replace(/_/g, '/');
+    while (b64.length % 4) b64 += '=';
+    var json = decodeURIComponent(escape(atob(b64)));
+    var params = JSON.parse(json);
+    // 校验必要字段存在
+    if (typeof params.insuredAge !== 'undefined') return params;
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// 应用参数到表单
+function applyParamsToForm(params) {
+  function setVal(id, val) {
+    var el = document.getElementById(id);
+    if (el && val !== undefined && val !== null && !isNaN(val)) el.value = val;
+  }
+  function setRadio(name, val) {
+    var r = document.querySelector('input[name="' + name + '"][value="' + val + '"]');
+    if (r) r.checked = true;
+  }
+
+  setVal('insuredAge', params.insuredAge);
+  setRadio('gender', params.insuredGender || 'male');
+  setVal('annualPremium', params.annualPremium);
+  if (params.paymentYears) document.getElementById('paymentYears').value = String(params.paymentYears);
+  setRadio('payMethod', params.paymentMethod || 'annual');
+  setVal('guaranteePeriod', params.guaranteePeriod);
+  setVal('guaranteedRate', params.guaranteedRate);
+  setVal('dividendRateLow', params.dividendRateLow);
+  setVal('dividendRateMedium', params.dividendRateMedium);
+  setVal('dividendRateHigh', params.dividendRateHigh);
+  setVal('annualSurvivalBenefit', params.annualSurvivalBenefit);
+  setVal('survivalBenefitStartAge', params.survivalBenefitStartAge);
+  setVal('extraDividendRate', params.extraDividendRate);
+  setVal('secondaryInterestRate', params.secondaryInterestRate);
+  setVal('annualWithdrawal', params.annualWithdrawal);
+  setVal('bankRate', params.bankRate);
+  setRadio('addMethod', params.addMethod || 'none');
+  setVal('universalAddAmount', params.universalAddAmount);
+  setVal('universalAddCapRatio', params.universalAddCapRatio);
+  setVal('idleFundRate', params.idleFundRate);
+  setVal('compareAge', params.compareAge);
+  setVal('compareSurvivalBenefit', params.compareSurvivalBenefit);
+  if (params.productName) document.getElementById('productName').value = params.productName;
+  if (params.company) document.getElementById('company').value = params.company;
+
+  // 复选框与联动
+  var cbDiv = document.getElementById('enableDividend');
+  cbDiv.checked = !!params.enableDividend;
+  document.getElementById('dividendSection').style.display = cbDiv.checked ? '' : 'none';
+
+  var cbIdle = document.getElementById('enableIdleFundCalc');
+  cbIdle.checked = !!params.enableIdleFundCalc;
+  document.getElementById('idleFundSection').style.display = cbIdle.checked ? '' : 'none';
+
+  var cbAge = document.getElementById('enableAgeCompare');
+  cbAge.checked = !!params.enableAgeCompare;
+  document.getElementById('ageCompareSection').style.display = cbAge.checked ? '' : 'none';
+
+  setRadio('dividendMode', params.dividendMode || 'manual');
+  var isSJJ = (params.dividendMode || 'manual') === 'sjj';
+  document.getElementById('manualDividendInputs').style.display = isSJJ ? 'none' : '';
+  document.getElementById('sjjDividendInfo').style.display = isSJJ ? '' : 'none';
+
+  toggleAddMethod();
+  updateHints();
+}
+
+// 生成分享链接
+function buildShareUrl() {
+  var params = collectShareParams();
+  var hash = encodeParamsToHash(params);
+  var baseUrl = location.origin + location.pathname;
+  return baseUrl + '#p=' + hash;
+}
+
+// 关闭URL加载提示
+function dismissUrlNotice() {
+  var n = document.getElementById('urlLoadedNotice');
+  if (n) n.style.display = 'none';
+}
+
+// ======== 分享链接弹窗 ========
+function openShareLinkModal() {
+  if (!calcResult) { showToast('请先点击「开始计算」', 'warning'); return; }
+  var url = buildShareUrl();
+
+  // 同步更新地址栏（不刷新）
+  try { history.replaceState(null, '', '#p=' + url.split('#p=')[1]); } catch (e) {}
+
+  // 移除旧弹窗
+  var old = document.getElementById('shareModalOverlay');
+  if (old) old.remove();
+
+  // 生成二维码（本地生成，无需联网API）
+  var qrImgTag = '';
+  try {
+    var qr = qrcode(0, 'M');
+    qr.addData(url);
+    qr.make();
+    var qrDataUrl = qr.createDataURL(4, 8);
+    qrImgTag = '<img src="' + qrDataUrl + '" alt="二维码">';
+  } catch (e) {
+    qrImgTag = '<div style="font-size:12px;color:var(--gray-400);padding:20px;">二维码生成失败，请复制链接</div>';
+  }
+
+  var overlay = document.createElement('div');
+  overlay.className = 'share-modal-overlay';
+  overlay.id = 'shareModalOverlay';
+  overlay.innerHTML = '<div class="share-modal">' +
+    '<h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>分享试算链接</h3>' +
+    '<div class="modal-desc">对方打开链接后，表单参数自动回填并立即重新计算，得到与您相同的试算结果。链接有效期永久（参数编码在URL中，不依赖服务器）。</div>' +
+    '<div class="link-box">' +
+      '<textarea id="shareUrlText" readonly>' + url + '</textarea>' +
+      '<button class="copy-btn" onclick="copyShareUrl()">复制链接</button>' +
+    '</div>' +
+    '<div class="qr-area">' + qrImgTag + '<div class="qr-hint">手机扫码直接打开试算页面</div></div>' +
+    '<div class="modal-close-bar"><button class="modal-close-btn" onclick="closeShareModal()">关闭</button></div>' +
+  '</div>';
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) closeShareModal(); });
+  document.body.appendChild(overlay);
+
+  // 自动选中文本
+  var ta = document.getElementById('shareUrlText');
+  ta.focus(); ta.select();
+}
+
+function closeShareModal() {
+  var m = document.getElementById('shareModalOverlay');
+  if (m) m.remove();
+}
+
+function copyShareUrl() {
+  var ta = document.getElementById('shareUrlText');
+  var url = ta.value;
+  function onSuccess() {
+    var btn = document.querySelector('#shareModalOverlay .copy-btn');
+    if (btn) { btn.textContent = '已复制 ✓'; setTimeout(function() { btn.textContent = '复制链接'; }, 1800); }
+    showToast('链接已复制到剪贴板', 'success');
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(onSuccess).catch(function() { fallbackCopy(ta, onSuccess); });
+  } else {
+    fallbackCopy(ta, onSuccess);
+  }
+}
+function fallbackCopy(ta, cb) {
+  try { ta.select(); document.execCommand('copy'); cb(); } catch (e) { showToast('复制失败，请手动长按复制', 'warning'); }
+}
+
+// ======== 生成分享图片 ========
+function generateShareImage() {
+  if (!calcResult) { showToast('请先点击「开始计算」', 'warning'); return; }
+  if (typeof html2canvas === 'undefined') { showToast('图片组件加载失败，请检查网络', 'error'); return; }
+
+  // 加载遮罩
+  var loading = document.createElement('div');
+  loading.className = 'share-loading-overlay';
+  loading.id = 'shareLoadingOverlay';
+  loading.innerHTML = '<div class="spinner"></div><div>正在生成分享图片...</div>';
+  document.body.appendChild(loading);
+
+  // 异步执行，让loading先渲染
+  setTimeout(function() {
+    try {
+      buildAndExportShareImage();
+    } catch (e) {
+      console.error(e);
+      removeLoading();
+      showToast('图片生成失败: ' + e.message, 'error');
+    }
+  }, 50);
+}
+
+function removeLoading() {
+  var l = document.getElementById('shareLoadingOverlay');
+  if (l) l.remove();
+}
+
+function buildAndExportShareImage() {
+  var p = calcResult.params;
+  var s = calcResult.scenarios[currentScenario];
+
+  // 图表转图片
+  var chartImgs = [];
+  ['earnings', 'compare'].forEach(function(key) {
+    if (charts[key] && charts[key].canvas) {
+      try { chartImgs.push({ title: key === 'earnings' ? '年度收益趋势' : '保单收益 vs 银行储蓄', src: charts[key].canvas.toDataURL('image/png') }); } catch (e) {}
+    }
+  });
+
+  // 场景名称
+  var scenarioNames = { low: '低档（保底）', medium: '中档（平均）', high: '高档（理想）', sjj: 'SJJ模型' };
+  var scName = scenarioNames[currentScenario] || currentScenario;
+
+  // 关键指标
+  var insuranceTotal = s.finalSecondaryAccount + s.totalPremium + (p.enableIdleFundCalc ? s.totalIdleFundInterest : 0);
+  var diff = insuranceTotal - s.finalBankAccount;
+  var diffTxt = diff >= 0 ? '保单比银行多赚 ' + formatMoney(Math.abs(diff)) : '保单比银行少赚 ' + formatMoney(Math.abs(diff));
+
+  // 参数摘要
+  var genderTxt = p.insuredGender === 'female' ? '女' : '男';
+  var paramLine1 = p.insuredAge + '岁 · ' + genderTxt + ' · 年缴' + formatMoney(p.annualPremium) + '元 · 缴费' + p.paymentYears + '年 · 保' + p.guaranteePeriod + '年';
+  var paramLine2 = '生存金' + formatMoney(p.annualSurvivalBenefit) + '元/年（' + p.survivalBenefitStartAge + '岁起领） · 万能利率' + p.secondaryInterestRate + '%';
+  if (p.enableDividend) paramLine2 += ' · 含分红';
+  if (p.addMethod !== 'none') paramLine2 += ' · 含追加';
+
+  // 指标卡片
+  var metrics = [
+    { label: '总投入保费', value: formatMoney(s.totalPremium), color: '#1d4ed8', bg: '#eff6ff' },
+    { label: '万能账户总计', value: formatMoney(s.finalSecondaryAccount), color: '#0891b2', bg: '#ecfeff' },
+    { label: '累计生存金', value: formatMoney(s.totalSurvivalBenefit), color: '#16a34a', bg: '#f0fdf4' },
+    { label: '银行存款对比', value: formatMoney(s.finalBankAccount), color: '#6b7280', bg: '#f9fafb' }
+  ];
+  if (p.enableDividend) {
+    metrics.splice(3, 0, { label: '累计分红', value: formatMoney(s.totalDividend), color: '#d97706', bg: '#fffbeb' });
+  }
+
+  var today = new Date();
+  var dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+
+  // 构建分享卡片DOM
+  var card = document.createElement('div');
+  card.id = 'shareCardTmp';
+  card.style.cssText = 'position:fixed;left:-9999px;top:0;width:750px;background:#fff;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans CJK SC","PingFang SC","Microsoft YaHei",sans-serif;';
+
+  var metricsHtml = metrics.map(function(m) {
+    return '<div style="flex:1;min-width:135px;padding:14px 10px;background:' + m.bg + ';border-radius:10px;text-align:center;">' +
+      '<div style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:6px;">' + m.label + '</div>' +
+      '<div style="font-size:21px;font-weight:800;color:' + m.color + ';">' + m.value + '</div>' +
+    '</div>';
+  }).join('');
+
+  var chartsHtml = chartImgs.map(function(c) {
+    return '<div style="margin-top:14px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px;">' +
+      '<div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:10px;">' + c.title + '</div>' +
+      '<img src="' + c.src + '" style="width:100%;border-radius:6px;">' +
+    '</div>';
+  }).join('');
+
+  card.innerHTML =
+    '<div style="background:linear-gradient(135deg,#1e40af,#3b82f6);padding:26px 30px;">' +
+      '<div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;">收益试算报告</div>' +
+      '<div style="font-size:13px;color:rgba(255,255,255,.85);">' + (p.productName || '分红型年金保险') + ' · ' + (p.company || '') + ' · 情景：' + scName + '</div>' +
+      '<div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:4px;">生成日期：' + dateStr + '</div>' +
+    '</div>' +
+    '<div style="padding:24px 30px;background:#fff;">' +
+      '<div style="font-size:13px;color:#374151;font-weight:600;line-height:1.7;">' + paramLine1 + '<br>' + paramLine2 + '</div>' +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">' + metricsHtml + '</div>' +
+      '<div style="margin-top:14px;padding:12px 16px;border-radius:10px;background:' + (diff >= 0 ? '#f0fdf4' : '#fef2f2') + ';border:1px solid ' + (diff >= 0 ? '#bbf7d0' : '#fecaca') + ';text-align:center;font-size:15px;font-weight:800;color:' + (diff >= 0 ? '#16a34a' : '#dc2626') + ';">' + diffTxt + '</div>' +
+      chartsHtml +
+      '<div style="margin-top:16px;padding-top:14px;border-top:1px dashed #e5e7eb;font-size:11px;color:#9ca3af;line-height:1.6;">' +
+        '免责声明：本报告基于用户输入的假设参数进行演示性测算，红利、利率等均为假设值，实际收益以保险公司合同及实际结算为准。' +
+      '</div>' +
+    '</div>';
+
+  document.body.appendChild(card);
+
+  html2canvas(card, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: '#ffffff',
+    logging: false
+  }).then(function(canvas) {
+    card.remove();
+    removeLoading();
+    // 导出为PNG并下载
+    var fileName = '收益试算_' + (p.productName || '报告') + '_' + dateStr + '.png';
+    canvas.toBlob(function(blob) {
+      if (!blob) { showToast('图片导出失败', 'error'); return; }
+      // 触发下载
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      showToast('分享图片已生成并开始下载', 'success');
+      // 同时展示预览
+      showImagePreview(canvas, fileName);
+    }, 'image/png');
+  }).catch(function(err) {
+    card.remove();
+    removeLoading();
+    console.error(err);
+    showToast('图片生成失败，请重试', 'error');
+  });
+}
+
+// 图片预览弹窗（移动端可长按保存）
+function showImagePreview(canvas, fileName) {
+  var old = document.getElementById('imgPreviewOverlay');
+  if (old) old.remove();
+
+  var dataUrl = canvas.toDataURL('image/png');
+  var isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+  var overlay = document.createElement('div');
+  overlay.className = 'share-modal-overlay';
+  overlay.id = 'imgPreviewOverlay';
+  overlay.style.zIndex = '10002';
+  overlay.innerHTML = '<div class="share-modal" style="max-width:640px;">' +
+    '<h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>分享图片已生成</h3>' +
+    '<div class="modal-desc">' + (isMobile ? '长按下方图片可保存到相册，或发送给微信好友。' : '图片已自动下载。也可以右键另存为，或直接拖入微信聊天窗口。') + '</div>' +
+    '<div style="max-height:55vh;overflow:auto;border:1px solid var(--gray-200);border-radius:8px;">' +
+      '<img src="' + dataUrl + '" style="width:100%;display:block;">' +
+    '</div>' +
+    '<div class="modal-close-bar" style="display:flex;gap:10px;justify-content:flex-end;">' +
+      (isMobile ? '' : '<button class="modal-close-btn" onclick="downloadPreviewImage()" style="background:#eff6ff;color:#2563eb;">重新下载</button>') +
+      '<button class="modal-close-btn" onclick="document.getElementById(\'imgPreviewOverlay\').remove()">关闭</button>' +
+    '</div>' +
+  '</div>';
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+
+  // 保存全局引用用于重新下载
+  window._previewCanvas = canvas;
+  window._previewFileName = fileName;
+}
+
+function downloadPreviewImage() {
+  if (!window._previewCanvas) return;
+  var a = document.createElement('a');
+  a.href = window._previewCanvas.toDataURL('image/png');
+  a.download = window._previewFileName || 'share.png';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  showToast('已开始下载', 'success');
+}
+
+// ======== 页面加载：解析URL参数 ========
+(function initUrlShare() {
+  var hash = location.hash;
+  if (hash.indexOf('#p=') === 0) {
+    var encoded = hash.substring(3);
+    var params = decodeHashToParams(encoded);
+    if (params) {
+      // 延迟到DOM完全就绪
+      var applyNow = function() {
+        applyParamsToForm(params);
+        try {
+          calculate();
+          // 计算成功后显示提示
+          setTimeout(function() {
+            var notice = document.getElementById('urlLoadedNotice');
+            if (notice) notice.style.display = 'flex';
+          }, 400);
+        } catch (e) {
+          console.error(e);
+          showToast('链接参数解析异常，请手动计算', 'warning');
+        }
+      };
+      if (document.readyState === 'complete') {
+        setTimeout(applyNow, 100);
+      } else {
+        window.addEventListener('load', function() { setTimeout(applyNow, 100); });
+      }
+    }
+  }
+})();
 
 // ======== 重置 ========
 function resetAll() {

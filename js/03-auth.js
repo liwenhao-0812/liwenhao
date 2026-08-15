@@ -197,6 +197,8 @@ function enterMainApp() {
     updateInsuranceTypeDatalist();
     switchTab('home');
     updateBottomStats();
+    /* ★ 话术数据云端同步（登录后拉取一次） */
+    if (typeof ssSyncFromCloud === 'function') ssSyncFromCloud();
   });
 }
 

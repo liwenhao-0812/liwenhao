@@ -314,5 +314,70 @@ function refreshCurrentView() {
   }
 }
 
+/* ======== 话术数据云端读写（独立通道，失败不影响保单同步）========
+ * 需先执行 supabase_migration_v3_scripts.sql 添加 sales_scripts 列。
+ * 列不存在时（PGRST204 / 400）自动回退本地存储并只提示一次。 */
+var _ssColumnMissingWarned = false;
+
+async function supabaseLoadScripts() {
+  if (!currentSessionToken || !currentUserId) return null;
+  try {
+    var resp = await fetch(SUPABASE_REST_URL + '/user_data?select=sales_scripts&user_id=eq.' + encodeURIComponent(currentUserId), {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + currentSessionToken
+      }
+    });
+    if (!resp.ok) {
+      if (resp.status === 400 || resp.status === 404) {
+        if (!_ssColumnMissingWarned) {
+          _ssColumnMissingWarned = true;
+          console.warn('[Supabase] sales_scripts 列不存在，话术仅本地存储。执行 supabase_migration_v3_scripts.sql 可启用云同步');
+        }
+        return null;
+      }
+      console.warn('[Supabase] 话术读取失败: HTTP ' + resp.status);
+      return null;
+    }
+    var data = await resp.json();
+    var row = data && data.length > 0 ? data[0] : null;
+    return (row && row.sales_scripts) ? row.sales_scripts : null;
+  } catch (e) {
+    console.warn('[Supabase] 话术读取异常:', e.message);
+    return null;
+  }
+}
+
+async function supabaseSaveScripts(scriptsData) {
+  if (!currentSessionToken || !currentUserId) return { ok: false, error: '未登录' };
+  try {
+    var resp = await fetch(SUPABASE_REST_URL + '/user_data?user_id=eq.' + encodeURIComponent(currentUserId), {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + currentSessionToken,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ sales_scripts: scriptsData || null })
+    });
+    if (resp.ok) return { ok: true };
+    if (resp.status === 400 || resp.status === 404) {
+      if (!_ssColumnMissingWarned) {
+        _ssColumnMissingWarned = true;
+        console.warn('[Supabase] sales_scripts 列不存在，话术云同步未启用（本地存储正常）');
+      }
+      return { ok: false, error: 'column_missing' };
+    }
+    var errText = await resp.text();
+    console.warn('[Supabase] 话术保存失败: HTTP ' + resp.status, errText.substring(0, 150));
+    return { ok: false, error: 'HTTP ' + resp.status };
+  } catch (e) {
+    console.warn('[Supabase] 话术保存异常:', e.message);
+    return { ok: false, error: e.message };
+  }
+}
+
+
 /* 向后兼容：旧代码以 currentUser 作为 localStorage 后缀，现在统一用 user_id。
    对旧存储 key（username 后缀）在首次登录时迁移一次即可，见 03-auth.js finishLogin。*/

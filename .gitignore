@@ -25,4 +25,7 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
-*~
+*~*.idsig
+
+# Build artifacts
+*.idsig
