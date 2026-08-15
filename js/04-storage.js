@@ -47,7 +47,9 @@ async function loadUserData() {
             secureSetItem('insurance_type_lib_' + _idKey(), cloudData.insurance_types, _ENC_HINT);
           }
           secureSetItem('policy_data_' + _idKey() + '_timestamp', cloudTs, _ENC_HINT);
-          console.log('[Supabase] 已从云端加载最新数据');
+          console.log('[Supabase] 已从云端加载最新数据，count=' + clientData.length);
+          syncExistingPoliciesToLib();
+          refreshCurrentTab();
         } else {
           console.log('[Supabase] 本地数据较新，推送到云端');
           await supabaseSaveData();
@@ -234,6 +236,68 @@ function testSupabaseConnectionUI() {
   });
 }
 
+/* ★ Supabase 手动拉取（按"从云端拉取"按钮时调用）
+ * silent=true 时不弹 Toast（仅自动触发场景），默认 false 给用户反馈
+ */
+async function sbManualPull(silent) {
+  if (!currentUser && !currentUserId) { if (!silent) showToast('请先登录', 'warning'); return; }
+  if (!hasSupabaseConfig()) { if (!silent) showToast('未配置 Supabase', 'warning'); return; }
+  if (!initSupabase() || !isSupabaseConnected()) {
+    if (!silent) showToast('Supabase 未连接: ' + (supabaseLastError || ''), 'error');
+    return;
+  }
+  if (!silent) showToast('正在从 Supabase 拉取数据...', 'info');
+  try {
+    var cloudData = await supabaseLoadData();
+    if (!cloudData) {
+      if (!silent) showToast('云端暂无数据（先在这边推送一次）', 'warning');
+      return;
+    }
+    var touched = false;
+    if (cloudData.data && Array.isArray(cloudData.data)) {
+      clientData = cloudData.data;
+      secureSetItem('policy_data_' + _idKey(), clientData, _ENC_HINT);
+      touched = true;
+    }
+    if (cloudData.insurance_types) {
+      secureSetItem('insurance_type_lib_' + _idKey(), cloudData.insurance_types, _ENC_HINT);
+      touched = true;
+    }
+    if (cloudData.updated_at) {
+      secureSetItem('policy_data_' + _idKey() + '_timestamp', cloudData.updated_at, _ENC_HINT);
+    }
+    if (touched) {
+      syncExistingPoliciesToLib();
+      refreshCurrentTab();
+      if (!silent) showToast('拉取成功！共 ' + clientData.length + ' 个客户', 'success');
+    } else {
+      if (!silent) showToast('云端数据已同步到本地，但数据为空或未识别', 'info');
+    }
+    supabaseSubscribeRealtime();
+  } catch(e) {
+    console.error('[sbManualPull] 失败:', e);
+    if (!silent) showToast('拉取失败: ' + (e.message || e), 'error');
+  }
+}
+
+/* Supabase 手动推送（按"推送到云端"按钮时调用 — savePolicyData 会自动 push 到 Supabase + GitHub）*/
+function sbManualPush() {
+  if (!currentUser && !currentUserId) { showToast('请先登录', 'warning'); return; }
+  if (!hasSupabaseConfig() || !initSupabase()) { showToast('Supabase 未配置', 'warning'); return; }
+  showToast('正在推送到 Supabase 云端...', 'info');
+  supabaseSaveData().then(function(result) {
+    if (result && result.ok) {
+      showToast('推送成功！', 'success');
+      updateLocalTimestamp();
+      autoSyncPush(); /* 顺便同步 GitHub（若配置了Token） */
+    } else {
+      showToast('推送失败: ' + ((result && result.error) || '未知错误'), 'error');
+    }
+  }).catch(function(e) {
+    showToast('推送失败: ' + (e.message || e), 'error');
+  });
+}
+
 /* 获取当前用户的数据文件名 */
 function getDataFileName() {
   return '保单数据_' + currentUser + '.json';
@@ -321,9 +385,13 @@ function pushToCloud() {
   });
 }
 
-/* 静默自动拉取（首次登录时调用，无提示） */
+/* 静默自动拉取（首次登录时调用，无提示）—— Supabase 优先，GitHub 兜底 */
 var autoPullFromCloud = function() {
-  if (!currentUser) return;
+  if (!currentUser && !currentUserId) return;
+  if (hasSupabaseConfig() && isSupabaseConnected()) {
+    sbManualPull(true);  // silent
+    return;
+  }
   if (!hasGitHubToken()) return;
   var fileName = getDataFileName();
   fetch('https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + encodeURIComponent(fileName) + '?ref=' + GITHUB_BRANCH, {
