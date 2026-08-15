@@ -60,12 +60,27 @@ FOR EACH ROW EXECUTE FUNCTION public.trigger_set_timestamp();
 --    不开这一步，前端改 user_id 就能读到别人数据！
 -- =================================================================
 ALTER TABLE public.user_data ENABLE ROW LEVEL SECURITY;
+-- FORCE：即使以表 owner（postgres）身份查询也强制走 RLS，双保险
+ALTER TABLE public.user_data FORCE ROW LEVEL SECURITY;
 
--- 删除所有老策略（避免旧策略冲突）
-DROP POLICY IF EXISTS "user_data_select_self" ON public.user_data;
-DROP POLICY IF EXISTS "user_data_insert_self" ON public.user_data;
-DROP POLICY IF EXISTS "user_data_update_self" ON public.user_data;
-DROP POLICY IF EXISTS "user_data_delete_self" ON public.user_data;
+-- ★ 动态删除该表上【所有】现存 policy（不限名字）
+--   旧方案时代可能留下 "Enable ... for all" 之类的宽松策略，
+--   只 DROP 指定名字会漏掉它们，导致 anon 依然能读全表（已实测踩坑）
+DO $$
+DECLARE
+  pol RECORD;
+BEGIN
+  FOR pol IN
+    SELECT policyname
+    FROM   pg_policies
+    WHERE  schemaname = 'public'
+    AND    tablename  = 'user_data'
+  LOOP
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.user_data', pol.policyname);
+    RAISE NOTICE '已删除旧策略: %', pol.policyname;
+  END LOOP;
+END
+$$;
 
 -- 读：只允许读自己 user_id 对应的行
 CREATE POLICY "user_data_select_self"
