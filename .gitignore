@@ -1,0 +1,24 @@
+# IDE share packages / preview artifacts
+.trae-html-share-packages/
+.trae/
+
+# Dependencies
+node_modules/
+bower_components/
+
+# Build output
+dist/
+build/
+out/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
