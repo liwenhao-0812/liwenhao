@@ -2,6 +2,10 @@
 .trae-html-share-packages/
 .trae/
 
+# 用户上传临时文件
+.uploads/
+.screenshots/
+
 # Dependencies
 node_modules/
 bower_components/
