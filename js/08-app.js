@@ -646,8 +646,18 @@ function initAdmin() {
   }
 }
 
-/* 检查登录状态 */
-function checkLogin() {
+/* 检查登录状态：优先从 Supabase 会话恢复 */
+async function checkLogin() {
+  try {
+    var uid = await loadSessionOrNull();
+    if (uid) {
+      enterMainApp();
+      return;
+    }
+  } catch(e) {
+    console.warn('[checkLogin] 会话恢复异常:', e);
+  }
+  /* 兜底：兼容旧版 pms_currentUser（保留的话）*/
   var saved = localStorage.getItem('pms_currentUser');
   if (saved) {
     var users = getUsers();
@@ -673,16 +683,16 @@ function _bindModalCloseOnOverlay() {
 }
 
 /* 启动应用：确保DOM完全就绪后执行 */
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() {
-    initAdmin();
-    _bindModalCloseOnOverlay();
-    checkLogin();
-  });
-} else {
+function _bootstrapApp() {
   initAdmin();
   _bindModalCloseOnOverlay();
-  checkLogin();
+  checkLogin(); /* checkLogin 是 async，返回的 Promise 我们不必 await，让它在后台恢复会话 */
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _bootstrapApp);
+} else {
+  _bootstrapApp();
 }
 
 

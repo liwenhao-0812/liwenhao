@@ -4,18 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>保单管理系统</title>
-<link rel="stylesheet" href="css/baodanguanli.css?v=20260814a">
+<link rel="stylesheet" href="css/baodanguanli.css?v=20260815b">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-<script src="js/01-config.js?v=20260814a"></script>
-<script src="js/02-utils.js?v=20260814a"></script>
-<script src="js/03-auth.js?v=20260814a"></script>
-<script src="js/04-storage.js?v=20260814a"></script>
-<script src="js/05-render.js?v=20260814a"></script>
-<script src="js/06-crud.js?v=20260814a"></script>
-<script src="js/07-importexport.js?v=20260814a"></script>
-<script src="js/08-app.js?v=20260814a"></script>
+<script src="js/01-config.js?v=20260815b"></script>
+<script src="js/02-utils.js?v=20260815b"></script>
+<script src="js/03-auth.js?v=20260815b"></script>
+<script src="js/04-storage.js?v=20260815b"></script>
+<script src="js/05-render.js?v=20260815b"></script>
+<script src="js/06-crud.js?v=20260815b"></script>
+<script src="js/07-importexport.js?v=20260815b"></script>
+<script src="js/08-app.js?v=20260815b"></script>
 </head>
 <body>
 
@@ -42,8 +42,8 @@
     <!-- 登录表单 -->
     <form class="auth-form" id="loginForm" onsubmit="handleLogin(event)">
       <div class="form-group">
-        <label>用户名</label>
-        <input type="text" id="loginUsername" placeholder="请输入用户名" required autocomplete="username">
+        <label>邮箱</label>
+        <input type="email" id="loginEmail" placeholder="请输入邮箱" required autocomplete="email">
       </div>
       <div class="form-group">
         <label>密码</label>
@@ -55,8 +55,12 @@
     <!-- 注册表单 -->
     <form class="auth-form hidden" id="registerForm" onsubmit="handleRegister(event)">
       <div class="form-group">
-        <label>用户名</label>
-        <input type="text" id="regUsername" placeholder="请输入用户名" required autocomplete="username">
+        <label>显示名称</label>
+        <input type="text" id="regName" placeholder="用于页面顶部显示（可随意）" required autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label>邮箱</label>
+        <input type="email" id="regEmail" placeholder="请输入邮箱（登录凭据）" required autocomplete="email">
       </div>
       <div class="form-group">
         <label>密码</label>
@@ -194,26 +198,28 @@
         <div id="tokenStatus" style="margin-top:8px;font-size:12px;"></div>
       </div>
       <div class="card">
-        <div class="card-title">&#9889; Supabase 实时同步（推荐）</div>
-        <p style="font-size:12px;color:#64748b;margin-bottom:8px;line-height:1.5;">
-          使用 Supabase 实现跨设备实时数据同步，电脑端修改后手机端自动刷新。<br>
-          请前往 <a href="https://supabase.com" target="_blank" style="color:#2563eb;">supabase.com</a> 注册并创建项目，在项目 Settings → API 中获取 <strong>Project URL</strong> 和 <strong>anon public key</strong>。<br>
-          然后在项目的 SQL Editor 中执行 <a href="supabase_migration.sql" target="_blank" style="color:#2563eb;">迁移脚本</a> 创建数据库表。
+        <div class="card-title">&#9889; Supabase 云端同步（已启用，硬编码配置）</div>
+        <p style="font-size:12px;color:#475569;margin-bottom:12px;line-height:1.7;">
+          <strong>工作原理：</strong>通过 Supabase Auth（邮箱+密码）登录后，自动开启实时同步。<br>
+          数据按 <code>auth.uid()</code>（您的账号唯一UUID）行级隔离，配合 RLS 策略其他用户无法访问您的行。<br>
+          登录账户、密码、个人信息保存在 Supabase Auth 服务端（bcrypt 加密），任何人（包括管理员）都无法看到您的明文密码。<br>
+          <strong>显示名称：</strong>注册时填写，用于页面顶部显示（非登录名，可随意）。
         </p>
-        <div class="form-group">
-          <label>Project URL</label>
-          <input type="text" id="supabaseUrlInput" placeholder="https://xxxxx.supabase.co" style="font-family:monospace;font-size:13px;">
+        <div id="sbAuthPanel" style="padding:12px 14px;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;margin-bottom:10px;">
+          <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;font-size:13px;">
+            <div>
+              <div style="color:#14532d;font-weight:600;">当前会话状态</div>
+              <div id="sbAuthStatus" style="color:#15803d;margin-top:2px;">登录后自动启用云端同步</div>
+              <div id="sbAuthUser" style="color:#166534;margin-top:2px;"></div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn-outline btn-sm" id="sbTestConnBtn" onclick="testSupabaseConnectionUI()">测试同步</button>
+              <button class="btn-outline btn-sm" id="sbPullBtn" onclick="autoPullFromCloud()">☁ 从云端拉取</button>
+              <button class="btn-outline btn-sm" id="sbPushBtn" onclick="savePolicyData()">⤴ 推送到云端</button>
+            </div>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Anon Key</label>
-          <input type="password" id="supabaseKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="font-family:monospace;font-size:13px;">
-        </div>
-        <div style="display:flex;gap:8px;align-items:flex-end;">
-          <button class="btn-primary" onclick="saveSupabaseConfig()">保存配置</button>
-          <button class="btn-outline" onclick="testSupabaseConnectionUI()">测试连接</button>
-          <button class="btn-outline btn-sm" onclick="toggleSupabaseKeyVisibility()" style="white-space:nowrap;" id="toggleSupabaseKeyBtn">显示</button>
-        </div>
-        <div id="supabaseStatus" style="margin-top:8px;font-size:12px;"></div>
+        <div id="supabaseStatus" style="font-size:12px;"></div>
       </div>
       <div class="card">
         <div class="card-title">数据管理</div>

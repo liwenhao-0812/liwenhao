@@ -1,15 +1,22 @@
-/* ======== 数据存储（加密 + 用户隔离） ======== */
+/* ======== 数据存储（加密 + user_id 隔离）======== */
+
+/* 统一的 localStorage key 主标识：优先 user_id，未登录时回退 currentUser */
+function _idKey() {
+  return currentUserId || currentUser || 'anon';
+}
+/* secureSetItem 的 keyHint 固定常量（不要再用用户名或 user_id，因为用户升级前后身份字符串不一样，会导致旧密文解不开）*/
+const _ENC_HINT = 'baodan_storage_v1_salt';
 
 /* 获取当前用户保单数据 */
 function getPolicyData() {
   try {
-    return secureGetItem('policy_data_' + currentUser) || [];
+    return secureGetItem('policy_data_' + _idKey(), _ENC_HINT) || [];
   } catch(e) { return []; }
 }
 
 /* 保存保单数据 */
 function savePolicyData() {
-  secureSetItem('policy_data_' + currentUser, clientData);
+  secureSetItem('policy_data_' + _idKey(), clientData, _ENC_HINT);
   updateLocalTimestamp();
   /* 同步到 Supabase */
   supabaseSaveData();
@@ -21,42 +28,34 @@ function savePolicyData() {
 async function loadUserData() {
   clientData = getPolicyData();
 
-  console.log('[Supabase] loadUserData: hasConfig=' + hasSupabaseConfig() + ', connected=' + isSupabaseConnected());
+  console.log('[Supabase] loadUserData: hasSession=' + hasSupabaseConfig() + ', user_id=' + (currentUserId ? currentUserId.substring(0,8) + '...' : 'null'));
 
-  /* 尝试从 Supabase 加载最新数据 */
   if (hasSupabaseConfig()) {
-    /* 确保客户端已初始化 */
-    if (!isSupabaseConnected()) {
-      initSupabase();
-    }
+    initSupabase();
     if (isSupabaseConnected()) {
       var cloudData = await supabaseLoadData();
       if (cloudData) {
-        /* 比较时间戳，用较新的数据 */
-        var localTs = secureGetItem('policy_data_' + currentUser + '_timestamp');
+        var localTs = secureGetItem('policy_data_' + _idKey() + '_timestamp', _ENC_HINT);
         var cloudTs = cloudData.updated_at || '';
         if (!localTs || cloudTs > localTs) {
           console.log('[Supabase] 云端数据较新，拉取中...');
           if (cloudData.data) {
             clientData = cloudData.data;
-            secureSetItem('policy_data_' + currentUser, clientData);
+            secureSetItem('policy_data_' + _idKey(), clientData, _ENC_HINT);
           }
           if (cloudData.insurance_types) {
-            secureSetItem('insurance_type_lib_' + currentUser, cloudData.insurance_types);
+            secureSetItem('insurance_type_lib_' + _idKey(), cloudData.insurance_types, _ENC_HINT);
           }
-          secureSetItem('policy_data_' + currentUser + '_timestamp', cloudTs);
+          secureSetItem('policy_data_' + _idKey() + '_timestamp', cloudTs, _ENC_HINT);
           console.log('[Supabase] 已从云端加载最新数据');
         } else {
-          /* 本地数据较新，推送到 Supabase */
           console.log('[Supabase] 本地数据较新，推送到云端');
           await supabaseSaveData();
         }
       } else {
-        /* Supabase 无数据，首次推送 */
         console.log('[Supabase] 云端无数据，首次推送');
         await supabaseSaveData();
       }
-      /* 订阅实时变更 */
       supabaseSubscribeRealtime();
     } else {
       console.log('[Supabase] 客户端初始化失败: ' + supabaseLastError);
@@ -66,7 +65,7 @@ async function loadUserData() {
 
 /* 刷新当前时间戳 */
 function updateLocalTimestamp() {
-  secureSetItem('policy_data_' + currentUser + '_timestamp', new Date().toISOString());
+  secureSetItem('policy_data_' + _idKey() + '_timestamp', new Date().toISOString(), _ENC_HINT);
 }
 
 /* ======== 自动云同步（GitHub） ======== */
@@ -240,7 +239,7 @@ function getDataFileName() {
   return '保单数据_' + currentUser + '.json';
 }
 
-/* 获取所有用户数据（用于云端存储） */
+/* 获取所有用户数据（用于 GitHub 云端备份存储） */
 function getAllUserData() {
   var users = getUsers();
   var me = users.find(function(u) { return u.username === currentUser; });
@@ -249,6 +248,8 @@ function getAllUserData() {
     insuranceTypes: getInsuranceTypeLib(),
     _timestamp: Date.now().toString(),
     _user: currentUser,
+    _userId: currentUserId || '',
+    _userEmail: currentUserEmail || '',
     _passwordHash: me ? me.passwordHash : ''
   };
 }
@@ -257,13 +258,13 @@ function getAllUserData() {
 function restoreFromCloudData(cloudData) {
   if (cloudData.policies) {
     clientData = cloudData.policies;
-    secureSetItem('policy_data_' + currentUser, clientData);
+    secureSetItem('policy_data_' + _idKey(), clientData, _ENC_HINT);
   }
   if (cloudData.insuranceTypes) {
-    secureSetItem('insurance_type_lib_' + currentUser, cloudData.insuranceTypes);
+    secureSetItem('insurance_type_lib_' + _idKey(), cloudData.insuranceTypes, _ENC_HINT);
   }
   if (cloudData._timestamp) {
-    secureSetItem('policy_data_' + currentUser + '_timestamp', cloudData._timestamp);
+    secureSetItem('policy_data_' + _idKey() + '_timestamp', cloudData._timestamp, _ENC_HINT);
   }
 }
 
@@ -447,14 +448,14 @@ function startAutoPull() {
   }, 5 * 60 * 1000); /* 每5分钟检查一次 */
 }
 
-/* 更新设置页的同步状态 */
+/* 更新设置页的同步状态（GitHub 备用通道状态 + Supabase 会话状态栏）*/
 function updateSettingSyncStatus(ok, customMsg) {
   var dot = document.getElementById('settingSyncDot');
   var status = document.getElementById('settingSyncStatus');
   var time = document.getElementById('settingSyncTime');
   if (dot) {
     if (!hasGitHubToken()) {
-      dot.style.background = '#f59e0b'; /* 橙色：未配置Token */
+      dot.style.background = hasSupabaseConfig() ? '#22c55e' : '#f59e0b';
     } else {
       dot.style.background = ok ? '#22c55e' : '#ef4444';
     }
@@ -462,18 +463,32 @@ function updateSettingSyncStatus(ok, customMsg) {
   if (status) {
     if (customMsg) {
       status.textContent = customMsg;
+    } else if (hasSupabaseConfig()) {
+      status.textContent = ok ? '云端实时同步已启用（Supabase Auth）' : 'Supabase 同步失败，但本地数据安全';
     } else if (!hasGitHubToken()) {
-      status.textContent = '请配置GitHub Token';
+      status.textContent = '登录后自动启用 Supabase 云同步';
     } else {
-      status.textContent = ok ? '自动同步已启用' : '同步失败，请检查网络';
+      status.textContent = ok ? 'GitHub 自动同步已启用' : '同步失败，请检查网络';
     }
   }
   if (time) {
-    if (!hasGitHubToken()) {
-      time.textContent = '请前往下方「GitHub Token 配置」创建设置Token以启用云同步';
+    var lastTs = secureGetItem('policy_data_' + _idKey() + '_timestamp', _ENC_HINT);
+    time.textContent = lastTs ? '上次同步: ' + new Date(parseInt(lastTs)).toLocaleString('zh-CN') : '数据变更时自动保存';
+  }
+  /* Supabase 会话状态栏（设置 Tab 卡片内）*/
+  var sbStatusEl = document.getElementById('sbAuthStatus');
+  var sbUserEl = document.getElementById('sbAuthUser');
+  if (sbStatusEl) {
+    if (currentSessionToken && currentUserId) {
+      sbStatusEl.textContent = '✓ 已连接，RLS 按 UUID 隔离';
+      sbStatusEl.style.color = '#15803d';
+      if (sbUserEl) {
+        sbUserEl.textContent = '账号: ' + (currentUserEmail || '') + ' | 显示名: ' + (currentUser || '');
+      }
     } else {
-      var lastTs = secureGetItem('policy_data_' + currentUser + '_timestamp');
-      time.textContent = lastTs ? '上次同步: ' + new Date(parseInt(lastTs)).toLocaleString('zh-CN') : '数据变更时自动保存到云端';
+      sbStatusEl.textContent = '未登录 — 登录后自动启用云同步';
+      sbStatusEl.style.color = '#b45309';
+      if (sbUserEl) sbUserEl.textContent = '';
     }
   }
 }

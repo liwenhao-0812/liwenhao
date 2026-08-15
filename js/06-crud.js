@@ -535,13 +535,13 @@ function syncExistingPoliciesToLib() {
 /* 获取险种库 */
 function getInsuranceTypeLib() {
   try {
-    return secureGetItem('insurance_type_lib_' + currentUser) || [];
+    return secureGetItem('insurance_type_lib_' + _idKey(), _ENC_HINT) || [];
   } catch(e) { return []; }
 }
 
 /* 保存险种库 */
 function saveInsuranceTypeLib(lib) {
-  secureSetItem('insurance_type_lib_' + currentUser, lib);
+  secureSetItem('insurance_type_lib_' + _idKey(), lib, _ENC_HINT);
   supabaseSaveData();
 }
 
