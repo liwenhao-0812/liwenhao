@@ -94,8 +94,29 @@ CREATE POLICY "user_data_delete_self"
 
 -- =================================================================
 -- 6. 开启 Realtime（多设备实时同步推送依赖它）
+--    注意：ADD TABLE 本身不幂等，如果 user_data 已经在 publication 里会抛 42710 并回滚整批事务。
+--    用 DO block 先检查 publication_tables 视图，不在里面才 ADD。
 -- =================================================================
-ALTER PUBLICATION supabase_realtime ADD TABLE public.user_data;
+DO $$
+DECLARE
+  _exists BOOLEAN;
+BEGIN
+  SELECT EXISTS (
+    SELECT 1
+    FROM   pg_publication_tables
+    WHERE  pubname      = 'supabase_realtime'
+    AND    schemaname   = 'public'
+    AND    tablename    = 'user_data'
+  ) INTO _exists;
+
+  IF NOT _exists THEN
+    EXECUTE 'ALTER PUBLICATION supabase_realtime ADD TABLE public.user_data';
+    RAISE NOTICE '已将 public.user_data 加入 supabase_realtime';
+  ELSE
+    RAISE NOTICE 'public.user_data 已是 supabase_realtime 成员，跳过';
+  END IF;
+END
+$$;
 
 -- =================================================================
 -- 7. Supabase Auth 设置（网页后台操作，不是 SQL）★ 管理员必做 ★
