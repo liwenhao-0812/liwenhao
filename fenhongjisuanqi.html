@@ -1861,11 +1861,26 @@ function applyParamsToForm(params) {
   updateHints();
 }
 
+// 公网部署地址（GitHub Pages）。二维码/分享链接固定指向该地址，
+// 确保手机在任何地方扫码都能打开，不受当前本地环境(localhost/file)影响。
+var SHARE_PUBLIC_ORIGIN = 'https://liwenhao-0812.github.io';
+var SHARE_PUBLIC_PATH = '/liwenhao/fenhongjisuanqi.html';
+
 // 生成分享链接
 function buildShareUrl() {
   var params = collectShareParams();
   var hash = encodeParamsToHash(params);
-  var baseUrl = location.origin + location.pathname;
+  var origin = location.origin || '';
+  var path = location.pathname || '';
+  var proto = location.protocol || '';
+  // 本地/非公网环境：回退到公网部署地址，保证手机可访问
+  var isLocal = origin.indexOf('localhost') !== -1 || origin.indexOf('127.0.0.1') !== -1 ||
+                proto === 'file:' || proto === 'chrome-extension:' || origin === 'null';
+  if (isLocal) {
+    origin = SHARE_PUBLIC_ORIGIN;
+    path = SHARE_PUBLIC_PATH;
+  }
+  var baseUrl = origin + path;
   return baseUrl + '#p=' + hash;
 }
 
