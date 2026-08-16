@@ -1870,12 +1870,13 @@ var SHARE_PUBLIC_PATH = '/liwenhao/fenhongjisuanqi.html';
 function buildShareUrl() {
   var params = collectShareParams();
   var hash = encodeParamsToHash(params);
+  var host = location.hostname || '';
   var origin = location.origin || '';
   var path = location.pathname || '';
   var proto = location.protocol || '';
   // 本地/非公网环境：回退到公网部署地址，保证手机可访问
-  var isLocal = origin.indexOf('localhost') !== -1 || origin.indexOf('127.0.0.1') !== -1 ||
-                proto === 'file:' || proto === 'chrome-extension:' || origin === 'null';
+  var isLocalHost = host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '';
+  var isLocal = isLocalHost || proto === 'file:' || proto === 'chrome-extension:' || origin === 'null';
   if (isLocal) {
     origin = SHARE_PUBLIC_ORIGIN;
     path = SHARE_PUBLIC_PATH;
