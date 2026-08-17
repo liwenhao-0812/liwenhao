@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0, user-scalable=yes">
 <title>收益试算计算器</title>
 <script src="https://cdn.jsdelivr.net/npm/decimal.js@10.4.3/decimal.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -27,11 +27,20 @@
   --radius-sm: 8px;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
+html {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   background: linear-gradient(135deg, #eff6ff 0%, #ffffff 30%, #f0fdf4 70%, #eff6ff 100%);
   min-height: 100vh;
   color: var(--gray-800);
+  /* 阻止水平滑动触发浏览器返回手势 */
+  overscroll-behavior-x: none;
+  touch-action: pan-y;
+  /* 为手机浏览器底部工具栏和安全区域预留空间 */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 /* Header */
 .header {
@@ -78,6 +87,8 @@ body {
   grid-template-columns: 380px 1fr;
   gap: 20px;
   min-height: calc(100vh - 70px);
+  /* 移动端底部预留浏览器工具栏空间 */
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
 }
 @media (max-width: 1024px) {
   .container { grid-template-columns: 1fr; }
@@ -580,6 +591,20 @@ body {
   .header { padding: 12px 16px; }
   .container { padding: 12px; }
   .card { padding: 14px; }
+  /* 手机端底部预留浏览器工具栏空间（约60-80px）+ 安全区域 */
+  .container { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+  /* 表格横向滚动优化 */
+  .table-wrap { 
+    max-height: 400px;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  .table-wrap table { min-width: 700px; }
+  /* 表单行单列布局 */
+  .form-row { flex-direction: column; gap: 0; }
+  /* 分享按钮换行 */
+  .share-bar { flex-wrap: wrap; }
+  .share-btn { flex: 1; min-width: 140px; }
 }
 </style>
 </head>
@@ -2217,6 +2242,32 @@ function resetAll() {
   updateHints();
   showToast('已重置为默认值', 'success');
 }
+
+// ======== 移动端防误触优化 ========
+// 阻止左右边缘滑动触发浏览器返回手势
+(function() {
+  var EDGE_THRESHOLD = 24; // 屏幕边缘24px范围内视为边缘滑动
+  var SWIPE_DISTANCE = 50; // 水平滑动超过50px才拦截
+  var startX = 0, startY = 0, startEdge = false;
+
+  document.addEventListener('touchstart', function(e) {
+    var t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+    startEdge = (t.clientX <= EDGE_THRESHOLD || t.clientX >= window.innerWidth - EDGE_THRESHOLD);
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function(e) {
+    if (!startEdge) return;
+    var t = e.touches[0];
+    var dx = t.clientX - startX;
+    var dy = t.clientY - startY;
+    // 从屏幕边缘开始的水平滑动 → 阻止，防止触发浏览器返回
+    if (Math.abs(dx) > SWIPE_DISTANCE && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+})();
 </script>
 </body>
 </html>
