@@ -1213,7 +1213,18 @@
       "workAddress": "",
       "workCompany": "",
       "familyMembers": [],
-      "contactHistory": []
+      "contactHistory": [],
+      "scriptTracking": {
+        "currentNodeId": "n_1786687488874",
+        "lastUsedAt": "2026-08-18T08:29:21.944Z",
+        "pathHistory": [
+          {
+            "id": "n_1786687488874",
+            "title": "开场白",
+            "at": "2026-08-18T08:29:21.944Z"
+          }
+        ]
+      }
     },
     {
       "name": "黄早娣",
@@ -4294,7 +4305,7 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1787041407195",
+  "_timestamp": "1787041769453",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
