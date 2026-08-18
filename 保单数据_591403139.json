@@ -1170,44 +1170,44 @@
       "address": "广东省清远市清城区人民三路34号卧龙五州世纪城7栋2单元1403房",
       "policies": [
         {
-          "_idx": 0,
-          "remark": "",
-          "status": "有效",
-          "insured": "邓雨甜",
+          "policyCode": "2008442001S42015030832",
+          "insuranceName": "康宁终身保险",
           "codeType": "S42",
           "mainType": "主险",
-          "insuredId": "441802200701290529",
-          "policyCode": "2008442001S42015030832",
-          "sumInsured": "10000",
-          "extraFields": {},
+          "parentPolicyCode": "",
+          "status": "有效",
           "hasDividend": false,
-          "paymentBank": "",
-          "paymentTerm": "10",
-          "insuredPhone": "3800325",
+          "effectiveDate": "20080629",
           "maturityDate": "",
+          "paymentMethod": "年缴",
           "annualPremium": "710",
+          "sumInsured": "10000",
+          "paymentTerm": "10",
+          "paymentBank": "",
+          "paymentBankCard": "",
+          "insured": "邓雨甜",
+          "insuredRelation": "女儿",
+          "insuredId": "441802200701290529",
+          "insuredPhone": "3800325",
+          "insuredAddress": "广东省清远市清城区人民三路34号卧龙五州世纪城7栋2单元1403房",
           "beneficiaries": [
             {
               "name": "陈文泓",
               "quota": "100"
             }
           ],
-          "effectiveDate": "20080629",
-          "insuranceName": "康宁终身保险",
-          "paymentMethod": "年缴",
-          "insuredAddress": "广东省清远市清城区人民三路34号卧龙五州世纪城7栋2单元1403房",
-          "serviceRecords": [],
-          "insuredRelation": "",
-          "paymentBankCard": "",
+          "remark": "",
           "survivalBenefit": {
-            "note": "",
             "type": "",
             "amount": "",
+            "startDate": "",
             "lastDate": "",
             "nextDate": "",
-            "startDate": ""
+            "note": ""
           },
-          "parentPolicyCode": ""
+          "extraFields": {},
+          "serviceRecords": [],
+          "_idx": 0
         }
       ],
       "workAddress": "",
@@ -1327,90 +1327,90 @@
       "familyMembers": [],
       "contactHistory": [],
       "scriptTracking": {
-        "currentNodeId": "n_1786794838402",
         "lastUsedAt": "2026-08-15T11:54:08.273Z",
         "pathHistory": [
           {
+            "at": "2026-08-15T11:51:25.455Z",
             "id": "n_1786687488874",
-            "title": "开场白",
-            "at": "2026-08-15T11:51:25.455Z"
+            "title": "开场白"
           },
           {
+            "at": "2026-08-15T11:51:32.384Z",
             "id": "n_1786687627825",
-            "title": "是",
-            "at": "2026-08-15T11:51:32.384Z"
+            "title": "是"
           },
           {
+            "at": "2026-08-15T11:51:37.671Z",
             "id": "n_1786689469687",
-            "title": "没有更新",
-            "at": "2026-08-15T11:51:37.671Z"
+            "title": "没有更新"
           },
           {
+            "at": "2026-08-15T11:51:42.998Z",
             "id": "n_1786687627825",
-            "title": "是",
-            "at": "2026-08-15T11:51:42.998Z"
+            "title": "是"
           },
           {
+            "at": "2026-08-15T11:51:43.442Z",
             "id": "n_1786687488874",
-            "title": "开场白",
-            "at": "2026-08-15T11:51:43.442Z"
+            "title": "开场白"
           },
           {
+            "at": "2026-08-15T11:51:43.885Z",
             "id": "n_1786687627825",
-            "title": "是",
-            "at": "2026-08-15T11:51:43.885Z"
+            "title": "是"
           },
           {
+            "at": "2026-08-15T11:51:44.152Z",
             "id": "n_1786689469687",
-            "title": "没有更新",
-            "at": "2026-08-15T11:51:44.152Z"
+            "title": "没有更新"
           },
           {
+            "at": "2026-08-15T11:51:44.688Z",
             "id": "n_1786687627825",
-            "title": "是",
-            "at": "2026-08-15T11:51:44.688Z"
+            "title": "是"
           },
           {
+            "at": "2026-08-15T11:51:45.116Z",
             "id": "n_1786689469687",
-            "title": "没有更新",
-            "at": "2026-08-15T11:51:45.116Z"
+            "title": "没有更新"
           },
           {
+            "at": "2026-08-15T11:51:49.738Z",
             "id": "n_1786688805789",
-            "title": "不认识",
-            "at": "2026-08-15T11:51:49.738Z"
+            "title": "不认识"
           },
           {
+            "at": "2026-08-15T11:51:50.802Z",
             "id": "n_1786689469687",
-            "title": "没有更新",
-            "at": "2026-08-15T11:51:50.802Z"
+            "title": "没有更新"
           },
           {
+            "at": "2026-08-15T11:52:02.013Z",
             "id": "n_1786687627825",
-            "title": "是",
-            "at": "2026-08-15T11:52:02.013Z"
+            "title": "是"
           },
           {
+            "at": "2026-08-15T11:54:02.184Z",
             "id": "n_1786689469687",
-            "title": "没有更新",
-            "at": "2026-08-15T11:54:02.184Z"
+            "title": "没有更新"
           },
           {
+            "at": "2026-08-15T11:54:06.813Z",
             "id": "n_1786794838402",
-            "title": "有更新",
-            "at": "2026-08-15T11:54:06.813Z"
+            "title": "有更新"
           },
           {
+            "at": "2026-08-15T11:54:07.913Z",
             "id": "n_1786688746558",
-            "title": "否",
-            "at": "2026-08-15T11:54:07.913Z"
+            "title": "否"
           },
           {
+            "at": "2026-08-15T11:54:08.273Z",
             "id": "n_1786794838402",
-            "title": "有更新",
-            "at": "2026-08-15T11:54:08.273Z"
+            "title": "有更新"
           }
-        ]
+        ],
+        "currentNodeId": "n_1786794838402"
       }
     },
     {
@@ -4214,24 +4214,24 @@
     "children": [
       {
         "id": "n_1786687627825",
+        "notes": "",
         "title": "是",
         "script": "你好，我是中国人寿售后人员李文浩，工号9754 。您在我司XX年购买的XX保险，现在根据公司安排，需要定期对客户信息进行更新",
-        "notes": "",
         "category": "开场",
         "children": [
           {
             "id": "n_1786689469687",
+            "notes": "",
             "title": "没有更新",
             "script": "XX先生/女士，那请问您这边对你的保单内容清晰吗？",
-            "notes": "",
             "category": "开场",
             "children": []
           },
           {
             "id": "n_1786794838402",
+            "notes": "",
             "title": "有更新",
             "script": "这样的话请问您明天上午还是下午有时间，我到您那边上门为你做更新服务",
-            "notes": "",
             "category": "开场",
             "children": []
           }
@@ -4239,50 +4239,50 @@
       },
       {
         "id": "n_1786688746558",
+        "notes": "",
         "title": "否",
         "script": "您好请问您认识XX先生/女士吗？",
-        "notes": "",
         "category": "开场",
         "children": [
           {
             "id": "n_1786688805789",
+            "notes": "",
             "title": "不认识",
             "script": "好的，很抱歉打扰您了，谢谢",
-            "notes": "",
             "category": "开场",
             "children": []
           },
           {
             "id": "n_1786689014730",
+            "notes": "",
             "title": "认识 / 你找他什么事",
             "script": "我这边是中国人寿售后专员，公司这边安排了我为他做专人服务，需要他本人亲自确认。请问他现在在您身边吗？",
-            "notes": "",
             "category": "开场",
             "children": [
               {
                 "id": "n_1786689085975",
-                "title": "在",
-                "script": "好的，麻烦您将电话交给ta 接听一下。",
                 "notes": "",
+                "title": "在",
+                "jumpTo": "n_1786687488874",
+                "script": "好的，麻烦您将电话交给ta 接听一下。",
                 "category": "开场",
                 "children": [
                   {
                     "id": "n_1786689514116",
-                    "title": "您好",
-                    "script": "你好",
                     "notes": "",
+                    "title": "您好",
+                    "jumpTo": "n_1786687488874",
+                    "script": "你好",
                     "category": "开场",
-                    "children": [],
-                    "jumpTo": "n_1786687488874"
+                    "children": []
                   }
-                ],
-                "jumpTo": "n_1786687488874"
+                ]
               },
               {
                 "id": "n_1786689113806",
+                "notes": "",
                 "title": "不在",
                 "script": "请问你这边有他的联系方式吗？",
-                "notes": "",
                 "category": "开场",
                 "children": []
               }
@@ -4291,9 +4291,10 @@
         ]
       }
     ],
-    "jumpTo": "n_1786687627825"
+    "jumpTo": "n_1786687627825",
+    "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1786794849691",
+  "_timestamp": "1787041407195",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
