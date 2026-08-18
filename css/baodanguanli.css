@@ -546,6 +546,42 @@ button {
   border-radius: 10px;
   margin-bottom: 10px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+}
+/* 失效保单卡片 — 鲜明对比设计 */
+.policy-detail-card.policy-expired {
+  background: #f9fafb;
+  border: 2.5px dashed #dc2626;
+  border-radius: 10px;
+  box-shadow: none;
+  position: relative;
+  overflow: hidden;
+}
+/* 失效保单左上角红色标识条 */
+.policy-detail-card.policy-expired::before {
+  content: '已失效';
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #dc2626;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 14px;
+  border-radius: 0 0 8px 0;
+  z-index: 10;
+  letter-spacing: 0.05em;
+}
+/* 失效保单 header — 灰色而非深蓝，明显"沉闷" */
+.policy-detail-header.header-expired {
+  background: #6b7280;
+  border-bottom-color: #4b5563;
+}
+.policy-detail-header.header-expired .pdh-name-expired {
+  color: rgba(255,255,255,0.7);
+  text-decoration: line-through;
+  text-decoration-color: rgba(255,255,255,0.4);
+  text-decoration-thickness: 1px;
 }
 .policy-detail-header {
   background: #1a2744;

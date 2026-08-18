@@ -645,6 +645,7 @@ function renderDetailPanel(idx) {
     function renderPolicyDetail(p) {
       var pIdx = p._idx;
       var detail = '';
+      var isExpired = (p.status && p.status !== '有效');
 
       /* 被保人年龄计算 - 提前计算，供标题区使用 */
       var insuredId = p.insuredId || c.idCard || '';
@@ -653,11 +654,11 @@ function renderDetailPanel(idx) {
 
       /* 保单标题与操作 */
       var typeLabel = p.mainType === '附加险' ? '附加险' : p.mainType === '万能险' ? '万能险' : '主险';
-      detail += '<div id="policyDetail_' + pIdx + '" class="policy-detail-card">';
-      detail += '<div class="policy-detail-header">' +
+      detail += '<div id="policyDetail_' + pIdx + '" class="policy-detail-card' + (isExpired ? ' policy-expired' : '') + '">';
+      detail += '<div class="policy-detail-header' + (isExpired ? ' header-expired' : '') + '">' +
         '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px;">' +
         '<div style="flex:1;min-width:0;">' +
-        '<div class="pdh-name">' + (p.insuranceName || '') + '</div>' +
+        '<div class="pdh-name' + (isExpired ? ' pdh-name-expired' : '') + '">' + (p.insuranceName || '') + '</div>' +
         '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px;">' +
         '<span class="pdh-code" title="' + (p.policyCode || '') + '">' + (p.policyCode || '-') + '</span>' +
         (p.codeType ? '<span style="color:rgba(255,255,255,0.5);font-size:13px;font-weight:500;">' + p.codeType + '</span>' : '') +
@@ -671,8 +672,10 @@ function renderDetailPanel(idx) {
         '<button class="btn-sm btn-danger no-print" onclick="deletePolicy(' + idx + ',' + pIdx + ')">删除</button>' +
         '</div></div>' +
         '<div class="policy-meta">' +
-        '<span style="background:rgba(34,197,94,0.2);color:#4ade80;padding:2px 10px;border-radius:10px;font-size:14px;font-weight:700;">生效：' + formatDate(p.effectiveDate) + (effAge !== null ? '（' + effAge + '岁）' : '') + '</span>' +
-        (p.maturityDate ? '<span style="background:rgba(251,191,36,0.2);color:#fbbf24;padding:2px 10px;border-radius:10px;font-size:14px;font-weight:700;">满期：' + formatDate(p.maturityDate) + '</span>' : '') +
+        (isExpired
+          ? '<span style="background:rgba(239,68,68,0.25);color:#fca5a5;padding:2px 10px;border-radius:10px;font-size:14px;font-weight:700;">失效：' + (p.expiryDate ? formatDate(p.expiryDate) : (p.maturityDate ? formatDate(p.maturityDate) : '未知')) + '</span>'
+          : '<span style="background:rgba(34,197,94,0.2);color:#4ade80;padding:2px 10px;border-radius:10px;font-size:14px;font-weight:700;">生效：' + formatDate(p.effectiveDate) + (effAge !== null ? '（' + effAge + '岁）' : '') + '</span>') +
+        (p.maturityDate && !isExpired ? '<span style="background:rgba(251,191,36,0.2);color:#fbbf24;padding:2px 10px;border-radius:10px;font-size:14px;font-weight:700;">满期：' + formatDate(p.maturityDate) + '</span>' : '') +
         '</div>' +
         '</div>';
 
@@ -746,13 +749,15 @@ function renderDetailPanel(idx) {
             daysUntilNext = '<span style="color:#475569;">还有 ' + diffDays + ' 天</span>';
           }
         }
-        detail += '<div style="background:#f0fdf4;border:2px solid #22c55e;border-radius:10px;padding:16px;margin-bottom:10px;">' +
-          '<h6 style="font-size:14px;color:#166534;margin-bottom:12px;border-bottom:2px solid #86efac;padding-bottom:8px;font-weight:700;">生存金信息</h6>' +
+        detail += '<div style="' + (isExpired
+          ? 'background:#f4f4f5;border:2px dashed #9ca3af;border-radius:10px;padding:16px;margin-bottom:10px;'
+          : 'background:#f0fdf4;border:2px solid #22c55e;border-radius:10px;padding:16px;margin-bottom:10px;') + '">' +
+          '<h6 style="font-size:14px;' + (isExpired ? 'color:#6b7280;' : 'color:#166534;') + 'margin-bottom:12px;border-bottom:2px solid ' + (isExpired ? '#d1d5db' : '#86efac') + ';padding-bottom:8px;font-weight:700;">生存金信息' + (isExpired ? '（已失效）' : '') + '</h6>' +
           '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;font-size:13px;">' +
-          '<div style="text-align:center;padding:10px;background:#ffffff;border:1.5px solid #86efac;border-radius:8px;"><div style="font-size:12px;color:#166534;margin-bottom:4px;font-weight:700;">领取方式</div><div style="font-size:18px;font-weight:800;color:#166534;">' + typeLabel + '</div></div>' +
-          '<div style="text-align:center;padding:10px;background:#ffffff;border:1.5px solid #fbbf24;border-radius:8px;"><div style="font-size:12px;color:#92400e;margin-bottom:4px;font-weight:700;">生存金金额</div><div style="font-size:22px;font-weight:900;color:#b45309;">' + formatMoney(sb.amount) + ' 元</div></div>' +
+          '<div style="text-align:center;padding:10px;background:#ffffff;border:1.5px solid ' + (isExpired ? '#d1d5db' : '#86efac') + ';border-radius:8px;"><div style="font-size:12px;' + (isExpired ? 'color:#6b7280;' : 'color:#166534;') + 'margin-bottom:4px;font-weight:700;">领取方式</div><div style="font-size:18px;font-weight:800;' + (isExpired ? 'color:#6b7280;' : 'color:#166534;') + '">' + typeLabel + '</div></div>' +
+          '<div style="text-align:center;padding:10px;background:#ffffff;border:1.5px solid ' + (isExpired ? '#d1d5db' : '#fbbf24') + ';border-radius:8px;"><div style="font-size:12px;' + (isExpired ? 'color:#6b7280;' : 'color:#92400e;') + 'margin-bottom:4px;font-weight:700;">生存金金额</div><div style="font-size:22px;font-weight:900;' + (isExpired ? 'color:#9ca3af;' : 'color:#b45309;') + '">' + formatMoney(sb.amount) + ' 元</div></div>' +
           '</div>' +
-          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;font-size:14px;margin-top:12px;color:#0f172a;">' +
+          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;font-size:14px;margin-top:12px;' + (isExpired ? 'color:#9ca3af;' : 'color:#0f172a;') + '">' +
           (sb.startDate ? '<p><strong>起领日期：</strong>' + formatDate(sb.startDate) + '</p>' : '') +
           '<p><strong>最近领取：</strong>' + formatDate(sb.lastDate) + '</p>' +
           '<p' + alertClass + '><strong>下次领取：</strong>' + formatDate(sb.nextDate) + ' ' + daysUntilNext + '</p>' +
