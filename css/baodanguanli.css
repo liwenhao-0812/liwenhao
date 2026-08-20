@@ -1925,3 +1925,120 @@ button {
     border-color:#ef4444; background:#fef2f2; box-shadow:0 0 0 3px rgba(239,68,68,.15);
   }
   .wiz-strategy label.ws-danger .ws-title { color:#991b1b; }
+
+/* ======== 客户画像（暖色调备注卡） ======== */
+.btn-warm {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  color: #fff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(217,119,6,0.28);
+}
+.btn-warm:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(217,119,6,0.34); }
+.btn-warm:active { transform: translateY(0); }
+
+.profile-card {
+  border: 1.5px solid #fcd34d;
+  background: linear-gradient(180deg, #fffdf7 0%, #fff7e9 100%);
+  box-shadow: 0 1px 3px rgba(217,119,6,0.08), 0 6px 18px rgba(217,119,6,0.08);
+  position: relative;
+  overflow: hidden;
+}
+.profile-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 5px;
+  background: linear-gradient(180deg, #f59e0b, #fbbf24, #f59e0b);
+}
+.profile-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1.5px dashed #fde68a;
+}
+.profile-card-title {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  font-weight: 800;
+  color: #92400e;
+  letter-spacing: 0.02em;
+}
+.profile-card-sub { font-size: 12px; color: #b45309; margin-top: 3px; opacity: 0.85; }
+.profile-head-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.profile-badge {
+  font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px; white-space: nowrap;
+}
+.profile-badge.fresh { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.profile-badge.aging { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+.profile-badge.stale { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.profile-body { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.profile-chunk {
+  background: rgba(255,255,255,0.72);
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.85);
+}
+.profile-chunk-label {
+  font-size: 12px; font-weight: 800; color: #b45309;
+  text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
+}
+.profile-chunk-text {
+  font-family: 'Songti SC', 'STSong', 'SimSun', Georgia, serif;
+  font-size: 14.5px;
+  line-height: 1.78;
+  color: #4a2c0a;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.profile-card-empty { border-style: dashed; }
+.profile-empty-inner { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.profile-empty-mark {
+  flex-shrink: 0; width: 46px; height: 46px; border-radius: 14px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 1.5px solid #fbbf24;
+  position: relative;
+}
+.profile-empty-mark::before {
+  content: '';
+  position: absolute; left: 50%; top: 50%;
+  width: 15px; height: 15px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 30% 30%, #d97706, #92400e);
+  border-radius: 50%;
+  box-shadow: 0 0 0 5px rgba(217,119,6,0.15);
+}
+.profile-empty-copy { flex: 1; min-width: 200px; }
+.profile-empty-text { font-size: 13px; color: #92400e; margin-top: 5px; line-height: 1.6; }
+
+.profile-modal { max-width: 560px; }
+.profile-modal .modal-header { border-bottom-color: #fde68a; }
+.profile-modal .modal-header h2 { color: #92400e; }
+.profile-hint {
+  background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #f59e0b;
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #92400e; line-height: 1.6; margin-bottom: 18px;
+}
+.profile-modal textarea {
+  width: 100%;
+  border: 1.5px solid #e7d1a9;
+  background: #fffdf7;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.7;
+  color: #4a2c0a;
+  resize: vertical;
+  transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+}
+.profile-modal textarea:focus { outline: none; border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,0.15); }
+.profile-updated { font-size: 12px; color: #b45309; margin-top: 4px; opacity: 0.8; }
+
+@media (max-width: 720px) {
+  .profile-body { grid-template-columns: 1fr; }
+}

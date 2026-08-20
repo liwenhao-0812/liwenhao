@@ -31,6 +31,25 @@ function toYMD(dateStr) {
   return dateStr.replace(/-/g, '');
 }
 
+/* 今天 YYYYMMDD */
+function todayStamp() {
+  var d = new Date();
+  return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+}
+
+/* 距今天数描述（如 "今天" / "3天前" / "120天前"） */
+function daysFromToday(dateStr) {
+  if (!dateStr) return '未知';
+  var s = toYMD(dateStr);
+  if (!/^\d{8}$/.test(s)) return '未知';
+  var d = new Date(s.substring(0, 4) + '-' + s.substring(4, 6) + '-' + s.substring(6, 8));
+  var today = new Date(todayStamp().substring(0, 4) + '-' + todayStamp().substring(4, 6) + '-' + todayStamp().substring(6, 8));
+  var diff = Math.round((today - d) / 86400000);
+  if (diff === 0) return '今天';
+  if (diff === 1) return '昨天';
+  return diff + '天前';
+}
+
 /* 格式化金额 */
 function formatMoney(val) {
   if (!val && val !== 0) return '0';
@@ -180,8 +199,9 @@ function closeModal(id) {
 }
 
 /* 显示确认框 */
-function showConfirm(msg, callback) {
+function showConfirm(msg, callback, confirmText) {
   document.getElementById('confirmMessage').textContent = msg;
+  document.getElementById('confirmBtn').textContent = confirmText || '确认';
   confirmCallback = callback;
   document.getElementById('confirmBtn').onclick = function() {
     closeModal('confirmModal');

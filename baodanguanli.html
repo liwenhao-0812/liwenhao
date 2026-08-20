@@ -4,17 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>保单管理系统</title>
-<link rel="stylesheet" href="css/baodanguanli.css?v=20260815d">
+<link rel="stylesheet" href="css/baodanguanli.css?v=20260820a">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 <script src="js/01-config.js?v=20260815g"></script>
-<script src="js/02-utils.js?v=20260815c"></script>
+<script src="js/02-utils.js?v=20260820a"></script>
 <script src="js/03-auth.js?v=20260815d"></script>
 <script src="js/04-storage.js?v=20260815i"></script>
-<script src="js/05-render.js?v=20260815d"></script>
-<script src="js/06-crud.js?v=20260815c"></script>
-<script src="js/07-importexport.js?v=20260815c"></script>
+<script src="js/05-render.js?v=20260820a"></script>
+<script src="js/06-crud.js?v=20260820a"></script>
+<script src="js/07-importexport.js?v=20260820a"></script>
 <script src="js/08-app.js?v=20260815d"></script>
 </head>
 <body>
@@ -564,6 +564,38 @@
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('serviceModal')">取消</button>
       <button class="btn-primary" onclick="saveServiceRecord()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 客户画像模态框 -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal profile-modal">
+    <div class="modal-header">
+      <h2>客户画像</h2>
+      <button class="modal-close" onclick="closeModal('profileModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="profileClientIndex" value="-1">
+      <div class="profile-hint">
+        记录您对客户的了解，长期保持清晰印象，避免久不联系后遗忘或混淆。
+      </div>
+
+      <div class="form-group">
+        <label>个人情况</label>
+        <textarea id="profilePersonal" rows="5" placeholder="如：职业与收入、性格与沟通偏好、兴趣爱好、健康状况、投保关注点等……"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>家庭情况</label>
+        <textarea id="profileFamily" rows="5" placeholder="如：家庭结构与成员、配偶子女情况、子女教育或婚嫁计划、家庭资产负债、赡养责任等……"></textarea>
+      </div>
+
+      <div class="profile-updated" id="profileUpdatedAt">尚未建立画像</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('profileModal')">取消</button>
+      <button class="btn-primary btn-warm" onclick="saveProfile()">保存画像</button>
     </div>
   </div>
 </div>

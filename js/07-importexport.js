@@ -21,6 +21,16 @@ function saveContactRecord() {
     renderDetailPanel(selectedClientIdx);
   }
   showToast('联系记录已保存', 'success');
+
+  /* ★ 接触客户后，若画像缺失则提醒补全 */
+  var _cc = clientData[selectedClientIdx];
+  if (isProfileIncomplete(_cc)) {
+    setTimeout(function() {
+      showConfirm('为保持对「' + ((_cc && _cc.name) || '该客户') + '」的持续了解，是否现在补全客户画像（个人情况、家庭情况备注）？', function() {
+        openProfileModal(selectedClientIdx);
+      }, '现在补全');
+    }, 420);
+  }
 }
 
 /* 切换「不继续服务」标记 */

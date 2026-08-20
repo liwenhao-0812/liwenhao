@@ -89,12 +89,16 @@ function saveClient() {
 
   var editIdx = parseInt(document.getElementById('clientEditIndex').value);
   if (editIdx >= 0) {
-    /* 编辑：保留原有保单和联系记录 */
+    /* 编辑：保留原有保单、联系记录、画像及状态标记 */
     clientObj.policies = clientData[editIdx].policies || [];
     clientObj.contactHistory = clientData[editIdx].contactHistory || [];
+    clientObj.profile = clientData[editIdx].profile || null;
+    clientObj.doNotContact = clientData[editIdx].doNotContact || false;
     clientData[editIdx] = clientObj;
     showToast('客户信息已更新', 'success');
   } else {
+    clientObj.profile = null;
+    clientObj.doNotContact = false;
     clientData.push(clientObj);
     showToast('客户添加成功', 'success');
   }
@@ -115,6 +119,63 @@ function deleteClient(idx) {
     backToQueryList();
     showToast('客户已删除', 'success');
   });
+}
+
+/* ======== 客户画像 ======== */
+
+/* 打开画像编辑模态框 */
+function openProfileModal(clientIdx) {
+  document.getElementById('profileClientIndex').value = clientIdx;
+  var c = clientData[clientIdx];
+  var profile = (c && c.profile) ? c.profile : null;
+  document.getElementById('profilePersonal').value = (profile && profile.personal) ? profile.personal : '';
+  document.getElementById('profileFamily').value = (profile && profile.family) ? profile.family : '';
+  /* 更新时间 */
+  if (profile && profile.updatedAt) {
+    document.getElementById('profileUpdatedAt').textContent = '上次更新：' + formatDate(profile.updatedAt) + '（' + daysFromToday(profile.updatedAt) + '）';
+  } else {
+    document.getElementById('profileUpdatedAt').textContent = '尚未建立画像';
+  }
+  openModal('profileModal');
+}
+
+/* 保存客户画像 */
+function saveProfile() {
+  var idx = parseInt(document.getElementById('profileClientIndex').value);
+  if (isNaN(idx) || idx < 0 || idx >= clientData.length) { showToast('客户信息异常', 'warning'); return; }
+  var personal = document.getElementById('profilePersonal').value.trim();
+  var family = document.getElementById('profileFamily').value.trim();
+  if (!personal && !family) {
+    showToast('请至少填写一项画像内容', 'warning');
+    return;
+  }
+  clientData[idx].profile = {
+    personal: personal,
+    family: family,
+    updatedAt: todayStamp()
+  };
+  savePolicyData();
+  closeModal('profileModal');
+  if (currentTab === 'query' && document.getElementById('clientDetailView').style.display !== 'none') {
+    renderDetailPanel(idx);
+  }
+  showToast('客户画像已保存', 'success');
+}
+
+/* 是否画像缺失（用于提醒） */
+function isProfileIncomplete(c) {
+  return !(c && c.profile && (c.profile.personal || c.profile.family));
+}
+
+/* 画像新鲜度：返回距今天数与样式类（fresh/aging/stale） */
+function profileStaleness(updatedAt) {
+  var s = toYMD(updatedAt);
+  if (!s || !/^\d{8}$/.test(s)) return { days: null, cls: 'stale' };
+  var d = new Date(s.substring(0, 4) + '-' + s.substring(4, 6) + '-' + s.substring(6, 8));
+  var today = new Date(todayStamp().substring(0, 4) + '-' + todayStamp().substring(4, 6) + '-' + todayStamp().substring(6, 8));
+  var diff = Math.round((today - d) / 86400000);
+  var cls = diff <= 30 ? 'fresh' : (diff <= 90 ? 'aging' : 'stale');
+  return { days: diff, cls: cls };
 }
 
 /* ======== 保单增删改 ======== */

@@ -599,6 +599,38 @@ function renderDetailPanel(idx) {
   }
   html += '</div></div>';
 
+  /* 客户画像（个人/家庭情况备注） */
+  var _prof = c.profile;
+  var _hasProfile = _prof && (_prof.personal || _prof.family);
+  if (_hasProfile) {
+    var _stale = profileStaleness(_prof.updatedAt);
+    html += '<div class="card profile-card">' +
+      '<div class="profile-card-head">' +
+        '<div><div class="profile-card-title">客户画像</div>' +
+        '<div class="profile-card-sub">持续了解客户，避免久不联系后遗忘或混淆</div></div>' +
+        '<div class="profile-head-actions">' +
+          '<span class="profile-badge ' + _stale.cls + '">' + (_stale.days === null ? '尚未记录更新时间' : '更新于 ' + daysFromToday(_prof.updatedAt)) + '</span>' +
+          '<button class="btn-sm btn-warm no-print" onclick="openProfileModal(' + idx + ')">编辑画像</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="profile-body">' +
+      (_prof.personal ? '<div class="profile-chunk"><div class="profile-chunk-label">个人情况</div><div class="profile-chunk-text">' + htmlEscape(_prof.personal) + '</div></div>' : '') +
+      (_prof.family ? '<div class="profile-chunk"><div class="profile-chunk-label">家庭情况</div><div class="profile-chunk-text">' + htmlEscape(_prof.family) + '</div></div>' : '') +
+      '</div>' +
+      '</div>';
+  } else {
+    html += '<div class="card profile-card profile-card-empty">' +
+      '<div class="profile-empty-inner">' +
+        '<div class="profile-empty-mark" aria-hidden="true"></div>' +
+        '<div class="profile-empty-copy">' +
+          '<div class="profile-card-title">客户画像</div>' +
+          '<p class="profile-empty-text">尚未记录该客户的个人情况与家庭情况。每次接触后补全一点点，长期积累形成清晰印象。</p>' +
+        '</div>' +
+        '<button class="btn-sm btn-warm no-print" onclick="openProfileModal(' + idx + ')">建立画像</button>' +
+      '</div>' +
+      '</div>';
+  }
+
   /* 保单列表 - 紧凑版，点击可展开详情 */
   html += '<div class="card"><div class="card-title">保单列表' +
     '<button class="btn-sm btn-primary" onclick="openAddPolicyModal(' + idx + ')">添加保单</button></div>';
