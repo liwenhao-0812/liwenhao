@@ -475,7 +475,8 @@
             "nextDate": "20270912",
             "startDate": "20090912"
           },
-          "parentPolicyCode": ""
+          "parentPolicyCode": "",
+          "_idx": 0
         }
       ],
       "workAddress": "清远市清城区桥北路10号牛皇庙市场蔡蔡杂货铺",
@@ -503,7 +504,12 @@
           "note": "协助变更投保人、被保人手机号码",
           "status": "面见客户"
         }
-      ]
+      ],
+      "profile": {
+        "personal": "制衣厂领班，东城自建房",
+        "family": "独生儿子，儿子大专毕业在大学城油站工作，需要上夜班",
+        "updatedAt": "20260820"
+      }
     },
     {
       "name": "冯丽红",
@@ -2362,13 +2368,7 @@
       "workAddress": "",
       "workCompany": "",
       "familyMembers": [],
-      "contactHistory": [
-        {
-          "status": "未联系上",
-          "date": "20260819",
-          "note": "已与其他业务员联系"
-        }
-      ]
+      "contactHistory": []
     },
     {
       "name": "吴翠芬",
@@ -4317,9 +4317,9 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1787125955833",
+  "_timestamp": "1787194168315",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
-  "_passwordHash": "Hg10hvh"
+  "_passwordHash": "H143aad"
 }
