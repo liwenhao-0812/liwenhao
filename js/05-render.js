@@ -170,10 +170,56 @@ function renderAdminPanel() {
 
 /* ======== 查询功能 ======== */
 
+/* 联系状态筛选（点击统计徽标切换，''=不过滤） */
+var contactStatFilter = '';
+
+/* 客户联系分类（按最近一条联系记录的状态判定）
+   contacted   = 最近状态为「已电话联系/面见客户」
+   uncontacted = 「未联系上/电话挂断/已加微信(未见面)/无任何记录」
+   dnc         = 标记为不再服务（不计入两个统计） */
+function getContactClass(c) {
+  if (c.doNotContact) return 'dnc';
+  var latest = null;
+  (c.contactHistory || []).forEach(function(ch) {
+    if (!latest || (ch.date || '') > (latest.date || '')) latest = ch;
+  });
+  return (latest && (latest.status === '已电话联系' || latest.status === '面见客户')) ? 'contacted' : 'uncontacted';
+}
+
+/* 全量客户联系统计（不受搜索/筛选影响） */
+function getContactStats() {
+  var s = { contacted: 0, uncontacted: 0, dnc: 0, total: clientData.length };
+  clientData.forEach(function(c) {
+    s[getContactClass(c)]++;
+  });
+  return s;
+}
+
+/* 点击徽标切换筛选 */
+function toggleContactStatFilter(mode) {
+  contactStatFilter = (contactStatFilter === mode) ? '' : mode;
+  handleSearch();
+}
+
+/* 渲染联系统计徽标 */
+function renderContactStatChips() {
+  var box = document.getElementById('contactStatChips');
+  if (!box) return;
+  var s = getContactStats();
+  var html =
+    '<button type="button" class="cstat cs-contacted' + (contactStatFilter === 'contacted' ? ' active' : '') + '" onclick="toggleContactStatFilter(\'contacted\')" title="点击筛选：最近联系状态为已电话联系/面见客户的客户">已联系 ' + s.contacted + '</button>' +
+    '<button type="button" class="cstat cs-uncontacted' + (contactStatFilter === 'uncontacted' ? ' active' : '') + '" onclick="toggleContactStatFilter(\'uncontacted\')" title="点击筛选：未联系上/电话挂断/已加微信未见面/无记录的客户">未联系 ' + s.uncontacted + '</button>';
+  if (s.dnc > 0) {
+    html += '<span class="cstat cs-dnc" title="不再服务的客户，不计入统计">不再服务 ' + s.dnc + '</span>';
+  }
+  box.innerHTML = html;
+}
+
 /* 清空搜索 */
 function clearSearch() {
   document.getElementById('searchInput').value = '';
   document.getElementById('followUpFilter').value = 'all';
+  contactStatFilter = '';
   handleSearch();
 }
 
@@ -234,6 +280,13 @@ function handleSearch() {
     });
   }
 
+  /* 联系状态筛选（点击统计徽标触发） */
+  if (contactStatFilter) {
+    filtered = filtered.filter(function(item) {
+      return getContactClass(item.client) === contactStatFilter;
+    });
+  }
+
   /* 排序 */
   var sortBy = document.getElementById('sortSelect').value;
   filtered.sort(function(a, b) {
@@ -283,7 +336,9 @@ function handleSearch() {
   var totalPolicies = 0;
   filtered.forEach(function(item) { totalPolicies += item.matchedPolicies.length; });
   document.getElementById('searchResultInfo').textContent =
-    '共找到 ' + filtered.length + ' 个客户，' + totalPolicies + ' 条保单';
+    '共找到 ' + filtered.length + ' 个客户，' + totalPolicies + ' 条保单' +
+    (contactStatFilter === 'contacted' ? '（已联系）' : contactStatFilter === 'uncontacted' ? '（未联系）' : '');
+  renderContactStatChips();
 
   renderClientList(filtered);
 }

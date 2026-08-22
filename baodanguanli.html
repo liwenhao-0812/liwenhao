@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>保单管理系统</title>
-<link rel="stylesheet" href="css/baodanguanli.css?v=20260822b">
+<link rel="stylesheet" href="css/baodanguanli.css?v=20260822c">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
@@ -12,7 +12,7 @@
 <script src="js/02-utils.js?v=20260820a"></script>
 <script src="js/03-auth.js?v=20260815d"></script>
 <script src="js/04-storage.js?v=20260815i"></script>
-<script src="js/05-render.js?v=20260822a"></script>
+<script src="js/05-render.js?v=20260822b"></script>
 <script src="js/06-crud.js?v=20260822b"></script>
 <script src="js/07-importexport.js?v=20260820a"></script>
 <script src="js/08-app.js?v=20260815d"></script>
@@ -129,10 +129,13 @@
       <!-- 查询列表视图 -->
       <div id="queryListView">
       <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="按投保人/被保人/地址/险种名称/险种代码搜索..." oninput="handleSearch()">
-        <button class="btn-outline" onclick="clearSearch()">清空</button>
+        <input type="text" id="searchInput" placeholder="搜索投保人/被保人/地址/险种/代码..." oninput="handleSearch()">
+        <button class="btn-clear-sm" onclick="clearSearch()" title="清空搜索条件">清空</button>
       </div>
-      <div class="search-result-info" id="searchResultInfo"></div>
+      <div class="result-info-row">
+        <div class="search-result-info" id="searchResultInfo"></div>
+        <div class="contact-stat-chips" id="contactStatChips"></div>
+      </div>
       <!-- 跟进状态筛选 -->
       <div class="follow-up-filter" style="margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <span style="font-size:12px;font-weight:600;color:#64748b;">跟进状态：</span>
