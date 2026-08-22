@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>保单管理系统</title>
-<link rel="stylesheet" href="css/baodanguanli.css?v=20260822a">
+<link rel="stylesheet" href="css/baodanguanli.css?v=20260822b">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
@@ -13,7 +13,7 @@
 <script src="js/03-auth.js?v=20260815d"></script>
 <script src="js/04-storage.js?v=20260815i"></script>
 <script src="js/05-render.js?v=20260822a"></script>
-<script src="js/06-crud.js?v=20260822a"></script>
+<script src="js/06-crud.js?v=20260822b"></script>
 <script src="js/07-importexport.js?v=20260820a"></script>
 <script src="js/08-app.js?v=20260815d"></script>
 </head>
@@ -588,9 +588,11 @@
         <label>险种类别</label>
         <div class="trait-seg" id="traitCategorySeg">
           <button type="button" data-v="重疾险" onclick="setTraitCategory('重疾险')">重疾险</button>
+          <button type="button" data-v="防癌险" onclick="setTraitCategory('防癌险')">防癌险</button>
           <button type="button" data-v="医疗险" onclick="setTraitCategory('医疗险')">医疗险</button>
           <button type="button" data-v="寿险" onclick="setTraitCategory('寿险')">寿险</button>
           <button type="button" data-v="年金险" onclick="setTraitCategory('年金险')">年金险</button>
+          <button type="button" data-v="万能险" onclick="setTraitCategory('万能险')">万能险</button>
           <button type="button" data-v="意外险" onclick="setTraitCategory('意外险')">意外险</button>
           <button type="button" data-v="两全险" onclick="setTraitCategory('两全险')">两全险</button>
           <button type="button" data-v="分红险" onclick="setTraitCategory('分红险')">分红险</button>
@@ -598,6 +600,7 @@
           <button type="button" data-v="其他" onclick="setTraitCategory('其他')">其他</button>
         </div>
         <input type="hidden" id="traitCategory" value="">
+        <div class="trait-field-note" id="traitCatNote">附加险请按实际保障责任选择类别，再次点击已选类别可取消</div>
       </div>
 
       <div class="trait-field">
@@ -615,28 +618,37 @@
           <input type="number" id="traitWaitCustom" min="0" placeholder="天数" oninput="setTraitWaitCustom(this.value)">
           <span>天</span>
         </div>
+        <div class="trait-field-note">再次点击已选天数可取消选择</div>
       </div>
 
-      <div class="trait-field">
-        <label>年金 / 生存金领取规则</label>
-        <div class="trait-seg" id="traitAnnuityStartSeg">
-          <button type="button" data-v="none" onclick="setTraitAnnuityStart('none')">无领取责任</button>
-          <button type="button" data-v="afterYears" onclick="setTraitAnnuityStart('afterYears')">投保后N年</button>
-          <button type="button" data-v="atAge" onclick="setTraitAnnuityStart('atAge')">到达年龄</button>
-          <button type="button" data-v="fixedDate" onclick="setTraitAnnuityStart('fixedDate')">指定期限</button>
+      <div class="trait-field trait-collapsible" id="traitAnnuityField">
+        <button type="button" class="trait-collapse-head" onclick="toggleAnnuitySection()">
+          <span class="trait-collapse-title">年金 / 生存金领取规则</span>
+          <span class="trait-collapse-badge b-empty" id="traitAnnuityBadge">未设置</span>
+          <span class="trait-collapse-arrow" aria-hidden="true">▾</span>
+        </button>
+        <div class="trait-collapse-hint" id="traitAnnuityHint"></div>
+        <div class="trait-collapse-body" id="traitAnnuityBody">
+          <div class="trait-seg" id="traitAnnuityStartSeg">
+            <button type="button" data-v="none" onclick="setTraitAnnuityStart('none')">无领取责任</button>
+            <button type="button" data-v="afterYears" onclick="setTraitAnnuityStart('afterYears')">投保后N年</button>
+            <button type="button" data-v="atAge" onclick="setTraitAnnuityStart('atAge')">到达年龄</button>
+            <button type="button" data-v="fixedDate" onclick="setTraitAnnuityStart('fixedDate')">指定期限</button>
+          </div>
+          <input type="hidden" id="traitAnnuityStart" value="">
+          <input type="text" id="traitAnnuityVal" class="trait-val-input" placeholder="如：5年 / 60岁 / 2035年起" oninput="refreshAnnuityBadge()">
+          <div class="trait-sublabel" id="traitFreqLabel">领取频率</div>
+          <div class="trait-seg" id="traitAnnuityFreqSeg">
+            <button type="button" data-v="annual" onclick="setTraitAnnuityFreq('annual')">每年</button>
+            <button type="button" data-v="semiannual" onclick="setTraitAnnuityFreq('semiannual')">每半年</button>
+            <button type="button" data-v="quarterly" onclick="setTraitAnnuityFreq('quarterly')">每季</button>
+            <button type="button" data-v="monthly" onclick="setTraitAnnuityFreq('monthly')">每月</button>
+            <button type="button" data-v="triennial" onclick="setTraitAnnuityFreq('triennial')">每3年</button>
+            <button type="button" data-v="lumpsum" onclick="setTraitAnnuityFreq('lumpsum')">到期一次性</button>
+          </div>
+          <input type="hidden" id="traitAnnuityFreq" value="">
+          <div class="trait-field-note">再次点击已选项可取消</div>
         </div>
-        <input type="hidden" id="traitAnnuityStart" value="">
-        <input type="text" id="traitAnnuityVal" class="trait-val-input" placeholder="如：5年 / 60岁 / 2035年起">
-        <div class="trait-sublabel">领取频率</div>
-        <div class="trait-seg" id="traitAnnuityFreqSeg">
-          <button type="button" data-v="annual" onclick="setTraitAnnuityFreq('annual')">每年</button>
-          <button type="button" data-v="semiannual" onclick="setTraitAnnuityFreq('semiannual')">每半年</button>
-          <button type="button" data-v="quarterly" onclick="setTraitAnnuityFreq('quarterly')">每季</button>
-          <button type="button" data-v="monthly" onclick="setTraitAnnuityFreq('monthly')">每月</button>
-          <button type="button" data-v="triennial" onclick="setTraitAnnuityFreq('triennial')">每3年</button>
-          <button type="button" data-v="lumpsum" onclick="setTraitAnnuityFreq('lumpsum')">到期一次性</button>
-        </div>
-        <input type="hidden" id="traitAnnuityFreq" value="">
       </div>
 
       <div class="trait-field">

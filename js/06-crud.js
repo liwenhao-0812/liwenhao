@@ -600,14 +600,38 @@ function syncExistingPoliciesToLib() {
 /* ======== 险种赔付/领取特征 ======== */
 var TRAIT_META = {
   cats: {
-    '重疾险': 'cat-critical', '医疗险': 'cat-medical', '寿险': 'cat-life', '年金险': 'cat-annuity',
-    '意外险': 'cat-accident', '两全险': 'cat-endowment', '分红险': 'cat-dividend', '教育金': 'cat-edu', '其他': 'cat-other'
+    '重疾险': 'cat-critical', '防癌险': 'cat-cancer', '医疗险': 'cat-medical', '寿险': 'cat-life', '年金险': 'cat-annuity',
+    '万能险': 'cat-universal', '意外险': 'cat-accident', '两全险': 'cat-endowment', '分红险': 'cat-dividend',
+    '教育金': 'cat-edu', '其他': 'cat-other'
   },
   freqLabels: {
     annual: '每年领取', semiannual: '每半年领取', quarterly: '每季度领取',
     monthly: '每月领取', triennial: '每3年领取', lumpsum: '到期一次性领取'
   }
 };
+
+/* 保障型类别（通常无生存金领取责任，年金区块默认折叠） */
+var PROTECTION_CATS = ['重疾险', '防癌险', '医疗险', '寿险', '意外险'];
+
+function isProtectionCat(cat) {
+  return PROTECTION_CATS.indexOf(cat) !== -1;
+}
+
+/* 根据险种名称推荐类别（附加险/万能险等按名称关键词识别） */
+function suggestCategoryByName(name) {
+  if (!name) return '';
+  var rules = [
+    ['万能', '万能险'], ['防癌', '防癌险'], ['年金', '年金险'], ['养老', '年金险'],
+    ['教育', '教育金'], ['少儿', '教育金'], ['两全', '两全险'], ['分红', '分红险'],
+    ['重疾', '重疾险'], ['康宁', '重疾险'], ['康健', '重疾险'],
+    ['医疗', '医疗险'], ['费用', '医疗险'], ['康悦', '医疗险'],
+    ['意外', '意外险'], ['终身寿', '寿险'], ['定期寿', '寿险'], ['增额', '寿险'], ['寿险', '寿险']
+  ];
+  for (var i = 0; i < rules.length; i++) {
+    if (name.indexOf(rules[i][0]) !== -1) return rules[i][1];
+  }
+  return '';
+}
 
 /* 特征是否有内容（用于"待补全"判断） */
 function hasTraitContent(t) {
@@ -646,7 +670,7 @@ function traitChipsHtml(item) {
   if (startLbl) {
     chips.push('<span class="trait-chip tc-' + (t.annuityStart === 'none' ? 'none' : 'annuity') + '">📅 ' + startLbl + '</span>');
   }
-  if (t.annuityFreq && t.annuityFreq !== 'none') {
+  if (t.annuityFreq && t.annuityStart && t.annuityStart !== 'none') {
     chips.push('<span class="trait-chip tc-freq">🔁 ' + (TRAIT_META.freqLabels[t.annuityFreq] || htmlEscape(t.annuityFreq)) + '</span>');
   }
   if (t.note) chips.push('<span class="trait-chip tc-note">📝 ' + htmlEscape(t.note) + '</span>');
@@ -680,7 +704,7 @@ function findNextIncompleteIdx(fromIdx) {
   return -1;
 }
 
-/* —— 分段选择器交互 —— */
+/* —— 分段选择器交互（再次点击已选项可取消） —— */
 function setTraitSeg(segId, hiddenId, value) {
   document.getElementById(hiddenId).value = value;
   var seg = document.getElementById(segId);
@@ -692,7 +716,7 @@ function setTraitSeg(segId, hiddenId, value) {
 
 /* 类别推荐等待期 */
 function traitSuggestWait(category) {
-  var map = { '重疾险': '180', '医疗险': '30', '寿险': '30' };
+  var map = { '重疾险': '180', '防癌险': '180', '医疗险': '30', '寿险': '30' };
   return map[category] || '';
 }
 
@@ -707,12 +731,19 @@ function refreshTraitWaitSuggest() {
   });
 }
 
-function setTraitCategory(v) {
+function applyTraitCategory(v) {
   setTraitSeg('traitCategorySeg', 'traitCategory', v);
   refreshTraitWaitSuggest();
+  refreshAnnuitySection();
 }
 
-function setTraitWait(v) {
+function setTraitCategory(v) {
+  /* 再次点击已选类别 → 取消选择 */
+  if (v && document.getElementById('traitCategory').value === v) v = '';
+  applyTraitCategory(v);
+}
+
+function applyTraitWait(v) {
   v = (v === undefined || v === null) ? '' : String(v);
   document.getElementById('traitWait').value = v;
   var seg = document.getElementById('traitWaitSeg');
@@ -722,14 +753,95 @@ function setTraitWait(v) {
   refreshTraitWaitSuggest();
 }
 
+function setTraitWait(v) {
+  /* 再次点击已选天数 → 取消选择 */
+  if (v && document.getElementById('traitWait').value === String(v)) v = '';
+  applyTraitWait(v);
+}
+
 function setTraitWaitCustom(val) {
   val = (val || '').trim();
   if (val === '') return;
-  setTraitWait(val);
+  applyTraitWait(val);
 }
 
-function setTraitAnnuityStart(v) {
+/* 年金区块：折叠状态 */
+var annuityManual = false; /* 用户手动切换后不再自动折叠/展开 */
+
+function toggleAnnuitySection() {
+  var field = document.getElementById('traitAnnuityField');
+  if (!field) return;
+  annuityManual = true;
+  field.classList.toggle('collapsed');
+}
+
+/* 按类别自动折叠/展开年金区块（保障型默认折叠） */
+function refreshAnnuitySection() {
+  var field = document.getElementById('traitAnnuityField');
+  if (!field) return;
+  if (annuityManual) return;
+  var hint = document.getElementById('traitAnnuityHint');
+  var cat = document.getElementById('traitCategory').value;
+  var start = document.getElementById('traitAnnuityStart').value;
+  if (start) {
+    /* 已有领取规则 → 始终展开 */
+    field.classList.remove('collapsed');
+    field.classList.remove('has-hint');
+    if (hint) hint.innerHTML = '';
+    return;
+  }
+  if (isProtectionCat(cat)) {
+    field.classList.add('collapsed');
+    field.classList.add('has-hint');
+    if (hint) hint.innerHTML = '「' + htmlEscape(cat) + '」通常无生存金领取责任；如确有领取责任，点击上方标题可展开录入';
+  } else {
+    field.classList.remove('collapsed');
+    field.classList.remove('has-hint');
+    if (hint) hint.innerHTML = '';
+  }
+}
+
+/* 领取起始相关的输入项可见性（未选或"无领取责任"时隐藏详情输入） */
+function refreshAnnuityInputs() {
+  var start = document.getElementById('traitAnnuityStart').value;
+  var show = !!start && start !== 'none';
+  var valInput = document.getElementById('traitAnnuityVal');
+  var freqLabel = document.getElementById('traitFreqLabel');
+  var freqSeg = document.getElementById('traitAnnuityFreqSeg');
+  if (valInput) valInput.style.display = show ? 'block' : 'none';
+  if (freqLabel) freqLabel.style.display = show ? 'block' : 'none';
+  if (freqSeg) freqSeg.style.display = show ? 'flex' : 'none';
+}
+
+/* 年金区块标题右侧徽标（折叠时也能看到当前设置摘要） */
+function refreshAnnuityBadge() {
+  var badge = document.getElementById('traitAnnuityBadge');
+  if (!badge) return;
+  var start = document.getElementById('traitAnnuityStart').value;
+  var freq = document.getElementById('traitAnnuityFreq').value;
+  var cls = 'trait-collapse-badge ';
+  var txt = '未设置';
+  if (start === 'none') {
+    cls += 'b-none';
+    txt = '无领取责任';
+  } else if (start) {
+    cls += 'b-set';
+    var t = { annuityStart: start, annuityStartVal: document.getElementById('traitAnnuityVal').value };
+    txt = annuityStartLabel(t);
+    if (freq) txt += ' · ' + (TRAIT_META.freqLabels[freq] || freq);
+  } else {
+    cls += 'b-empty';
+  }
+  badge.className = cls;
+  badge.textContent = txt;
+}
+
+function applyTraitAnnuityStart(v) {
   setTraitSeg('traitAnnuityStartSeg', 'traitAnnuityStart', v);
+  /* 取消选择或选"无领取责任"时，联动清空领取频率 */
+  if (!v || v === 'none') {
+    setTraitSeg('traitAnnuityFreqSeg', 'traitAnnuityFreq', '');
+  }
   var input = document.getElementById('traitAnnuityVal');
   var ph = {
     afterYears: '如：5（投保满5年起可领取）',
@@ -738,11 +850,26 @@ function setTraitAnnuityStart(v) {
     none: ''
   };
   if (ph[v] !== undefined) input.placeholder = ph[v];
-  input.style.display = (v === 'none') ? 'none' : 'block';
+  refreshAnnuityInputs();
+  refreshAnnuityBadge();
+  refreshAnnuitySection();
+}
+
+function setTraitAnnuityStart(v) {
+  /* 再次点击已选项 → 取消选择 */
+  if (v && document.getElementById('traitAnnuityStart').value === v) v = '';
+  applyTraitAnnuityStart(v);
+}
+
+function applyTraitAnnuityFreq(v) {
+  setTraitSeg('traitAnnuityFreqSeg', 'traitAnnuityFreq', v);
+  refreshAnnuityBadge();
 }
 
 function setTraitAnnuityFreq(v) {
-  setTraitSeg('traitAnnuityFreqSeg', 'traitAnnuityFreq', v);
+  /* 再次点击已选频率 → 取消选择 */
+  if (v && document.getElementById('traitAnnuityFreq').value === v) v = '';
+  applyTraitAnnuityFreq(v);
 }
 
 /* 打开特征编辑器 */
@@ -754,12 +881,30 @@ function openTraitEditor(idx) {
   document.getElementById('traitEditTitle').textContent = item.insuranceName || '未命名险种';
   document.getElementById('traitEditCode').textContent = item.codeType || '';
   var t = item.traits || {};
-  setTraitCategory(t.category || '');
-  setTraitWait((t.waitingPeriod === undefined || t.waitingPeriod === null) ? '' : t.waitingPeriod);
-  setTraitAnnuityStart(t.annuityStart || '');
+  /* 类别：未设置时按险种名称自动推荐（附加险/万能险等） */
+  var catNote = document.getElementById('traitCatNote');
+  if (!t.category) {
+    var sug = suggestCategoryByName(item.insuranceName || '');
+    if (sug) {
+      applyTraitCategory(sug);
+      if (catNote) catNote.textContent = '已按险种名称推荐「' + sug + '」，可点击更换，再次点击可取消';
+    } else {
+      applyTraitCategory('');
+      if (catNote) catNote.textContent = '附加险请按实际保障责任选择类别，再次点击已选类别可取消';
+    }
+  } else {
+    applyTraitCategory(t.category);
+    if (catNote) catNote.textContent = '附加险请按实际保障责任选择类别，再次点击已选类别可取消';
+  }
+  applyTraitWait((t.waitingPeriod === undefined || t.waitingPeriod === null) ? '' : t.waitingPeriod);
+  annuityManual = false;
+  applyTraitAnnuityStart(t.annuityStart || '');
   document.getElementById('traitAnnuityVal').value = t.annuityStartVal || '';
-  setTraitAnnuityFreq(t.annuityFreq || '');
+  applyTraitAnnuityFreq(t.annuityFreq || '');
   document.getElementById('traitNote').value = t.note || '';
+  refreshAnnuityInputs();
+  refreshAnnuityBadge();
+  refreshAnnuitySection();
   var nextIdx = findNextIncompleteIdx(idx);
   document.getElementById('traitSaveNextBtn').style.display = (nextIdx === -1) ? 'none' : '';
   openModal('traitModal');
@@ -836,11 +981,16 @@ function showPolicyTraitHint(libItem) {
   }
   bar.innerHTML = '<span class="pth-label">险种特征</span>' + traitCatTag(libItem) + traitChipsHtml(libItem);
   bar.classList.add('show');
-  /* 生存金类型智能填充（仅当未选择时） */
+  /* 保障型险种（重疾/医疗/寿险/意外/防癌）隐藏生存金录入提示，避免误导 */
+  if (isProtectionCat(libItem.traits.category)) {
+    hideSurvivalBenefitHint();
+  }
+  /* 生存金类型智能填充：仅在特征档案明确有领取责任时才填充 */
   var sbSelect = document.getElementById('survivalBenefitType');
   var f = libItem.traits.annuityFreq;
+  var startSet = libItem.traits.annuityStart && libItem.traits.annuityStart !== 'none';
   var map = { annual: 'annual', triennial: 'triennial', lumpsum: 'maturity' };
-  if (f && map[f] && sbSelect && !sbSelect.value) {
+  if (startSet && f && map[f] && sbSelect && !sbSelect.value) {
     sbSelect.value = map[f];
     autoCalcSurvivalNextDate();
     showToast('已按险种库特征自动填充生存金类型：' + TRAIT_META.freqLabels[f], 'success');
