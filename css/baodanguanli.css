@@ -2042,3 +2042,109 @@ button {
 @media (max-width: 720px) {
   .profile-body { grid-template-columns: 1fr; }
 }
+
+/* ======== 险种赔付/领取特征 ======== */
+/* 完善度横幅 */
+.itp-banner {
+  background: linear-gradient(135deg, #fffdf7, #fff7e9);
+  border: 1.5px solid #fcd34d;
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+.itp-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.itp-title { font-size: 14px; font-weight: 800; color: #92400e; letter-spacing: 0.02em; }
+.itp-bar { height: 8px; border-radius: 6px; background: #fde68a; overflow: hidden; }
+.itp-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, #f59e0b, #d97706); transition: width 0.4s var(--ease-out); }
+.itp-meta { font-size: 12px; color: #b45309; margin-top: 8px; }
+
+/* 险种卡片：代码行 + 特征chips */
+.inslib-code-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.inslib-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; width: 100%; }
+.trait-chip {
+  display: inline-flex; align-items: center;
+  font-size: 11px; font-weight: 700;
+  padding: 2px 8px; border-radius: 6px;
+  white-space: nowrap;
+}
+.trait-missing { background: #fffbeb; color: #b45309; border: 1px dashed #f59e0b; }
+.tc-wait { background: #eef2ff; color: #4338ca; }
+.tc-annuity { background: #fffbeb; color: #b45309; }
+.tc-freq { background: #f0fdfa; color: #0f766e; }
+.tc-none { background: #f1f5f9; color: #475569; }
+.tc-note { background: #f5f3ff; color: #7c3aed; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+
+/* 类别标签 */
+.trait-cat {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  padding: 1px 8px; border-radius: 4px; white-space: nowrap;
+}
+.cat-critical { background: #fef2f2; color: #b91c1c; }
+.cat-medical { background: #f0f9ff; color: #0369a1; }
+.cat-life { background: #eef1f7; color: #1a2744; }
+.cat-annuity { background: #fffbeb; color: #b45309; }
+.cat-accident { background: #fff7ed; color: #c2410c; }
+.cat-endowment { background: #f0fdfa; color: #0f766e; }
+.cat-dividend { background: #f5f3ff; color: #7c3aed; }
+.cat-edu { background: #f0fdf4; color: #15803d; }
+.cat-other { background: #f1f5f9; color: #475569; }
+
+/* 特征编辑模态框 */
+.trait-modal { max-width: 620px; }
+.trait-modal-head {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 16px; padding: 10px 14px;
+  background: var(--color-accent-pale); border-radius: var(--radius-sm);
+}
+.trait-modal-name { font-size: 15px; font-weight: 800; color: var(--color-text-primary); word-break: break-all; }
+.trait-field { margin-bottom: 18px; }
+.trait-field > label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--color-text-primary); }
+.trait-seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.trait-seg button {
+  padding: 6px 12px; font-size: 12px; font-weight: 600;
+  border: 1.5px solid var(--color-border); border-radius: 8px;
+  background: #fff; color: var(--color-text-secondary);
+  cursor: pointer; transition: all 0.15s var(--ease-out); min-height: 32px;
+}
+.trait-seg button:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.trait-seg button.active {
+  background: var(--color-primary); border-color: var(--color-primary);
+  color: #fff; box-shadow: 0 2px 8px rgba(26,39,68,0.25);
+}
+.trait-seg button.suggest { border-style: dashed; border-color: #f59e0b; color: #b45309; background: #fffbeb; }
+.trait-custom-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 12px; color: var(--color-text-muted); }
+.trait-custom-row input {
+  width: 90px; padding: 6px 8px; font-size: 13px;
+  border: 1.5px solid var(--color-border); border-radius: 8px;
+}
+.trait-custom-row input:focus { outline: none; border-color: var(--color-primary); }
+.trait-val-input {
+  width: 100%; margin-top: 8px; padding: 8px 12px; font-size: 13px;
+  border: 1.5px solid var(--color-border); border-radius: 8px;
+  transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+}
+.trait-val-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(26,39,68,0.1); }
+.trait-sublabel { font-size: 12px; font-weight: 700; color: var(--color-text-muted); margin: 10px 0 6px; }
+.trait-modal textarea {
+  width: 100%; border: 1.5px solid var(--color-border); border-radius: 10px;
+  padding: 10px 12px; font-size: 13px; line-height: 1.6; resize: vertical;
+  font-family: var(--font-body);
+}
+.trait-modal textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(26,39,68,0.1); }
+
+/* 保单表单内的特征提示条 */
+.policy-trait-hint {
+  display: none; flex-wrap: wrap; align-items: center; gap: 5px;
+  margin-top: 8px; padding: 8px 12px;
+  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+}
+.policy-trait-hint.show { display: flex; }
+.pth-label { font-size: 11px; font-weight: 800; color: var(--color-text-muted); letter-spacing: 0.04em; margin-right: 2px; }
+
+/* 保单详情内特征条 */
+.policy-trait-strip {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 5px;
+  background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px;
+  padding: 8px 12px; margin-bottom: 12px;
+}
+.policy-trait-strip .tc-note { max-width: 100%; white-space: normal; }

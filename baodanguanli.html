@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>保单管理系统</title>
-<link rel="stylesheet" href="css/baodanguanli.css?v=20260820a">
+<link rel="stylesheet" href="css/baodanguanli.css?v=20260822a">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
@@ -12,8 +12,8 @@
 <script src="js/02-utils.js?v=20260820a"></script>
 <script src="js/03-auth.js?v=20260815d"></script>
 <script src="js/04-storage.js?v=20260815i"></script>
-<script src="js/05-render.js?v=20260820a"></script>
-<script src="js/06-crud.js?v=20260820a"></script>
+<script src="js/05-render.js?v=20260822a"></script>
+<script src="js/06-crud.js?v=20260822a"></script>
 <script src="js/07-importexport.js?v=20260820a"></script>
 <script src="js/08-app.js?v=20260815d"></script>
 </head>
@@ -266,7 +266,7 @@
     <div class="tab-content" id="tabInslib">
       <div class="card">
         <div class="card-title">险种库管理</div>
-        <p style="font-size:12px;color:#64748b;margin-bottom:10px;">手动添加险种，或点击下方按钮从保单数据中自动同步</p>
+        <p style="font-size:12px;color:#64748b;margin-bottom:10px;">手动添加险种，或从保单数据自动同步。点击险种卡片上的「特征」补全等待期、年金领取等赔付/领取特征。</p>
         <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;">
           <input type="text" id="newInsLibName" placeholder="险种名称" style="flex:1;min-width:120px;">
           <input type="text" id="newInsLibCode" placeholder="险种代码" style="flex:1;min-width:100px;">
@@ -275,6 +275,7 @@
         <div style="margin-bottom:12px;">
           <button class="btn-outline btn-sm" onclick="syncExistingPoliciesToLib();renderInsuranceTypeLib();">从保单数据同步</button>
         </div>
+        <div id="inslibTraitProgress" class="itp-banner"></div>
         <div id="insuranceTypeLibTable" class="table-responsive"></div>
       </div>
     </div>
@@ -363,6 +364,7 @@
         <input type="text" id="insuranceName" placeholder="请输入险种名称" required list="insuranceTypeList" onchange="syncInsuranceTypeToForm(this.value);checkSurvivalBenefitHint(this.value)" oninput="checkSurvivalBenefitHint(this.value)">
         <datalist id="insuranceTypeList"></datalist>
         <div class="survival-benefit-hint" id="survivalBenefitHint">检测到该险种可能属于年金/分红/养老/理财类险种，建议设置生存金信息</div>
+        <div class="policy-trait-hint" id="policyTraitHint"></div>
       </div>
       <div class="form-group">
         <label>险种代码</label>
@@ -564,6 +566,88 @@
     <div class="modal-footer">
       <button class="btn-secondary" onclick="closeModal('serviceModal')">取消</button>
       <button class="btn-primary" onclick="saveServiceRecord()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 险种特征编辑模态框 -->
+<div class="modal-overlay" id="traitModal">
+  <div class="modal trait-modal">
+    <div class="modal-header">
+      <h2>险种特征档案</h2>
+      <button class="modal-close" onclick="closeModal('traitModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="traitEditIdx" value="-1">
+      <div class="trait-modal-head">
+        <span class="trait-modal-name" id="traitEditTitle"></span>
+        <span class="inslib-code" id="traitEditCode"></span>
+      </div>
+
+      <div class="trait-field">
+        <label>险种类别</label>
+        <div class="trait-seg" id="traitCategorySeg">
+          <button type="button" data-v="重疾险" onclick="setTraitCategory('重疾险')">重疾险</button>
+          <button type="button" data-v="医疗险" onclick="setTraitCategory('医疗险')">医疗险</button>
+          <button type="button" data-v="寿险" onclick="setTraitCategory('寿险')">寿险</button>
+          <button type="button" data-v="年金险" onclick="setTraitCategory('年金险')">年金险</button>
+          <button type="button" data-v="意外险" onclick="setTraitCategory('意外险')">意外险</button>
+          <button type="button" data-v="两全险" onclick="setTraitCategory('两全险')">两全险</button>
+          <button type="button" data-v="分红险" onclick="setTraitCategory('分红险')">分红险</button>
+          <button type="button" data-v="教育金" onclick="setTraitCategory('教育金')">教育金</button>
+          <button type="button" data-v="其他" onclick="setTraitCategory('其他')">其他</button>
+        </div>
+        <input type="hidden" id="traitCategory" value="">
+      </div>
+
+      <div class="trait-field">
+        <label>等待期（初次投保）</label>
+        <div class="trait-seg" id="traitWaitSeg">
+          <button type="button" data-v="0" onclick="setTraitWait('0')">无</button>
+          <button type="button" data-v="30" onclick="setTraitWait('30')">30天</button>
+          <button type="button" data-v="60" onclick="setTraitWait('60')">60天</button>
+          <button type="button" data-v="90" onclick="setTraitWait('90')">90天</button>
+          <button type="button" data-v="180" onclick="setTraitWait('180')">180天</button>
+        </div>
+        <input type="hidden" id="traitWait" value="">
+        <div class="trait-custom-row">
+          <span>自定义</span>
+          <input type="number" id="traitWaitCustom" min="0" placeholder="天数" oninput="setTraitWaitCustom(this.value)">
+          <span>天</span>
+        </div>
+      </div>
+
+      <div class="trait-field">
+        <label>年金 / 生存金领取规则</label>
+        <div class="trait-seg" id="traitAnnuityStartSeg">
+          <button type="button" data-v="none" onclick="setTraitAnnuityStart('none')">无领取责任</button>
+          <button type="button" data-v="afterYears" onclick="setTraitAnnuityStart('afterYears')">投保后N年</button>
+          <button type="button" data-v="atAge" onclick="setTraitAnnuityStart('atAge')">到达年龄</button>
+          <button type="button" data-v="fixedDate" onclick="setTraitAnnuityStart('fixedDate')">指定期限</button>
+        </div>
+        <input type="hidden" id="traitAnnuityStart" value="">
+        <input type="text" id="traitAnnuityVal" class="trait-val-input" placeholder="如：5年 / 60岁 / 2035年起">
+        <div class="trait-sublabel">领取频率</div>
+        <div class="trait-seg" id="traitAnnuityFreqSeg">
+          <button type="button" data-v="annual" onclick="setTraitAnnuityFreq('annual')">每年</button>
+          <button type="button" data-v="semiannual" onclick="setTraitAnnuityFreq('semiannual')">每半年</button>
+          <button type="button" data-v="quarterly" onclick="setTraitAnnuityFreq('quarterly')">每季</button>
+          <button type="button" data-v="monthly" onclick="setTraitAnnuityFreq('monthly')">每月</button>
+          <button type="button" data-v="triennial" onclick="setTraitAnnuityFreq('triennial')">每3年</button>
+          <button type="button" data-v="lumpsum" onclick="setTraitAnnuityFreq('lumpsum')">到期一次性</button>
+        </div>
+        <input type="hidden" id="traitAnnuityFreq" value="">
+      </div>
+
+      <div class="trait-field">
+        <label>其他赔付特征备注</label>
+        <textarea id="traitNote" rows="3" placeholder="如：等待期内确诊仅退还保费；续保/复效无等待期；意外身故双倍赔付；领取至终身等"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('traitModal')">取消</button>
+      <button class="btn-primary" onclick="saveTraits(false)">保存</button>
+      <button class="btn-primary btn-warm" id="traitSaveNextBtn" onclick="saveTraits(true)">保存并补全下一个</button>
     </div>
   </div>
 </div>

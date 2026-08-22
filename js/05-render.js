@@ -713,6 +713,12 @@ function renderDetailPanel(idx) {
 
       detail += '<div class="policy-detail-body">';
 
+      /* 险种赔付/领取特征（来自险种库档案） */
+      var _libItem = findLibItem(p.insuranceName, p.codeType);
+      if (_libItem && _libItem.traits && hasTraitContent(_libItem.traits)) {
+        detail += '<div class="policy-trait-strip">' + traitCatTag(_libItem) + traitChipsHtml(_libItem) + '</div>';
+      }
+
       /* 被保人信息 - 加大字体 */
       detail += '<div class="info-block insured-block">' +
         '<h6>被保人信息</h6>' +
