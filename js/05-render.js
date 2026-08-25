@@ -1,5 +1,31 @@
-/* ======== Tab切换 ======== */
+/* ======== Tab切换与浏览器历史（移动端滑动返回=应用内返回） ======== */
+
+/* 压入一条浏览器历史记录（连续相同视图去重） */
+var navLastState = null;
+function navPush(state) {
+  if (navLastState && JSON.stringify(navLastState) === JSON.stringify(state)) return;
+  navLastState = state;
+  try { history.pushState(state, ''); } catch (e) { /* 隐私模式等异常时静默降级 */ }
+}
+
+/* 应用某个历史状态对应的视图（不压栈，供popstate回退用） */
+function navApplyView(st) {
+  if (st && st.v === 'detail' && st.i >= 0 && st.i < clientData.length) {
+    applyTab('query');
+    applyClientDetail(st.i);
+  } else {
+    applyTab(st && st.t ? st.t : 'home');
+  }
+}
+
+/* 切换Tab（产生历史记录，返回手势可退回上一页） */
 function switchTab(tab) {
+  navPush({ v: 'tab', t: tab });
+  applyTab(tab);
+}
+
+/* 静默切换Tab（不产生历史记录） */
+function applyTab(tab) {
   currentTab = tab;
   document.querySelectorAll('.nav-item').forEach(function(n) {
     n.classList.toggle('active', n.dataset.tab === tab);
@@ -10,7 +36,7 @@ function switchTab(tab) {
   var el = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
   if (el) el.classList.add('active');
 
-  /* 切换到查询页时重置为列表视图 */
+  /* 切换到查询页时重置为列表视图；离开查询页时同样复位详情状态，避免残留 */
   if (tab === 'query') {
     var listView = document.getElementById('queryListView');
     var detailView = document.getElementById('clientDetailView');
@@ -18,6 +44,9 @@ function switchTab(tab) {
     if (detailView) detailView.style.display = 'none';
     selectedClientIdx = -1;
   } else {
+    var dv = document.getElementById('clientDetailView');
+    if (dv) dv.style.display = 'none';
+    selectedClientIdx = -1;
     hideScriptToggleBtn();
     if (ssPanelOpen) toggleScriptPanel();
   }
@@ -54,16 +83,14 @@ var SL_TYPES = {
   overdue:     { pri: 0, label: '应领未领', icon: '💰' },
   dueSoon:     { pri: 1, label: '即将领取', icon: '📅' },
   maturity:    { pri: 2, label: '满期临近', icon: '🏁' },
-  birthday:    { pri: 3, label: '生日关怀', icon: '🎂' },
-  uncontacted: { pri: 4, label: '长期未联系', icon: '📞' }
+  birthday:    { pri: 3, label: '生日关怀', icon: '🎂' }
 };
 var SL_FILTERS = [
   { key: 'all', label: '全部' },
   { key: 'overdue', label: '应领未领' },
   { key: 'dueSoon', label: '即将领取' },
   { key: 'maturity', label: '满期临近' },
-  { key: 'birthday', label: '生日关怀' },
-  { key: 'uncontacted', label: '长期未联系' }
+  { key: 'birthday', label: '生日关怀' }
 ];
 var slFilter = 'all';
 
@@ -87,7 +114,7 @@ function slDaysLabel(days) {
 
 /* 收集全部服务线索（按客户分组） */
 function collectServiceLeads() {
-  var result = { clients: [], stats: { total: 0, overdue: 0, dueSoon: 0, maturity: 0, birthday: 0, uncontacted: 0, amount: 0 } };
+  var result = { clients: [], stats: { total: 0, overdue: 0, dueSoon: 0, maturity: 0, birthday: 0, amount: 0 } };
 
   clientData.forEach(function(c, idx) {
     if (c.doNotContact) return; /* 不再服务客户不进入锦囊 */
@@ -150,30 +177,6 @@ function collectServiceLeads() {
       }
     }
 
-    /* 长期未联系（超90天未联系或从未联系） */
-    var latest = null;
-    (c.contactHistory || []).forEach(function(ch) {
-      if (!latest || (ch.date || '') > (latest.date || '')) latest = ch;
-    });
-    if (!latest) {
-      leads.push({
-        type: 'uncontacted',
-        title: '从未联系',
-        desc: '该客户尚无任何联系记录，建议尽快建立首次接触',
-        days: null, date: '', policyCode: ''
-      });
-    } else {
-      var cd = slDaysUntil(latest.date);
-      if (cd !== null && cd < -90) {
-        leads.push({
-          type: 'uncontacted',
-          title: '已 ' + Math.abs(cd) + ' 天未联系',
-          desc: '最近一次联系（' + formatDate(latest.date) + ' ' + (latest.status || '') + '）距今较久，建议回访维护',
-          days: cd, date: latest.date, policyCode: ''
-        });
-      }
-    }
-
     if (leads.length > 0) {
       /* 客户内线索按紧急度排序 */
       leads.sort(function(a, b) { return SL_TYPES[a.type].pri - SL_TYPES[b.type].pri || (a.days || 0) - (b.days || 0); });
@@ -215,9 +218,10 @@ function setSlFilter(key) {
   renderServiceLeads();
 }
 
-/* 从锦囊跳转客户详情 */
+/* 从锦囊跳转客户详情（静默切换查询页，只压一条"客户详情"历史，
+   返回手势直接退回服务提醒页） */
 function slGoDetail(clientIdx) {
-  switchTab('query');
+  applyTab('query');
   selectClient(clientIdx);
 }
 
@@ -783,7 +787,13 @@ function renderClientList(filtered) {
 }
 
 /* 选择客户 - 跳转到详情页 */
-function selectClient(idx) {
+function selectClient(idx, silent) {
+  if (!silent) navPush({ v: 'detail', i: idx });
+  applyClientDetail(idx);
+}
+
+/* 显示客户详情视图（不压栈） */
+function applyClientDetail(idx) {
   selectedClientIdx = idx;
   document.getElementById('queryListView').style.display = 'none';
   document.getElementById('clientDetailView').style.display = 'block';
@@ -796,13 +806,8 @@ function selectClient(idx) {
 
 /* 返回查询列表 */
 function backToQueryList() {
-  document.getElementById('queryListView').style.display = 'block';
-  document.getElementById('clientDetailView').style.display = 'none';
-  selectedClientIdx = -1;
-  hideScriptToggleBtn();
-  /* 如果话术面板打开着，关闭它 */
-  if (ssPanelOpen) toggleScriptPanel();
-  handleSearch();
+  navPush({ v: 'tab', t: 'query' });
+  applyTab('query');
   window.scrollTo(0, 0);
 }
 

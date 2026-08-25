@@ -197,6 +197,12 @@ function openModal(id) {
 function closeModal(id) {
   document.getElementById(id).classList.remove('show');
 }
+/* 关闭所有已打开的模态框（浏览器返回时清理，避免视图切换后弹窗残留） */
+function closeAllModals() {
+  document.querySelectorAll('.modal-overlay.show').forEach(function(m) {
+    m.classList.remove('show');
+  });
+}
 
 /* 显示确认框 */
 function showConfirm(msg, callback, confirmText) {

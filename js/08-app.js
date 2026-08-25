@@ -882,7 +882,24 @@ function _bindModalCloseOnOverlay() {
 function _bootstrapApp() {
   initAdmin();
   _bindModalCloseOnOverlay();
+  _initHistoryNav();
   checkLogin(); /* checkLogin 是 async，返回的 Promise 我们不必 await，让它在后台恢复会话 */
+}
+
+/* 浏览器历史导航：移动端左滑/返回键 = 应用内返回上一视图，而非关闭页面 */
+function _initHistoryNav() {
+  /* 初始视图登记为首页（登录后 switchTab('home') 会因去重不再压栈） */
+  try {
+    history.replaceState({ v: 'tab', t: 'home' }, '');
+    navLastState = { v: 'tab', t: 'home' };
+  } catch (e) { /* 不支持时静默降级为普通返回 */ return; }
+
+  window.addEventListener('popstate', function(e) {
+    /* 返回时清理可能开着的弹窗，避免残留到新视图 */
+    closeAllModals();
+    navLastState = e.state || null;
+    navApplyView(e.state);
+  });
 }
 
 if (document.readyState === 'loading') {
