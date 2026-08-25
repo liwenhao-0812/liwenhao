@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>保单管理系统</title>
-<link rel="stylesheet" href="css/baodanguanli.css?v=20260822c">
+<link rel="stylesheet" href="css/baodanguanli.css?v=20260825a">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
@@ -12,9 +12,9 @@
 <script src="js/02-utils.js?v=20260820a"></script>
 <script src="js/03-auth.js?v=20260815d"></script>
 <script src="js/04-storage.js?v=20260815i"></script>
-<script src="js/05-render.js?v=20260822b"></script>
+<script src="js/05-render.js?v=20260825a"></script>
 <script src="js/06-crud.js?v=20260822b"></script>
-<script src="js/07-importexport.js?v=20260820a"></script>
+<script src="js/07-importexport.js?v=20260825a"></script>
 <script src="js/08-app.js?v=20260815d"></script>
 </head>
 <body>
@@ -93,6 +93,7 @@
   <div class="nav-bar">
     <button class="nav-item active" data-tab="home" onclick="switchTab('home')">首页</button>
     <button class="nav-item" data-tab="query" onclick="switchTab('query')">查询</button>
+    <button class="nav-item nav-item-lead" data-tab="reminders" onclick="switchTab('reminders')">服务提醒<span class="nav-lead-badge hidden" id="navLeadBadge"></span></button>
     <button class="nav-item" data-tab="settings" onclick="switchTab('settings')">设置</button>
     <button class="nav-item" data-tab="inslib" onclick="switchTab('inslib')">险种库</button>
     <a href="fenhongjisuanqi.html" class="nav-item" style="background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff !important;border-radius:8px;font-weight:700;margin-left:4px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">收益试算</a>
@@ -122,6 +123,11 @@
           <button class="btn-warning" onclick="switchTab('reminders')">查看提醒</button>
         </div>
       </div>
+    </div>
+
+    <!-- ====== 服务提醒页（服务锦囊） ====== -->
+    <div class="tab-content" id="tabReminders">
+      <div id="serviceLeadBoard"></div>
     </div>
 
     <!-- ====== 查询页 ====== -->

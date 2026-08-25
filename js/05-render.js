@@ -30,6 +30,7 @@ function refreshCurrentTab() {
   switch(currentTab) {
     case 'home': renderDashboard(); break;
     case 'query': handleSearch(); break;
+    case 'reminders': renderServiceLeads(); break;
     case 'inslib': renderInsuranceTypeLib(); break;
     case 'settings': updateSettingSyncStatus(hasGitHubToken()); initTokenStatus(); initSupabaseStatus(); break;
   }
@@ -43,6 +44,281 @@ function updateBottomStats() {
   clientData.forEach(function(c) { totalPolicies += (c.policies || []).length; });
   document.getElementById('bottomStats').textContent =
     '客户: ' + totalClients + ' | 保单: ' + totalPolicies;
+  updateNavLeadBadge();
+}
+
+/* ======== 服务锦囊（服务线索提醒） ======== */
+
+/* 线索类型定义：pri 越小越紧急 */
+var SL_TYPES = {
+  overdue:     { pri: 0, label: '应领未领', icon: '💰' },
+  dueSoon:     { pri: 1, label: '即将领取', icon: '📅' },
+  maturity:    { pri: 2, label: '满期临近', icon: '🏁' },
+  birthday:    { pri: 3, label: '生日关怀', icon: '🎂' },
+  uncontacted: { pri: 4, label: '长期未联系', icon: '📞' }
+};
+var SL_FILTERS = [
+  { key: 'all', label: '全部' },
+  { key: 'overdue', label: '应领未领' },
+  { key: 'dueSoon', label: '即将领取' },
+  { key: 'maturity', label: '满期临近' },
+  { key: 'birthday', label: '生日关怀' },
+  { key: 'uncontacted', label: '长期未联系' }
+];
+var slFilter = 'all';
+
+/* 日期字符串(YYYYMMDD或带-)距今天数：正=未来，负=已过 */
+function slDaysUntil(dateStr) {
+  var s = toYMD(dateStr || '');
+  if (!/^\d{8}$/.test(s)) return null;
+  var d = new Date(parseInt(s.substring(0,4)), parseInt(s.substring(4,6)) - 1, parseInt(s.substring(6,8)));
+  var now = new Date();
+  now.setHours(0,0,0,0);
+  return Math.round((d - now) / 86400000);
+}
+
+/* 天数描述 */
+function slDaysLabel(days) {
+  if (days === null) return '';
+  if (days < 0) return '已逾期 ' + Math.abs(days) + ' 天';
+  if (days === 0) return '今天';
+  return days + ' 天后';
+}
+
+/* 收集全部服务线索（按客户分组） */
+function collectServiceLeads() {
+  var result = { clients: [], stats: { total: 0, overdue: 0, dueSoon: 0, maturity: 0, birthday: 0, uncontacted: 0, amount: 0 } };
+
+  clientData.forEach(function(c, idx) {
+    if (c.doNotContact) return; /* 不再服务客户不进入锦囊 */
+    var leads = [];
+
+    /* 保单类线索 */
+    (c.policies || []).forEach(function(p) {
+      var sb = p.survivalBenefit || {};
+      /* 应领未领 / 即将领取 */
+      if (sb.type && sb.nextDate) {
+        var d = slDaysUntil(sb.nextDate);
+        if (d !== null && d < 0) {
+          leads.push({
+            type: 'overdue',
+            title: '应领未领：' + (p.insuranceName || '保单'),
+            desc: '生存金/红利已到领取日' + (parseFloat(sb.amount) ? '，金额 ' + formatMoney(sb.amount) + ' 元' : '') + '，请尽快协助客户办理领取',
+            days: d, date: sb.nextDate, policyCode: p.policyCode || ''
+          });
+        } else if (d !== null && d <= 30) {
+          leads.push({
+            type: 'dueSoon',
+            title: '领取提醒：' + (p.insuranceName || '保单'),
+            desc: '生存金/红利 ' + slDaysLabel(d) + '可领取' + (parseFloat(sb.amount) ? '，金额 ' + formatMoney(sb.amount) + ' 元' : ''),
+            days: d, date: sb.nextDate, policyCode: p.policyCode || ''
+          });
+        }
+      }
+      /* 满期临近（60天内且未过期，有效保单） */
+      if (p.status === '有效' && p.maturityDate) {
+        var md = slDaysUntil(p.maturityDate);
+        if (md !== null && md >= 0 && md <= 60) {
+          leads.push({
+            type: 'maturity',
+            title: '满期临近：' + (p.insuranceName || '保单'),
+            desc: '保单 ' + slDaysLabel(md) + '满期' + (parseFloat(p.sumInsured) ? '，保额 ' + formatMoney(p.sumInsured) + ' 元' : '') + '，提前沟通满期金领取方式',
+            days: md, date: p.maturityDate, policyCode: p.policyCode || ''
+          });
+        }
+      }
+    });
+
+    /* 生日关怀（14天内，身份证推算） */
+    if (c.idCard && c.idCard.length >= 14) {
+      var bm = parseInt(c.idCard.substring(10, 12));
+      var bd = parseInt(c.idCard.substring(12, 14));
+      if (bm >= 1 && bm <= 12 && bd >= 1 && bd <= 31) {
+        var now = new Date();
+        var thisYearBirthday = new Date(now.getFullYear(), bm - 1, bd);
+        now.setHours(0,0,0,0);
+        var bdiff = Math.round((thisYearBirthday - now) / 86400000);
+        if (bdiff < 0) bdiff += 365; /* 已过则看明年 */
+        if (bdiff <= 14) {
+          leads.push({
+            type: 'birthday',
+            title: '生日：' + (bm + '月' + bd + '日'),
+            desc: '客户生日 ' + slDaysLabel(bdiff) + '，可发送生日祝福并顺势回顾保单保障',
+            days: bdiff, date: '', policyCode: ''
+          });
+        }
+      }
+    }
+
+    /* 长期未联系（超90天未联系或从未联系） */
+    var latest = null;
+    (c.contactHistory || []).forEach(function(ch) {
+      if (!latest || (ch.date || '') > (latest.date || '')) latest = ch;
+    });
+    if (!latest) {
+      leads.push({
+        type: 'uncontacted',
+        title: '从未联系',
+        desc: '该客户尚无任何联系记录，建议尽快建立首次接触',
+        days: null, date: '', policyCode: ''
+      });
+    } else {
+      var cd = slDaysUntil(latest.date);
+      if (cd !== null && cd < -90) {
+        leads.push({
+          type: 'uncontacted',
+          title: '已 ' + Math.abs(cd) + ' 天未联系',
+          desc: '最近一次联系（' + formatDate(latest.date) + ' ' + (latest.status || '') + '）距今较久，建议回访维护',
+          days: cd, date: latest.date, policyCode: ''
+        });
+      }
+    }
+
+    if (leads.length > 0) {
+      /* 客户内线索按紧急度排序 */
+      leads.sort(function(a, b) { return SL_TYPES[a.type].pri - SL_TYPES[b.type].pri || (a.days || 0) - (b.days || 0); });
+      result.clients.push({ idx: idx, client: c, leads: leads });
+    }
+    leads.forEach(function(l) { result.stats[l.type]++; });
+  });
+
+  /* 合计 */
+  result.stats.total = result.clients.reduce(function(sum, cl) { return sum + cl.leads.length; }, 0);
+
+  /* 客户排序：按最紧急线索的优先级 */
+  result.clients.sort(function(a, b) {
+    var pa = SL_TYPES[a.leads[0].type].pri;
+    var pb = SL_TYPES[b.leads[0].type].pri;
+    if (pa !== pb) return pa - pb;
+    return (a.leads[0].days || 0) - (b.leads[0].days || 0);
+  });
+  return result;
+}
+
+/* 导航角标：应领未领 + 即将领取 */
+function updateNavLeadBadge() {
+  var badge = document.getElementById('navLeadBadge');
+  if (!badge) return;
+  var data = collectServiceLeads();
+  var n = data.stats.overdue + data.stats.dueSoon;
+  if (n > 0) {
+    badge.textContent = String(n);
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+/* 线索筛选 */
+function setSlFilter(key) {
+  slFilter = key;
+  renderServiceLeads();
+}
+
+/* 从锦囊跳转客户详情 */
+function slGoDetail(clientIdx) {
+  switchTab('query');
+  selectClient(clientIdx);
+}
+
+/* 渲染服务锦囊 */
+function renderServiceLeads() {
+  var board = document.getElementById('serviceLeadBoard');
+  if (!board) return;
+  var data = collectServiceLeads();
+
+  /* 筛选 */
+  var clients = data.clients;
+  if (slFilter !== 'all') {
+    clients = clients.filter(function(cl) {
+      return cl.leads.some(function(l) { return l.type === slFilter; });
+    });
+  }
+
+  var html = '';
+
+  /* 概览横幅 */
+  html += '<div class="sl-hero">' +
+    '<div class="sl-hero-main">' +
+      '<div class="sl-hero-title">服务锦囊</div>' +
+      '<div class="sl-hero-sub">推荐您优先完成以下客户的服务线索</div>' +
+    '</div>' +
+    '<div class="sl-hero-stats">' +
+      '<div class="sl-hstat"><span class="sl-hv">' + data.stats.total + '</span><span class="sl-hl">待办线索</span></div>' +
+      '<div class="sl-hstat"><span class="sl-hv">' + data.clients.length + '</span><span class="sl-hl">涉及客户</span></div>' +
+      (data.stats.overdue > 0 ? '<div class="sl-hstat hot"><span class="sl-hv">' + data.stats.overdue + '</span><span class="sl-hl">应领未领</span></div>' : '') +
+    '</div>' +
+  '</div>';
+
+  /* 类型筛选条 */
+  html += '<div class="sl-filter">';
+  SL_FILTERS.forEach(function(f) {
+    var cnt = f.key === 'all' ? data.stats.total : data.stats[f.key];
+    if (f.key !== 'all' && cnt === 0) return; /* 无该项时不显示 */
+    var active = slFilter === f.key ? ' active' : '';
+    var urg = (f.key === 'overdue' || f.key === 'all') ? ' urg' : '';
+    html += '<button type="button" class="sl-chip' + active + urg + '" onclick="setSlFilter(\'' + f.key + '\')">' + f.label + ' ' + cnt + '</button>';
+  });
+  html += '</div>';
+
+  /* 客户卡片列表 */
+  if (clients.length === 0) {
+    html += '<div class="sl-empty">' +
+      '<div class="sl-empty-icon">🌿</div>' +
+      '<div class="sl-empty-title">' + (slFilter === 'all' ? '暂无服务线索' : '该类别暂无线索') + '</div>' +
+      '<div class="sl-empty-text">' + (slFilter === 'all' ? '所有客户均无待办服务事项，经营状况良好' : '试试切换到其他类别查看') + '</div>' +
+    '</div>';
+  } else {
+    clients.forEach(function(cl) {
+      var c = cl.client;
+      var topType = cl.leads[0].type;
+      var contactCls = getContactClass(c);
+      var phone = c.phone || '';
+
+      html += '<div class="sl-card t-' + topType + '">';
+      /* 客户头 */
+      html += '<div class="sl-card-head">' +
+        '<div class="sl-avatar">' + htmlEscape((c.name || '客').charAt(0)) + '</div>' +
+        '<div class="sl-head-info">' +
+          '<div class="sl-head-name">' + htmlEscape(c.name || '未命名') + '</div>' +
+          '<div class="sl-head-meta">' +
+            (phone ? '<a class="sl-phone" href="tel:' + htmlEscape(phone) + '">📞 ' + htmlEscape(phone) + '</a>' : '') +
+            '<span class="sl-tag ' + (contactCls === 'contacted' ? 'st-ok' : 'st-wait') + '">' + (contactCls === 'contacted' ? '已联系' : '未联系') + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="sl-head-right">' +
+          '<span class="sl-count">服务线索 ' + cl.leads.length + '</span>' +
+        '</div>' +
+      '</div>';
+
+      /* 线索条目 */
+      html += '<div class="sl-items">';
+      cl.leads.forEach(function(l) {
+        var meta = SL_TYPES[l.type];
+        var daysCls = l.type === 'overdue' ? 'd-over' : (l.days !== null && l.days <= 7 ? 'd-soon' : '');
+        html += '<div class="sl-item t-' + l.type + '">' +
+          '<div class="sl-item-icon">' + meta.icon + '</div>' +
+          '<div class="sl-item-body">' +
+            '<div class="sl-item-title">' + htmlEscape(l.title) + '</div>' +
+            '<div class="sl-item-desc">' + htmlEscape(l.desc) + '</div>' +
+          '</div>' +
+          (l.days !== null ? '<div class="sl-item-days ' + daysCls + '">' + slDaysLabel(l.days) + '</div>' : '') +
+        '</div>';
+      });
+      html += '</div>';
+
+      /* 操作区 */
+      html += '<div class="sl-actions">' +
+        '<button class="btn-sm btn-warm" onclick="openAddContactModal(' + cl.idx + ')">＋ 记录联系</button>' +
+        '<button class="btn-sm btn-outline" onclick="slGoDetail(' + cl.idx + ')">客户详情 →</button>' +
+      '</div>';
+
+      html += '</div>';
+    });
+  }
+
+  board.innerHTML = html;
+  updateNavLeadBadge();
 }
 
 /* ======== 首页 - 仪表盘 ======== */

@@ -1,5 +1,7 @@
 /* ======== 联系记录 ======== */
+var contactModalClientIdx = -1; /* 联系记录弹窗针对的客户（支持从服务锦囊等处直接打开） */
 function openAddContactModal(clientIdx) {
+  contactModalClientIdx = (clientIdx === undefined || clientIdx === null) ? selectedClientIdx : clientIdx;
   document.getElementById('contactDate').value = new Date().toISOString().slice(0, 10);
   document.getElementById('contactNote').value = '';
   document.getElementById('contactStatus').value = '已电话联系';
@@ -7,27 +9,31 @@ function openAddContactModal(clientIdx) {
 }
 
 function saveContactRecord() {
-  if (selectedClientIdx < 0) return;
+  var targetIdx = (contactModalClientIdx >= 0 && contactModalClientIdx < clientData.length) ? contactModalClientIdx : selectedClientIdx;
+  if (targetIdx < 0 || targetIdx >= clientData.length) return;
+  contactModalClientIdx = -1;
   var record = {
     status: document.getElementById('contactStatus').value,
     date: toYMD(document.getElementById('contactDate').value),
     note: document.getElementById('contactNote').value.trim()
   };
-  if (!clientData[selectedClientIdx].contactHistory) clientData[selectedClientIdx].contactHistory = [];
-  clientData[selectedClientIdx].contactHistory.unshift(record);
+  if (!clientData[targetIdx].contactHistory) clientData[targetIdx].contactHistory = [];
+  clientData[targetIdx].contactHistory.unshift(record);
   savePolicyData();
   closeModal('contactModal');
   if (currentTab === 'query' && document.getElementById('clientDetailView').style.display !== 'none') {
-    renderDetailPanel(selectedClientIdx);
+    renderDetailPanel(targetIdx);
   }
+  /* 服务锦囊页打开时刷新（长期未联系线索可能因此消除） */
+  if (currentTab === 'reminders') renderServiceLeads();
   showToast('联系记录已保存', 'success');
 
   /* ★ 接触客户后，若画像缺失则提醒补全 */
-  var _cc = clientData[selectedClientIdx];
+  var _cc = clientData[targetIdx];
   if (isProfileIncomplete(_cc)) {
     setTimeout(function() {
       showConfirm('为保持对「' + ((_cc && _cc.name) || '该客户') + '」的持续了解，是否现在补全客户画像（个人情况、家庭情况备注）？', function() {
-        openProfileModal(selectedClientIdx);
+        openProfileModal(targetIdx);
       }, '现在补全');
     }, 420);
   }
