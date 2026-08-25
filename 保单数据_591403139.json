@@ -843,15 +843,15 @@
       "familyMembers": [],
       "contactHistory": [],
       "scriptTracking": {
-        "currentNodeId": "n_1786687488874",
         "lastUsedAt": "2026-08-20T05:20:13.007Z",
         "pathHistory": [
           {
+            "at": "2026-08-20T05:20:13.007Z",
             "id": "n_1786687488874",
-            "title": "开场白",
-            "at": "2026-08-20T05:20:13.007Z"
+            "title": "开场白"
           }
-        ]
+        ],
+        "currentNodeId": "n_1786687488874"
       }
     },
     {
@@ -1494,6 +1494,7 @@
           "parentPolicyCode": ""
         },
         {
+          "_idx": 1,
           "remark": "",
           "status": "有效",
           "insured": "叶明陶",
@@ -2054,6 +2055,7 @@
       "address": "广东省清远市清城区东城街道锦兴路168号东城水岸10幢1001号",
       "policies": [
         {
+          "_idx": 0,
           "remark": "",
           "status": "有效",
           "insured": "李佩娟",
@@ -4044,199 +4046,591 @@
   "insuranceTypes": [
     {
       "insuranceName": "国寿金账户两全保险(万能型)",
-      "codeType": "268"
+      "codeType": "268",
+      "traits": {
+        "note": "",
+        "category": "年金险",
+        "annuityFreq": "",
+        "annuityStart": "none",
+        "waitingPeriod": "0",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿鑫账户年金保险（万能型）（惠享版）",
-      "codeType": "286"
+      "codeType": "286",
+      "traits": {
+        "note": "",
+        "category": "年金险",
+        "annuityFreq": "",
+        "annuityStart": "none",
+        "waitingPeriod": "0",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿鑫账户年金保险（万能型）（卓越版）",
-      "codeType": "287"
+      "codeType": "287",
+      "traits": {
+        "note": "",
+        "category": "年金险",
+        "annuityFreq": "",
+        "annuityStart": "none",
+        "waitingPeriod": "0",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿鑫尊宝年金保险(万能型)(B款)",
-      "codeType": "290"
+      "codeType": "290",
+      "traits": {
+        "note": "",
+        "category": "年金险",
+        "annuityFreq": "",
+        "annuityStart": "none",
+        "waitingPeriod": "0",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿鑫尊宝终身寿险(万能型)(A款)",
-      "codeType": "291"
+      "codeType": "291",
+      "traits": {
+        "note": "",
+        "category": "年金险",
+        "annuityFreq": "lumpsum",
+        "annuityStart": "none",
+        "waitingPeriod": "0",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿附加国寿福提前给付重大疾病保险(至尊版)",
-      "codeType": "315"
+      "codeType": "315",
+      "traits": {
+        "note": "",
+        "category": "重疾险",
+        "annuityFreq": "",
+        "annuityStart": "none",
+        "waitingPeriod": "180",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿附加国寿福豁免保险费疾病保险(至尊版)",
-      "codeType": "316"
+      "codeType": "316",
+      "traits": {
+        "note": "",
+        "category": "其他",
+        "annuityFreq": "",
+        "annuityStart": "none",
+        "waitingPeriod": "0",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿附加国寿福提前给付重大疾病保险(至尊版)",
-      "codeType": "317"
+      "codeType": "317",
+      "traits": {
+        "note": "",
+        "category": "重疾险",
+        "annuityFreq": "",
+        "annuityStart": "none",
+        "waitingPeriod": "180",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿附加防癌两全保险(优享版)",
-      "codeType": "321"
+      "codeType": "321",
+      "traits": {
+        "note": "",
+        "category": "防癌险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿附加百万如意行意外伤害住院定额给付医疗保险",
-      "codeType": "322"
+      "codeType": "322",
+      "traits": {
+        "note": "",
+        "category": "意外险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "0",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿康宁终身重大疾病保险",
-      "codeType": "432"
+      "codeType": "432",
+      "traits": {
+        "note": "",
+        "category": "重疾险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿防癌疾病保险",
-      "codeType": "512"
+      "codeType": "512",
+      "traits": {
+        "note": "",
+        "category": "防癌险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿如意随行两全保险",
-      "codeType": "522"
+      "codeType": "522",
+      "traits": {
+        "note": "",
+        "category": "两全险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "0",
+        "annuityStartVal": "75"
+      }
     },
     {
       "insuranceName": "国寿鸿福至尊年金保险（分红型）",
-      "codeType": "553"
+      "codeType": "553",
+      "traits": {
+        "note": "",
+        "category": "年金险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "0",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿福终身寿险(至尊版)",
-      "codeType": "559"
+      "codeType": "559",
+      "traits": {
+        "note": "",
+        "category": "寿险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿百万如意行两全保险",
-      "codeType": "564"
+      "codeType": "564",
+      "traits": {
+        "note": "",
+        "category": "两全险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿附加防癌两全保险",
-      "codeType": "769"
+      "codeType": "769",
+      "traits": {
+        "note": "",
+        "category": "防癌险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿附加如意随行意外伤害住院定额给付医疗保险",
-      "codeType": "778"
+      "codeType": "778",
+      "traits": {
+        "note": "",
+        "category": "医疗险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿福终身寿险（庆典版）",
-      "codeType": "SK5"
+      "codeType": "SK5",
+      "traits": {
+        "note": "",
+        "category": "寿险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿附加国寿福提前给付重大疾病保险（庆典版）",
-      "codeType": "R41"
+      "codeType": "R41",
+      "traits": {
+        "category": "重疾险",
+        "waitingPeriod": "180",
+        "annuityStart": "",
+        "annuityStartVal": "",
+        "annuityFreq": "",
+        "note": ""
+      }
     },
     {
       "insuranceName": "国寿附加国寿福豁免保险费疾病保险（庆典版）",
-      "codeType": "R42"
+      "codeType": "R42",
+      "traits": {
+        "category": "重疾险",
+        "waitingPeriod": "180",
+        "annuityStart": "",
+        "annuityStartVal": "",
+        "annuityFreq": "",
+        "note": ""
+      }
     },
     {
       "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险（庆典版，B款）",
-      "codeType": "R44"
+      "codeType": "R44",
+      "traits": {
+        "category": "重疾险",
+        "waitingPeriod": "180",
+        "annuityStart": "",
+        "annuityStartVal": "",
+        "annuityFreq": "",
+        "note": ""
+      }
     },
     {
       "insuranceName": "国寿千禧理财分红型",
-      "codeType": "S50"
+      "codeType": "S50",
+      "traits": {
+        "note": "",
+        "category": "分红险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿鑫账户年金保险（万能型）（卓越版）",
-      "codeType": "R39"
+      "codeType": "R39",
+      "traits": {
+        "note": "",
+        "category": "万能险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿鸿福至尊年金保险（分红型）",
-      "codeType": "R38"
+      "codeType": "R38",
+      "traits": {
+        "note": "",
+        "category": "年金险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿鑫账户年金保险（万能型）（惠享版）",
-      "codeType": "R40"
+      "codeType": "R40",
+      "traits": {
+        "note": "",
+        "category": "万能险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿康宁嘉保疾病保险",
-      "codeType": "SD2"
+      "codeType": "SD2",
+      "traits": {
+        "note": "",
+        "category": "重疾险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿附加国寿福提前给付重大疾病保险(至尊版)",
-      "codeType": "R37"
+      "codeType": "R37",
+      "traits": {
+        "category": "重疾险",
+        "waitingPeriod": "180",
+        "annuityStart": "",
+        "annuityStartVal": "",
+        "annuityFreq": "",
+        "note": ""
+      }
     },
     {
       "insuranceName": "国寿99鸿福两全保险",
-      "codeType": "R48"
+      "codeType": "R48",
+      "traits": {
+        "note": "",
+        "category": "两全险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿美满一生年金保险(分红型)",
-      "codeType": "S93"
+      "codeType": "S93",
+      "traits": {
+        "note": "",
+        "category": "年金险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "重大疾病终身保险(98版利差返还型)",
-      "codeType": "S32"
+      "codeType": "S32",
+      "traits": {
+        "category": "重疾险",
+        "waitingPeriod": "180",
+        "annuityStart": "",
+        "annuityStartVal": "",
+        "annuityFreq": "",
+        "note": ""
+      }
     },
     {
       "insuranceName": "国寿鑫享鸿福年金保险",
-      "codeType": "SD6"
+      "codeType": "SD6",
+      "traits": {
+        "note": "",
+        "category": "年金险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿附加广佑人生提前给付重大疾病保险（臻享版）",
-      "codeType": "R55"
+      "codeType": "R55",
+      "traits": {
+        "category": "重疾险",
+        "waitingPeriod": "180",
+        "annuityStart": "",
+        "annuityStartVal": "",
+        "annuityFreq": "",
+        "note": ""
+      }
     },
     {
       "insuranceName": "国寿少儿国寿福终身寿险(庆典版)",
-      "codeType": "SK6"
+      "codeType": "SK6",
+      "traits": {
+        "note": "",
+        "category": "教育金",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿附加少儿国寿福提前给付重大疾病保险(庆典版)",
-      "codeType": "R45"
+      "codeType": "R45",
+      "traits": {
+        "note": "",
+        "category": "教育金",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿附加少儿国寿福豁免保险费疾病保险(庆典版)",
-      "codeType": "R46"
+      "codeType": "R46",
+      "traits": {
+        "note": "",
+        "category": "教育金",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "康宁定期保险",
-      "codeType": "R53"
+      "codeType": "R53",
+      "traits": {
+        "note": "",
+        "category": "重疾险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿通泰无忧意外伤害保险(节假日版)",
-      "codeType": "D8N"
+      "codeType": "D8N",
+      "traits": {
+        "note": "",
+        "category": "意外险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿千禧理财两全保险(分红型)",
-      "codeType": "R47"
+      "codeType": "R47",
+      "traits": {
+        "note": "",
+        "category": "两全险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿康宁终身重大疾病保险（2019版）",
-      "codeType": "SI6"
+      "codeType": "SI6",
+      "traits": {
+        "note": "",
+        "category": "重疾险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿附加康宁两全保险（2019版）",
-      "codeType": "R36"
+      "codeType": "R36",
+      "traits": {
+        "note": "",
+        "category": "两全险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿千禧理财两全保险(分红型)",
-      "codeType": "R43"
+      "codeType": "R43",
+      "traits": {
+        "note": "",
+        "category": "两全险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险（2019版A款）",
-      "codeType": "R49"
+      "codeType": "R49",
+      "traits": {
+        "category": "重疾险",
+        "waitingPeriod": "180",
+        "annuityStart": "",
+        "annuityStartVal": "",
+        "annuityFreq": "",
+        "note": ""
+      }
     },
     {
       "insuranceName": "国寿鸿运少儿两全保险（分红型）",
-      "codeType": "R51"
+      "codeType": "R51",
+      "traits": {
+        "note": "",
+        "category": "教育金",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿附加少儿国寿福豁免保险费疾病保险（2019版）",
-      "codeType": "R52"
+      "codeType": "R52",
+      "traits": {
+        "note": "",
+        "category": "教育金",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿附加康宁保提前给付重大疾病保险（B款）",
-      "codeType": "R54"
+      "codeType": "R54",
+      "traits": {
+        "note": "",
+        "category": "重疾险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "康宁终身保险",
-      "codeType": "S42"
+      "codeType": "S42",
+      "traits": {
+        "note": "",
+        "category": "重疾险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "国寿99鸿福两全保险",
-      "codeType": "S49"
+      "codeType": "S49",
+      "traits": {
+        "note": "",
+        "category": "两全险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     },
     {
       "insuranceName": "康宁定期保险",
-      "codeType": "S43"
+      "codeType": "S43",
+      "traits": {
+        "note": "",
+        "category": "重疾险",
+        "annuityFreq": "",
+        "annuityStart": "",
+        "waitingPeriod": "",
+        "annuityStartVal": ""
+      }
     }
   ],
   "salesScripts": {
@@ -4328,7 +4722,7 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1787203220522",
+  "_timestamp": "1787666064032",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
