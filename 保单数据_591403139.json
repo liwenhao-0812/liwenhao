@@ -3618,42 +3618,44 @@
       "address": "广东省清远市清城区凤城街道高基里社区松鹤西街24号古城华景苑",
       "policies": [
         {
-          "_idx": 0,
-          "remark": "",
-          "status": "有效",
-          "insured": "卢芷瑶",
+          "policyCode": "2001442011S49200002186",
+          "insuranceName": "国寿99鸿福两全保险",
           "codeType": "R48",
           "mainType": "主险",
-          "insuredId": "441802200002080928",
-          "policyCode": "2001442011S49200002186",
-          "sumInsured": "",
-          "extraFields": {},
+          "parentPolicyCode": "",
+          "status": "有效",
           "hasDividend": false,
-          "paymentTerm": "20",
-          "insuredPhone": "13553962268",
+          "effectiveDate": "20010605",
           "maturityDate": "",
+          "paymentMethod": "年缴",
           "annualPremium": "1180",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "paymentBank": "",
+          "paymentBankCard": "",
+          "insured": "卢芷瑶",
+          "insuredRelation": "女儿",
+          "insuredId": "441802200002080928",
+          "insuredPhone": "13553962268",
+          "insuredAddress": "广东省清远市清城区凤城街道高基里社区松鹤西街24号古城华景苑",
           "beneficiaries": [
             {
               "name": "张彩美",
               "quota": "100"
             }
           ],
-          "effectiveDate": "20010605",
-          "insuranceName": "国寿99鸿福两全保险",
-          "paymentMethod": "年缴",
-          "insuredAddress": "广东省清远市清城区凤城街道高基里社区松鹤西街24号古城华景苑",
-          "serviceRecords": [],
-          "insuredRelation": "女儿",
+          "remark": "",
           "survivalBenefit": {
-            "note": "",
             "type": "triennial",
             "amount": "500",
+            "startDate": "20020605",
             "lastDate": "",
-            "nextDate": "",
-            "startDate": ""
+            "nextDate": "20290605",
+            "note": ""
           },
-          "parentPolicyCode": ""
+          "extraFields": {},
+          "serviceRecords": [],
+          "_idx": 0
         }
       ],
       "workAddress": "",
@@ -4276,36 +4278,36 @@
       "insuranceName": "国寿附加国寿福提前给付重大疾病保险（庆典版）",
       "codeType": "R41",
       "traits": {
+        "note": "",
         "category": "重疾险",
-        "waitingPeriod": "180",
-        "annuityStart": "",
-        "annuityStartVal": "",
         "annuityFreq": "",
-        "note": ""
+        "annuityStart": "",
+        "waitingPeriod": "180",
+        "annuityStartVal": ""
       }
     },
     {
       "insuranceName": "国寿附加国寿福豁免保险费疾病保险（庆典版）",
       "codeType": "R42",
       "traits": {
+        "note": "",
         "category": "重疾险",
-        "waitingPeriod": "180",
-        "annuityStart": "",
-        "annuityStartVal": "",
         "annuityFreq": "",
-        "note": ""
+        "annuityStart": "",
+        "waitingPeriod": "180",
+        "annuityStartVal": ""
       }
     },
     {
       "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险（庆典版，B款）",
       "codeType": "R44",
       "traits": {
+        "note": "",
         "category": "重疾险",
-        "waitingPeriod": "180",
-        "annuityStart": "",
-        "annuityStartVal": "",
         "annuityFreq": "",
-        "note": ""
+        "annuityStart": "",
+        "waitingPeriod": "180",
+        "annuityStartVal": ""
       }
     },
     {
@@ -4372,12 +4374,12 @@
       "insuranceName": "国寿附加国寿福提前给付重大疾病保险(至尊版)",
       "codeType": "R37",
       "traits": {
+        "note": "",
         "category": "重疾险",
-        "waitingPeriod": "180",
-        "annuityStart": "",
-        "annuityStartVal": "",
         "annuityFreq": "",
-        "note": ""
+        "annuityStart": "",
+        "waitingPeriod": "180",
+        "annuityStartVal": ""
       }
     },
     {
@@ -4408,12 +4410,12 @@
       "insuranceName": "重大疾病终身保险(98版利差返还型)",
       "codeType": "S32",
       "traits": {
+        "note": "",
         "category": "重疾险",
-        "waitingPeriod": "180",
-        "annuityStart": "",
-        "annuityStartVal": "",
         "annuityFreq": "",
-        "note": ""
+        "annuityStart": "",
+        "waitingPeriod": "180",
+        "annuityStartVal": ""
       }
     },
     {
@@ -4432,12 +4434,12 @@
       "insuranceName": "国寿附加广佑人生提前给付重大疾病保险（臻享版）",
       "codeType": "R55",
       "traits": {
+        "note": "",
         "category": "重疾险",
-        "waitingPeriod": "180",
-        "annuityStart": "",
-        "annuityStartVal": "",
         "annuityFreq": "",
-        "note": ""
+        "annuityStart": "",
+        "waitingPeriod": "180",
+        "annuityStartVal": ""
       }
     },
     {
@@ -4552,12 +4554,12 @@
       "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险（2019版A款）",
       "codeType": "R49",
       "traits": {
+        "note": "",
         "category": "重疾险",
-        "waitingPeriod": "180",
-        "annuityStart": "",
-        "annuityStartVal": "",
         "annuityFreq": "",
-        "note": ""
+        "annuityStart": "",
+        "waitingPeriod": "180",
+        "annuityStartVal": ""
       }
     },
     {
@@ -4722,9 +4724,9 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1787666064032",
+  "_timestamp": "1787708603853",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
-  "_passwordHash": "Hg10hvh"
+  "_passwordHash": "H143aad"
 }
