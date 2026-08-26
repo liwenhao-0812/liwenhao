@@ -455,7 +455,7 @@
             }
           ],
           "effectiveDate": "20060912",
-          "insuranceName": "国寿千禧理财分红型",
+          "insuranceName": "国寿千禧理财（分红型）",
           "paymentMethod": "年缴",
           "insuredAddress": "东城街道澜水村委会中心村增强西街南一巷 15 号 201",
           "serviceRecords": [
@@ -1546,6 +1546,7 @@
       "address": "广东省清远市清城区源潭大连村委会东门闸门围4号",
       "policies": [
         {
+          "_idx": 0,
           "remark": "",
           "status": "有效",
           "insured": "雷秋玲",
@@ -1599,24 +1600,37 @@
           "policyCode": "2017442001321300104973",
           "sumInsured": "",
           "extraFields": {},
+          "hasDividend": false,
+          "paymentBank": "",
           "paymentTerm": "20",
           "insuredPhone": "15219079862",
+          "maturityDate": "",
           "annualPremium": "440",
           "beneficiaries": [
             {
               "name": "赖浩宇",
-              "quota": 50
+              "quota": "50"
             },
             {
               "name": "赖水松",
-              "quota": 50
+              "quota": "50"
             }
           ],
           "effectiveDate": "20170910",
           "insuranceName": "国寿附加防癌两全保险(优享版)",
           "paymentMethod": "年缴",
+          "insuredAddress": "广东省清远市清城区源潭大连村委会东门闸门围4号",
           "serviceRecords": [],
           "insuredRelation": "",
+          "paymentBankCard": "",
+          "survivalBenefit": {
+            "note": "",
+            "type": "",
+            "amount": "",
+            "lastDate": "",
+            "nextDate": "",
+            "startDate": ""
+          },
           "parentPolicyCode": "2017442001512015116744"
         },
         {
@@ -3618,44 +3632,44 @@
       "address": "广东省清远市清城区凤城街道高基里社区松鹤西街24号古城华景苑",
       "policies": [
         {
-          "policyCode": "2001442011S49200002186",
-          "insuranceName": "国寿99鸿福两全保险",
+          "_idx": 0,
+          "remark": "",
+          "status": "有效",
+          "insured": "卢芷瑶",
           "codeType": "R48",
           "mainType": "主险",
-          "parentPolicyCode": "",
-          "status": "有效",
-          "hasDividend": false,
-          "effectiveDate": "20010605",
-          "maturityDate": "",
-          "paymentMethod": "年缴",
-          "annualPremium": "1180",
-          "sumInsured": "",
-          "paymentTerm": "20",
-          "paymentBank": "",
-          "paymentBankCard": "",
-          "insured": "卢芷瑶",
-          "insuredRelation": "女儿",
           "insuredId": "441802200002080928",
+          "policyCode": "2001442011S49200002186",
+          "sumInsured": "",
+          "extraFields": {},
+          "hasDividend": false,
+          "paymentBank": "",
+          "paymentTerm": "20",
           "insuredPhone": "13553962268",
-          "insuredAddress": "广东省清远市清城区凤城街道高基里社区松鹤西街24号古城华景苑",
+          "maturityDate": "",
+          "annualPremium": "1180",
           "beneficiaries": [
             {
               "name": "张彩美",
               "quota": "100"
             }
           ],
-          "remark": "",
+          "effectiveDate": "20010605",
+          "insuranceName": "国寿99鸿福两全保险",
+          "paymentMethod": "年缴",
+          "insuredAddress": "广东省清远市清城区凤城街道高基里社区松鹤西街24号古城华景苑",
+          "serviceRecords": [],
+          "insuredRelation": "女儿",
+          "paymentBankCard": "",
           "survivalBenefit": {
+            "note": "",
             "type": "triennial",
             "amount": "500",
-            "startDate": "20020605",
             "lastDate": "",
             "nextDate": "20290605",
-            "note": ""
+            "startDate": "20020605"
           },
-          "extraFields": {},
-          "serviceRecords": [],
-          "_idx": 0
+          "parentPolicyCode": ""
         }
       ],
       "workAddress": "",
@@ -4051,7 +4065,7 @@
       "codeType": "268",
       "traits": {
         "note": "",
-        "category": "年金险",
+        "category": "万能险",
         "annuityFreq": "",
         "annuityStart": "none",
         "waitingPeriod": "0",
@@ -4063,7 +4077,7 @@
       "codeType": "286",
       "traits": {
         "note": "",
-        "category": "年金险",
+        "category": "万能险",
         "annuityFreq": "",
         "annuityStart": "none",
         "waitingPeriod": "0",
@@ -4075,7 +4089,7 @@
       "codeType": "287",
       "traits": {
         "note": "",
-        "category": "年金险",
+        "category": "万能险",
         "annuityFreq": "",
         "annuityStart": "none",
         "waitingPeriod": "0",
@@ -4087,7 +4101,7 @@
       "codeType": "290",
       "traits": {
         "note": "",
-        "category": "年金险",
+        "category": "万能险",
         "annuityFreq": "",
         "annuityStart": "none",
         "waitingPeriod": "0",
@@ -4099,7 +4113,7 @@
       "codeType": "291",
       "traits": {
         "note": "",
-        "category": "年金险",
+        "category": "万能险",
         "annuityFreq": "lumpsum",
         "annuityStart": "none",
         "waitingPeriod": "0",
@@ -4123,10 +4137,10 @@
       "codeType": "316",
       "traits": {
         "note": "",
-        "category": "其他",
+        "category": "重疾险",
         "annuityFreq": "",
         "annuityStart": "none",
-        "waitingPeriod": "0",
+        "waitingPeriod": "180",
         "annuityStartVal": ""
       }
     },
@@ -4150,7 +4164,7 @@
         "category": "防癌险",
         "annuityFreq": "",
         "annuityStart": "",
-        "waitingPeriod": "",
+        "waitingPeriod": "180",
         "annuityStartVal": ""
       }
     },
@@ -4174,7 +4188,7 @@
         "category": "重疾险",
         "annuityFreq": "",
         "annuityStart": "",
-        "waitingPeriod": "",
+        "waitingPeriod": "180",
         "annuityStartVal": ""
       }
     },
@@ -4186,7 +4200,7 @@
         "category": "防癌险",
         "annuityFreq": "",
         "annuityStart": "",
-        "waitingPeriod": "",
+        "waitingPeriod": "180",
         "annuityStartVal": ""
       }
     },
@@ -4195,7 +4209,7 @@
       "codeType": "522",
       "traits": {
         "note": "",
-        "category": "两全险",
+        "category": "意外险",
         "annuityFreq": "",
         "annuityStart": "",
         "waitingPeriod": "0",
@@ -4222,7 +4236,7 @@
         "category": "寿险",
         "annuityFreq": "",
         "annuityStart": "",
-        "waitingPeriod": "",
+        "waitingPeriod": "60",
         "annuityStartVal": ""
       }
     },
@@ -4231,10 +4245,10 @@
       "codeType": "564",
       "traits": {
         "note": "",
-        "category": "两全险",
+        "category": "意外险",
         "annuityFreq": "",
         "annuityStart": "",
-        "waitingPeriod": "",
+        "waitingPeriod": "0",
         "annuityStartVal": ""
       }
     },
@@ -4246,7 +4260,7 @@
         "category": "防癌险",
         "annuityFreq": "",
         "annuityStart": "",
-        "waitingPeriod": "",
+        "waitingPeriod": "180",
         "annuityStartVal": ""
       }
     },
@@ -4258,7 +4272,7 @@
         "category": "医疗险",
         "annuityFreq": "",
         "annuityStart": "",
-        "waitingPeriod": "",
+        "waitingPeriod": "30",
         "annuityStartVal": ""
       }
     },
@@ -4270,7 +4284,7 @@
         "category": "寿险",
         "annuityFreq": "",
         "annuityStart": "",
-        "waitingPeriod": "",
+        "waitingPeriod": "30",
         "annuityStartVal": ""
       }
     },
@@ -4311,15 +4325,15 @@
       }
     },
     {
-      "insuranceName": "国寿千禧理财分红型",
+      "insuranceName": "国寿千禧理财（分红型）",
       "codeType": "S50",
       "traits": {
         "note": "",
         "category": "分红险",
-        "annuityFreq": "",
-        "annuityStart": "",
-        "waitingPeriod": "",
-        "annuityStartVal": ""
+        "annuityFreq": "triennial",
+        "annuityStart": "afterYears",
+        "waitingPeriod": "0",
+        "annuityStartVal": "1"
       }
     },
     {
@@ -4506,12 +4520,12 @@
       "insuranceName": "国寿千禧理财两全保险(分红型)",
       "codeType": "R47",
       "traits": {
-        "note": "",
-        "category": "两全险",
-        "annuityFreq": "",
-        "annuityStart": "",
-        "waitingPeriod": "",
-        "annuityStartVal": ""
+        "category": "分红险",
+        "waitingPeriod": "0",
+        "annuityStart": "afterYears",
+        "annuityStartVal": "1",
+        "annuityFreq": "triennial",
+        "note": ""
       }
     },
     {
@@ -4542,12 +4556,12 @@
       "insuranceName": "国寿千禧理财两全保险(分红型)",
       "codeType": "R43",
       "traits": {
-        "note": "",
         "category": "两全险",
-        "annuityFreq": "",
-        "annuityStart": "",
-        "waitingPeriod": "",
-        "annuityStartVal": ""
+        "waitingPeriod": "0",
+        "annuityStart": "afterYears",
+        "annuityStartVal": "1",
+        "annuityFreq": "triennial",
+        "note": ""
       }
     },
     {
@@ -4724,7 +4738,7 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1787708603853",
+  "_timestamp": "1787712872793",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
