@@ -1982,7 +1982,7 @@
           "remark": "",
           "status": "有效",
           "insured": "刘琛",
-          "codeType": "S49",
+          "codeType": "R48",
           "mainType": "主险",
           "insuredId": "/",
           "policyCode": "2001442001S49100002577",
@@ -1998,7 +1998,7 @@
             }
           ],
           "effectiveDate": "20010210",
-          "insuranceName": "国寿99鸿福两全保险",
+          "insuranceName": "国寿附加国寿福豁免保险费疾病保险（2019版）",
           "paymentMethod": "年缴",
           "serviceRecords": [],
           "insuredRelation": "儿子",
@@ -3658,7 +3658,7 @@
             }
           ],
           "effectiveDate": "20010605",
-          "insuranceName": "国寿99鸿福两全保险",
+          "insuranceName": "国寿附加国寿福豁免保险费疾病保险（2019版）",
           "paymentMethod": "年缴",
           "insuredAddress": "广东省清远市清城区凤城街道高基里社区松鹤西街24号古城华景苑",
           "serviceRecords": [],
@@ -4400,15 +4400,15 @@
       }
     },
     {
-      "insuranceName": "国寿99鸿福两全保险",
+      "insuranceName": "国寿附加国寿福豁免保险费疾病保险（2019版）",
       "codeType": "R48",
       "traits": {
-        "note": "",
-        "category": "两全险",
-        "annuityFreq": "",
+        "category": "重疾险",
+        "waitingPeriod": "180",
         "annuityStart": "",
-        "waitingPeriod": "",
-        "annuityStartVal": ""
+        "annuityStartVal": "",
+        "annuityFreq": "",
+        "note": ""
       }
     },
     {
@@ -4463,24 +4463,24 @@
       "insuranceName": "国寿少儿国寿福终身寿险(庆典版)",
       "codeType": "SK6",
       "traits": {
-        "note": "",
-        "category": "教育金",
-        "annuityFreq": "",
+        "category": "寿险",
+        "waitingPeriod": "90",
         "annuityStart": "",
-        "waitingPeriod": "",
-        "annuityStartVal": ""
+        "annuityStartVal": "",
+        "annuityFreq": "",
+        "note": ""
       }
     },
     {
       "insuranceName": "国寿附加少儿国寿福提前给付重大疾病保险(庆典版)",
       "codeType": "R45",
       "traits": {
-        "note": "",
-        "category": "教育金",
-        "annuityFreq": "",
+        "category": "重疾险",
+        "waitingPeriod": "180",
         "annuityStart": "",
-        "waitingPeriod": "",
-        "annuityStartVal": ""
+        "annuityStartVal": "",
+        "annuityFreq": "",
+        "note": ""
       }
     },
     {
@@ -4547,12 +4547,12 @@
       "insuranceName": "国寿附加康宁两全保险（2019版）",
       "codeType": "R36",
       "traits": {
-        "note": "",
-        "category": "两全险",
-        "annuityFreq": "",
+        "category": "重疾险",
+        "waitingPeriod": "180",
         "annuityStart": "",
-        "waitingPeriod": "",
-        "annuityStartVal": ""
+        "annuityStartVal": "",
+        "annuityFreq": "",
+        "note": ""
       }
     },
     {
@@ -4741,7 +4741,7 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1787843050237",
+  "_timestamp": "1787843127201",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
