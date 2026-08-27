@@ -4487,12 +4487,12 @@
       "insuranceName": "国寿附加少儿国寿福豁免保险费疾病保险(庆典版)",
       "codeType": "R46",
       "traits": {
-        "note": "",
-        "category": "教育金",
-        "annuityFreq": "",
+        "category": "重疾险",
+        "waitingPeriod": "180",
         "annuityStart": "",
-        "waitingPeriod": "",
-        "annuityStartVal": ""
+        "annuityStartVal": "",
+        "annuityFreq": "",
+        "note": ""
       }
     },
     {
@@ -4520,15 +4520,15 @@
       }
     },
     {
-      "insuranceName": "国寿千禧理财两全保险(分红型)",
+      "insuranceName": "国寿附加国寿福提前给付重大疾病保险（2019版）",
       "codeType": "R47",
       "traits": {
-        "note": "",
-        "category": "分红险",
-        "annuityFreq": "triennial",
-        "annuityStart": "afterYears",
-        "waitingPeriod": "0",
-        "annuityStartVal": "1"
+        "category": "重疾险",
+        "waitingPeriod": "180",
+        "annuityStart": "none",
+        "annuityStartVal": "",
+        "annuityFreq": "",
+        "note": ""
       }
     },
     {
@@ -4559,12 +4559,12 @@
       "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险（庆典版A款）",
       "codeType": "R43",
       "traits": {
-        "note": "",
-        "category": "两全险",
-        "annuityFreq": "triennial",
-        "annuityStart": "afterYears",
-        "waitingPeriod": "0",
-        "annuityStartVal": "1"
+        "category": "重疾险",
+        "waitingPeriod": "180",
+        "annuityStart": "none",
+        "annuityStartVal": "",
+        "annuityFreq": "",
+        "note": ""
       }
     },
     {
@@ -4741,7 +4741,7 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1787842973110",
+  "_timestamp": "1787843050237",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
