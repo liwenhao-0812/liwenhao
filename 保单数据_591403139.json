@@ -2780,7 +2780,7 @@
           "remark": "",
           "status": "有效",
           "insured": "欧梓娟",
-          "codeType": "S50",
+          "codeType": "R43",
           "mainType": "主险",
           "insuredId": "441802198906150220",
           "policyCode": "2003442001S50000033420",
@@ -2796,7 +2796,7 @@
             }
           ],
           "effectiveDate": "20031125",
-          "insuranceName": "国寿千禧理财两全保险(分红型)",
+          "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险（庆典版A款）",
           "paymentMethod": "年缴",
           "serviceRecords": [],
           "insuredRelation": "女儿",
@@ -2875,7 +2875,7 @@
           "remark": "",
           "status": "有效",
           "insured": "王镇江",
-          "codeType": "S50",
+          "codeType": "R43",
           "mainType": "主险",
           "insuredId": "441802199707030239",
           "policyCode": "2004442001S50000021376",
@@ -2891,7 +2891,7 @@
             }
           ],
           "effectiveDate": "20040603",
-          "insuranceName": "国寿千禧理财两全保险(分红型)",
+          "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险（庆典版A款）",
           "paymentMethod": "年缴",
           "serviceRecords": [],
           "insuredRelation": "儿子",
@@ -2902,7 +2902,7 @@
           "remark": "",
           "status": "有效",
           "insured": "王洁怡",
-          "codeType": "S50",
+          "codeType": "R43",
           "mainType": "主险",
           "insuredId": "441802199201120229",
           "policyCode": "2004442001S50000021334",
@@ -2918,7 +2918,7 @@
             }
           ],
           "effectiveDate": "20040603",
-          "insuranceName": "国寿千禧理财两全保险(分红型)",
+          "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险（庆典版A款）",
           "paymentMethod": "年缴",
           "serviceRecords": [],
           "insuredRelation": "女儿",
@@ -3572,7 +3572,7 @@
           "remark": "",
           "status": "有效",
           "insured": "袁政",
-          "codeType": "R47",
+          "codeType": "R43",
           "mainType": "主险",
           "insuredId": "441802200103120511",
           "policyCode": "2004442001S50000054020",
@@ -3591,7 +3591,7 @@
             }
           ],
           "effectiveDate": "20041212",
-          "insuranceName": "国寿千禧理财两全保险(分红型)",
+          "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险（庆典版A款）",
           "paymentMethod": "年缴",
           "insuredAddress": "广东省清远市清城区清远市清城区下濠基176号五环体育",
           "serviceRecords": [],
@@ -4556,7 +4556,7 @@
       }
     },
     {
-      "insuranceName": "国寿千禧理财两全保险(分红型)",
+      "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险（庆典版A款）",
       "codeType": "R43",
       "traits": {
         "note": "",
@@ -4741,7 +4741,7 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1787841460683",
+  "_timestamp": "1787842973110",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
