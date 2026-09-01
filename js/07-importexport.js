@@ -137,7 +137,9 @@ function importData(e) {
               mainType: p.mainType || '主险',
               parentPolicyCode: p.parentPolicyCode || '',
               status: p.status || '',
+              hasDividend: !!p.hasDividend,
               effectiveDate: p.effectiveDate || '',
+              maturityDate: p.maturityDate || '',
               paymentMethod: p.paymentMethod || '年缴',
               annualPremium: p.annualPremium || '',
               sumInsured: p.sumInsured || '',
@@ -148,14 +150,18 @@ function importData(e) {
               insuredRelation: p.insuredRelation || '',
               insuredId: p.insuredId || '',
               insuredPhone: p.insuredPhone || '',
+              insuredAddress: p.insuredAddress || '',
               beneficiaries: p.beneficiaries || [],
+              survivalBenefit: p.survivalBenefit || { type: '', amount: '', startDate: '', lastDate: '', nextDate: '', note: '' },
               remark: p.remark || '',
               extraFields: p.extraFields || {},
               serviceRecords: p.serviceRecords || []
             };
           }),
           familyMembers: item.familyMembers || [],
-          contactHistory: item.contactHistory || []
+          contactHistory: item.contactHistory || [],
+          profile: item.profile || null,
+          doNotContact: !!item.doNotContact
         };
       });
       showConfirm('检测到 ' + normalized.length + ' 位客户数据。确定导入将覆盖当前数据。', function() {
@@ -184,6 +190,82 @@ function importExcelPrompt() {
   document.getElementById('importExcelInput').click();
 }
 
+/* ======== 模板扩展字段解析（旧版导入与智能向导共用） ======== */
+
+/* 生存金类型：中文/英文 → 系统值（annual/triennial/maturity/''） */
+function parseSurvivalType(v) {
+  var s = (v || '').toString().trim().toLowerCase();
+  if (!s || s === '无' || s === '无生存金' || s === 'none' || s === 'no') return '';
+  if (s.indexOf('3年') !== -1 || s === '每三年' || s === '三年' || s === 'triennial') return 'triennial';
+  if (s.indexOf('到期') !== -1 || s.indexOf('满期') !== -1 || s.indexOf('一次性') !== -1 || s === 'maturity' || s === 'lumpsum') return 'maturity';
+  if (s.indexOf('每年') !== -1 || s.indexOf('年度') !== -1 || s.indexOf('年领') !== -1 || s === 'annual' || s === 'yearly') return 'annual';
+  return s;
+}
+
+/* 是否类字段：是/有/1/true/√ → true，其余 false */
+function parseYesNo(v) {
+  var s = (v || '').toString().trim().toLowerCase();
+  if (!s) return false;
+  return ['是', '有', 'y', 'yes', 'true', '1', '√', '✓'].indexOf(s) !== -1;
+}
+
+/* 家庭成员解析：多成员用分号分隔，字段用|分隔：姓名|关系|身份证|电话|备注；
+   容错：多余分隔符自动忽略（如「张小|儿子||||在读小学」的备注仍识别为「在读小学」） */
+function parseFamilyMembers(v) {
+  var s = (v || '').toString().trim();
+  if (!s) return [];
+  var out = [];
+  s.split(/[;；\n\r]+/).forEach(function(seg) {
+    seg = seg.trim();
+    if (!seg) return;
+    var parts = seg.split(/[|｜]/).map(function(p) { return p.trim(); });
+    if (!parts[0]) return;
+    out.push({
+      name: parts[0] || '',
+      relationship: parts[1] || '',
+      idCard: parts[2] || '',
+      phone: parts[3] || '',
+      note: parts.slice(4).filter(function(x) { return x; }).join('|')
+    });
+  });
+  return out;
+}
+
+/* 生存金下次领取日期自动推算（type + 起领日/最近领取日 → 下次YYYYMMDD；到期领取返回''） */
+function calcSurvivalNextDate(type, baseStr) {
+  if (!type || type === 'maturity') return '';
+  var s = (baseStr || '').toString().trim().replace(/\D/g, '');
+  if (s.length !== 8) return '';
+  var y = parseInt(s.substring(0, 4)), m = parseInt(s.substring(4, 6)), d = parseInt(s.substring(6, 8));
+  if (!(y > 1900 && y < 3000 && m >= 1 && m <= 12 && d >= 1 && d <= 31)) return '';
+  var next = new Date(y, m - 1, d);
+  var today = new Date();
+  var step = (type === 'triennial') ? 3 : 1;
+  while (next <= today) next.setFullYear(next.getFullYear() + step);
+  return '' + next.getFullYear() + String(next.getMonth() + 1).padStart(2, '0') + String(next.getDate()).padStart(2, '0');
+}
+
+/* 从行解析生存金对象（旧版导入与向导共用） */
+function parseSurvivalBenefitFromRow(getVal) {
+  var type = parseSurvivalType(getVal('生存金类型'));
+  var amount = _wizNum(getVal('生存金金额（元）'));
+  var startDate = _wizNormalizeDate(getVal('生存金起领日期'));
+  var lastDate = _wizNormalizeDate(getVal('最近领取日期'));
+  var nextDate = _wizNormalizeDate(getVal('下次领取日期'));
+  var note = (getVal('生存金备注') || '').toString().trim();
+  if (!type && !amount && !startDate && !lastDate && !note) return null;
+  /* 下次领取日未填时按类型+基准日自动推算 */
+  if (!nextDate && type) nextDate = calcSurvivalNextDate(type, lastDate || startDate);
+  return { type: type, amount: amount, startDate: startDate, lastDate: lastDate, nextDate: nextDate, note: note };
+}
+
+/* 行是否包含保单信息（保单代码或险种名称任一非空） */
+function rowHasPolicy(getVal) {
+  var code = (getVal('保单代码') || '').toString().trim();
+  var name = (getVal('险种名称') || '').toString().trim();
+  return !!(code || name);
+}
+
 /* Excel批量导入 */
 function importExcelData(e) {
   var file = e.target.files[0];
@@ -200,27 +282,56 @@ function importExcelData(e) {
         showToast('Excel文件中没有数据行', 'warning');
         return;
       }
+      /* 智能列名匹配（与导入向导共用别名表） */
+      var colMap = buildColumnAliasMap(Object.keys(rows[0]));
       /* 按投保人姓名分组 */
       var clientMap = {};
       rows.forEach(function(row) {
-        var name = (row['投保人姓名'] || '').toString().trim();
+        var get = function(col) { return lookupCol(row, colMap, col); };
+        var name = (get('投保人姓名') || '').toString().trim();
         if (!name) return;
         if (!clientMap[name]) {
           clientMap[name] = {
             name: name,
-            idCard: (row['投保人身份证号'] || '').toString().trim(),
-            phone: (row['联系电话'] || '').toString().trim(),
-            address: (row['通信地址'] || '').toString().trim(),
-            workCompany: (row['工作单位'] || '').toString().trim(),
-            workAddress: (row['工作地址'] || '').toString().trim(),
+            idCard: (get('投保人身份证号') || '').toString().trim(),
+            phone: (get('联系电话') || '').toString().trim(),
+            address: (get('通信地址') || '').toString().trim(),
+            workCompany: (get('工作单位') || '').toString().trim(),
+            workAddress: (get('工作地址') || '').toString().trim(),
             policies: [],
             familyMembers: [],
             contactHistory: []
           };
         }
+        /* 客户画像（个人/家庭情况备注） */
+        var _personal = (get('个人情况备注') || '').toString().trim();
+        var _family = (get('家庭情况备注') || '').toString().trim();
+        if (_personal || _family) {
+          if (!clientMap[name].profile) {
+            clientMap[name].profile = {
+              personal: _personal,
+              family: _family,
+              updatedAt: todayStamp()
+            };
+          } else {
+            if (!clientMap[name].profile.personal && _personal) clientMap[name].profile.personal = _personal;
+            if (!clientMap[name].profile.family && _family) clientMap[name].profile.family = _family;
+          }
+        }
+        /* 家庭成员：姓名|关系|身份证|电话|备注，多人用分号分隔 */
+        var _fmStr = (get('家庭成员') || '').toString().trim();
+        if (_fmStr) {
+          var _fms = parseFamilyMembers(_fmStr);
+          _fms.forEach(function(fm) {
+            var exists = clientMap[name].familyMembers.some(function(e) { return e.name === fm.name; });
+            if (!exists) clientMap[name].familyMembers.push(fm);
+          });
+        }
+        /* 纯客户资源行（无保单代码且无险种名称）：仅录入客户信息，不建保单 */
+        if (!rowHasPolicy(get)) return;
         /* 解析受益人 */
         var beneficiaries = [];
-        var beneStr = (row['受益人'] || '').toString().trim();
+        var beneStr = (get('受益人') || '').toString().trim();
         if (beneStr) {
           var parts = beneStr.split(/[\/、,，]/);
           var quotaEach = Math.round(100 / parts.length);
@@ -234,26 +345,32 @@ function importExcelData(e) {
             }
           });
         }
+        /* 生存金信息 */
+        var _sb = parseSurvivalBenefitFromRow(get);
         var policy = {
-          policyCode: (row['保单代码'] || '').toString().trim(),
-          insuranceName: (row['险种名称'] || '').toString().trim(),
-          codeType: (row['险种代码'] || '').toString().trim(),
-          mainType: (row['主险/附加险'] || '主险').toString().trim(),
-          parentPolicyCode: (row['关联主险代码'] || '').toString().trim(),
-          status: (row['保单状态'] || '有效').toString().trim(),
-          effectiveDate: (row['生效日'] || '').toString().trim().replace(/-/g, ''),
-          paymentMethod: (row['缴费方式'] || '年缴').toString().trim(),
-          annualPremium: (row['年缴保费（元）'] || '').toString().trim(),
-          sumInsured: (row['保额（元）'] || '').toString().trim(),
-          paymentTerm: (row['缴费期限（年）'] || '').toString().trim(),
-          paymentBank: (row['缴费银行'] || '').toString().trim(),
-          paymentBankCard: (row['银行卡后四位'] || '').toString().trim(),
-          insured: (row['被保险人'] || '').toString().trim(),
-          insuredRelation: (row['与被保人关系'] || '').toString().trim(),
-          insuredId: (row['被保人身份证'] || '').toString().trim(),
-          insuredPhone: (row['被保人手机号码'] || '').toString().trim(),
+          policyCode: (get('保单代码') || '').toString().trim(),
+          insuranceName: (get('险种名称') || '').toString().trim(),
+          codeType: (get('险种代码') || '').toString().trim(),
+          mainType: (get('主险/附加险') || '主险').toString().trim() || '主险',
+          parentPolicyCode: (get('关联主险代码') || '').toString().trim(),
+          status: (get('保单状态') || '有效').toString().trim() || '有效',
+          hasDividend: parseYesNo(get('是否有分红')),
+          effectiveDate: _wizNormalizeDate(get('生效日')),
+          maturityDate: _wizNormalizeDate(get('满期日期')),
+          paymentMethod: (get('缴费方式') || '年缴').toString().trim() || '年缴',
+          annualPremium: _wizNum(get('年缴保费（元）')),
+          sumInsured: _wizNum(get('保额（元）')),
+          paymentTerm: (get('缴费期限（年）') || '').toString().trim(),
+          paymentBank: (get('缴费银行') || '').toString().trim(),
+          paymentBankCard: (get('银行卡后四位') || '').toString().trim(),
+          insured: (get('被保险人') || '').toString().trim(),
+          insuredRelation: (get('与被保人关系') || '').toString().trim(),
+          insuredId: (get('被保人身份证') || '').toString().trim(),
+          insuredPhone: (get('被保人手机号码') || '').toString().trim(),
+          insuredAddress: (get('被保人地址') || '').toString().trim(),
           beneficiaries: beneficiaries,
-          remark: (row['备注'] || '').toString().trim(),
+          survivalBenefit: _sb || { type: '', amount: '', startDate: '', lastDate: '', nextDate: '', note: '' },
+          remark: (get('备注') || '').toString().trim(),
           extraFields: {},
           serviceRecords: []
         };
@@ -276,42 +393,118 @@ function importExcelData(e) {
   e.target.value = '';
 }
 
-/* 导出Excel导入模板 */
+/* 导出Excel导入模板（覆盖系统全部字段：客户画像/家庭成员/满期日/分红/生存金） */
 function exportExcelTemplate() {
   var headers = [
+    /* —— 投保人信息 —— */
     '投保人姓名', '投保人身份证号', '联系电话', '通信地址', '工作单位', '工作地址',
-    '险种名称', '保单代码', '险种代码', '主险/附加险', '关联主险代码', '保单状态',
-    '生效日', '缴费方式', '年缴保费（元）', '保额（元）', '缴费期限（年）', '缴费银行', '银行卡后四位',
-    '被保险人', '与被保人关系', '被保人身份证', '被保人手机号码', '受益人', '备注'
+    '个人情况备注', '家庭情况备注', '家庭成员',
+    /* —— 保单信息 —— */
+    '保单代码', '险种名称', '险种代码', '主险/附加险', '关联主险代码', '保单状态', '是否有分红',
+    '生效日', '满期日期', '缴费方式', '年缴保费（元）', '保额（元）', '缴费期限（年）', '缴费银行', '银行卡后四位',
+    /* —— 被保人 —— */
+    '被保险人', '与被保人关系', '被保人身份证', '被保人手机号码', '被保人地址',
+    /* —— 受益人 / 生存金 —— */
+    '受益人',
+    '生存金类型', '生存金金额（元）', '生存金起领日期', '最近领取日期', '下次领取日期', '生存金备注',
+    /* —— 其他 —— */
+    '备注'
   ];
   var exampleData = [
     {
       '投保人姓名': '张三', '投保人身份证号': '110101199001011234', '联系电话': '13800138000',
-      '通信地址': '北京市朝阳区某某路1号', '工作单位': '某某公司', '工作地址': '',
-      '险种名称': '国寿防癌疾病保险', '保单代码': '2017442001522015000001', '险种代码': '522',
-      '主险/附加险': '主险', '关联主险代码': '', '保单状态': '有效',
-      '生效日': '20170112', '缴费方式': '年缴', '年缴保费（元）': '780',
-      '保额（元）': '100000', '缴费期限（年）': '20', '缴费银行': '工商银行', '银行卡后四位': '6789', '被保险人': '李四', '与被保人关系': '配偶',
-      '被保人身份证': '', '被保人手机号码': '', '受益人': '张三', '备注': ''
+      '通信地址': '北京市朝阳区某某路1号', '工作单位': '某某公司', '工作地址': '北京市海淀区某某大厦',
+      '个人情况备注': '性格爽朗，重收益对比，偏好周末电话沟通', '家庭情况备注': '配偶李四同岁，儿子8岁在读小学，家庭年收入约40万',
+      '家庭成员': '李四|配偶|110101199001022345|13800138001|同单位就职；张小|儿子|||在读小学',
+      '保单代码': '2017442001522015000001', '险种名称': '国寿防癌疾病保险', '险种代码': '522',
+      '主险/附加险': '主险', '关联主险代码': '', '保单状态': '有效', '是否有分红': '否',
+      '生效日': '20170112', '满期日期': '', '缴费方式': '年缴', '年缴保费（元）': '780',
+      '保额（元）': '100000', '缴费期限（年）': '20', '缴费银行': '工商银行', '银行卡后四位': '6789',
+      '被保险人': '李四', '与被保人关系': '配偶',
+      '被保人身份证': '110101199001022345', '被保人手机号码': '13800138001', '被保人地址': '北京市朝阳区某某路1号',
+      '受益人': '张三', '生存金类型': '', '生存金金额（元）': '', '生存金起领日期': '',
+      '最近领取日期': '', '下次领取日期': '', '生存金备注': '', '备注': ''
     },
     {
       '投保人姓名': '张三', '投保人身份证号': '', '联系电话': '',
       '通信地址': '', '工作单位': '', '工作地址': '',
+      '个人情况备注': '', '家庭情况备注': '', '家庭成员': '',
       '险种名称': '国寿附加意外伤害保险', '保单代码': '2017442001778300000001', '险种代码': '778',
-      '主险/附加险': '附加险', '关联主险代码': '2017442001522015000001', '保单状态': '有效',
-      '生效日': '20170112', '缴费方式': '年缴', '年缴保费（元）': '82',
-      '保额（元）': '50000', '缴费期限（年）': '20', '缴费银行': '工商银行', '银行卡后四位': '6789', '被保险人': '李四', '与被保人关系': '配偶',
-      '被保人身份证': '', '被保人手机号码': '', '受益人': '张三', '备注': '附加险示例'
+      '主险/附加险': '附加险', '关联主险代码': '2017442001522015000001', '保单状态': '有效', '是否有分红': '否',
+      '生效日': '20170112', '满期日期': '', '缴费方式': '年缴', '年缴保费（元）': '82',
+      '保额（元）': '50000', '缴费期限（年）': '20', '缴费银行': '工商银行', '银行卡后四位': '6789',
+      '被保险人': '李四', '与被保人关系': '配偶',
+      '被保人身份证': '', '被保人手机号码': '', '被保人地址': '',
+      '受益人': '张三', '生存金类型': '', '生存金金额（元）': '', '生存金起领日期': '',
+      '最近领取日期': '', '下次领取日期': '', '生存金备注': '', '备注': '附加险示例'
+    },
+    {
+      '投保人姓名': '王五', '投保人身份证号': '110101198505056789', '联系电话': '13900139000',
+      '通信地址': '北京市西城区某某街8号', '工作单位': '某某科技公司', '工作地址': '',
+      '个人情况备注': '朋友转介绍，初次接触，关注孩子教育金', '家庭情况备注': '女儿3岁，计划储备教育金',
+      '家庭成员': '赵六|配偶|110101198606067890|13900139001|全职太太；王小|女儿|||3岁',
+      '保单代码': '', '险种名称': '', '险种代码': '', '主险/附加险': '', '关联主险代码': '',
+      '保单状态': '', '是否有分红': '', '生效日': '', '满期日期': '', '缴费方式': '',
+      '年缴保费（元）': '', '保额（元）': '', '缴费期限（年）': '', '缴费银行': '', '银行卡后四位': '',
+      '被保险人': '', '与被保人关系': '', '被保人身份证': '', '被保人手机号码': '', '被保人地址': '',
+      '受益人': '', '生存金类型': '', '生存金金额（元）': '', '生存金起领日期': '',
+      '最近领取日期': '', '下次领取日期': '', '生存金备注': '', '备注': '纯客户资源示例（无保单，仅录客户信息）'
     }
   ];
   var ws = XLSX.utils.json_to_sheet(exampleData, { header: headers });
   ws['!cols'] = headers.map(function(h) {
-    return { wch: Math.max(h.length * 2, 12) };
+    return { wch: Math.max(h.length * 2 + 2, 12) };
   });
+  /* 冻结首行，方便横向滚动时对照表头 */
+  ws['!freeze'] = { xSplit: 0, ySplit: 1 };
   var wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, '保单数据');
-  XLSX.writeFile(wb, '保单导入模板.xlsx');
-  showToast('Excel模板已下载', 'success');
+  XLSX.utils.book_append_sheet(wb, ws, '客户保单数据');
+
+  /* 第二个Sheet：填写说明 */
+  var guideRows = [
+    { '列名': '投保人姓名', '必填': '是', '格式说明': '客户姓名；同一客户的多张保单写成多行，姓名相同的行自动合并为一位客户', '示例': '张三' },
+    { '列名': '投保人身份证号', '必填': '建议', '格式说明': '15或18位身份证号；用于识别重复客户', '示例': '110101199001011234' },
+    { '列名': '联系电话', '必填': '建议', '格式说明': '手机号；与姓名一起用于识别重复客户', '示例': '13800138000' },
+    { '列名': '通信地址', '必填': '否', '格式说明': '客户常住地址', '示例': '北京市朝阳区某某路1号' },
+    { '列名': '工作单位', '必填': '否', '格式说明': '客户工作单位', '示例': '某某公司' },
+    { '列名': '工作地址', '必填': '否', '格式说明': '客户办公地址', '示例': '北京市海淀区某某大厦' },
+    { '列名': '个人情况备注', '必填': '否', '格式说明': '客户画像·个人情况：职业收入、性格沟通偏好、兴趣爱好、健康状况、投保关注点等', '示例': '性格爽朗，偏好周末电话沟通' },
+    { '列名': '家庭情况备注', '必填': '否', '格式说明': '客户画像·家庭情况：家庭结构、配偶子女、子女教育/婚嫁计划、资产负债、赡养责任等', '示例': '儿子8岁在读小学' },
+    { '列名': '家庭成员', '必填': '否', '格式说明': '多位成员用分号(;)分隔；每位成员字段用竖线(|)分隔，顺序：姓名|关系|身份证|电话|备注，可留空', '示例': '李四|配偶|110101...|13800138001|备注；张小|儿子|||在读小学' },
+    { '列名': '保单代码', '必填': '保单行必填', '格式说明': '保单唯一编号；无保单的客户资源行留空即可不建保单', '示例': '2017442001522015000001' },
+    { '列名': '险种名称', '必填': '保单行必填', '格式说明': '险种全称；导入后自动收录进险种库', '示例': '国寿防癌疾病保险' },
+    { '列名': '险种代码', '必填': '建议', '格式说明': '险种代码', '示例': '522' },
+    { '列名': '主险/附加险', '必填': '否', '格式说明': '主险 / 附加险 / 万能险，默认主险', '示例': '主险' },
+    { '列名': '关联主险代码', '必填': '附加险填写', '格式说明': '附加险所属主险的保单代码', '示例': '2017442001522015000001' },
+    { '列名': '保单状态', '必填': '否', '格式说明': '有效 / 失效，默认有效', '示例': '有效' },
+    { '列名': '是否有分红', '必填': '否', '格式说明': '是 / 否（也可填 有/无/1/0/true/false），默认否', '示例': '是' },
+    { '列名': '生效日', '必填': '建议', '格式说明': '支持 20230115 / 2023-01-15 / 2023/1/15 / 2023年1月15日 / Excel日期 等格式', '示例': '20230115' },
+    { '列名': '满期日期', '必填': '非终身险填写', '格式说明': '满期/到期日，终身险留空', '示例': '20470112' },
+    { '列名': '缴费方式', '必填': '否', '格式说明': '年缴 / 月缴 / 趸缴，默认年缴', '示例': '年缴' },
+    { '列名': '年缴保费（元）', '必填': '建议', '格式说明': '数字，可含千分位逗号，如 7,800', '示例': '780' },
+    { '列名': '保额（元）', '必填': '建议', '格式说明': '数字', '示例': '100000' },
+    { '列名': '缴费期限（年）', '必填': '建议', '格式说明': '数字（年）', '示例': '20' },
+    { '列名': '缴费银行', '必填': '否', '格式说明': '缴费银行名称', '示例': '工商银行' },
+    { '列名': '银行卡后四位', '必填': '否', '格式说明': '缴费卡号后4位', '示例': '6789' },
+    { '列名': '被保险人', '必填': '建议', '格式说明': '被保人姓名，空则默认同投保人', '示例': '李四' },
+    { '列名': '与被保人关系', '必填': '建议', '格式说明': '本人 / 丈夫 / 妻子 / 儿子 / 女儿 / 父亲 / 母亲', '示例': '配偶' },
+    { '列名': '被保人身份证', '必填': '否', '格式说明': '被保人身份证号', '示例': '110101199001022345' },
+    { '列名': '被保人手机号码', '必填': '否', '格式说明': '被保人手机号', '示例': '13800138001' },
+    { '列名': '被保人地址', '必填': '否', '格式说明': '被保人联系地址', '示例': '北京市朝阳区某某路1号' },
+    { '列名': '受益人', '必填': '否', '格式说明': '多个受益人用 / 、 ， 分隔，份额自动均分', '示例': '张三/李四' },
+    { '列名': '生存金类型', '必填': '否', '格式说明': '每年领取 / 每3年领取 / 到期领取 / 无（留空）', '示例': '每年领取' },
+    { '列名': '生存金金额（元）', '必填': '否', '格式说明': '每次领取金额，数字', '示例': '5000' },
+    { '列名': '生存金起领日期', '必填': '否', '格式说明': '首次领取日期；下次领取日留空时将按此日期自动推算', '示例': '20300115' },
+    { '列名': '最近领取日期', '必填': '否', '格式说明': '最近一次已领取日期（已领过的客户填写）', '示例': '20260115' },
+    { '列名': '下次领取日期', '必填': '否', '格式说明': '留空时按 起领日期/最近领取日期 + 领取类型 自动推算', '示例': '' },
+    { '列名': '生存金备注', '必填': '否', '格式说明': '如：60岁起每年领取至终身', '示例': '' },
+    { '列名': '备注', '必填': '否', '格式说明': '保单其他备注', '示例': '' }
+  ];
+  var wsGuide = XLSX.utils.json_to_sheet(guideRows);
+  wsGuide['!cols'] = [{ wch: 20 }, { wch: 12 }, { wch: 78 }, { wch: 34 }];
+  XLSX.utils.book_append_sheet(wb, wsGuide, '填写说明');
+  XLSX.writeFile(wb, '客户保单导入模板.xlsx');
+  showToast('Excel模板已下载（含填写说明Sheet）', 'success');
 }
 
 /* ======== 智能Excel导入向导 - JS逻辑 ======== */
@@ -355,32 +548,58 @@ var _COL_ALIASES = {
   '被保人身份证': ['被保人身份证','被保人证件号','被保险人身份证号','insured id'],
   '被保人手机号码': ['被保人手机号码','被保人电话','被保手机','被保险人电话','insured phone','被保险人手机'],
   '受益人': ['受益人','身故受益人','beneficiary','受益人姓名','benefit'],
-  '备注': ['备注','remark','notes','说明','附记']
+  '备注': ['备注','remark','notes','说明','附记'],
+  /* —— 客户画像 / 家庭成员 —— */
+  '个人情况备注': ['个人情况备注','个人情况','个人备注','客户画像','画像个人','画像','personal','客户情况','个人简介','了解备注'],
+  '家庭情况备注': ['家庭情况备注','家庭情况','家庭备注','画像家庭','family','家庭简介','家庭状况'],
+  '家庭成员': ['家庭成员','家人','家庭人员','成员','family members','家成员'],
+  /* —— 保单扩展 —— */
+  '是否有分红': ['是否有分红','有无分红','分红','是否分红','has dividend','分红标识','分红标记'],
+  '满期日期': ['满期日期','满期日','到期日','到期日期','期满日','maturity','满期时间','保障到期'],
+  '被保人地址': ['被保人地址','被保险人地址','被保人联系地址','insured address','被保人住址'],
+  /* —— 生存金 —— */
+  '生存金类型': ['生存金类型','领取类型','年金类型','survival type','生存金领取类型','生存金方式'],
+  '生存金金额（元）': ['生存金金额（元）','生存金金额','年金金额','每年生存金','survival amount','领取金额','年金额'],
+  '生存金起领日期': ['生存金起领日期','起领日期','首次领取日期','起领日','生存金起始日期','生存金开始领取'],
+  '最近领取日期': ['最近领取日期','最近一次领取日期','上次领取日期','最近领取日','上次领款日期'],
+  '下次领取日期': ['下次领取日期','下次领取日','下次领款日期','下一领取日','next date'],
+  '生存金备注': ['生存金备注','领取备注','年金备注','生存金说明','survival note','生存金领取说明']
 };
 
-/* 列名智能匹配 */
-function _wizLookupColumn(row, standardName) {
-  var aliases = _COL_ALIASES[standardName] || [standardName];
-  /* 先精确找 */
-  for (var i = 0; i < aliases.length; i++) {
-    for (var key in row) {
-      if (row.hasOwnProperty(key) && key && key.toString().trim() === aliases[i]) {
-        return row[key];
+/* 列名智能匹配（一次性构建映射，避免模糊匹配串列）：
+   Pass1 精确命中别名 → Pass2 列名包含别名 → Pass3 别名包含列名；
+   每个原始列只绑定一个标准字段，杜绝「领取类型」误配「主险/附加险」等串列问题 */
+function buildColumnAliasMap(headers) {
+  var map = {};   /* 标准字段名 -> 原始列名 */
+  var used = {};  /* 原始列名 -> 已绑定 */
+  var keys = (headers || []).filter(function(k) { return k !== undefined && k !== null && k.toString().trim() !== ''; });
+  var pass = function(matchFn) {
+    keys.forEach(function(k) {
+      if (used[k]) return;
+      for (var std in _COL_ALIASES) {
+        if (map[std]) continue;
+        var aliases = _COL_ALIASES[std];
+        for (var i = 0; i < aliases.length; i++) {
+          if (matchFn(k.toString().trim(), aliases[i])) { map[std] = k; used[k] = true; return; }
+        }
       }
-    }
-  }
-  /* 再模糊匹配：别名是列名子串，或列名是别名子串 */
-  for (var j = 0; j < aliases.length; j++) {
-    var alias = aliases[j];
-    for (var k in row) {
-      if (!row.hasOwnProperty(k) || !k) continue;
-      var kl = k.toString().trim();
-      if (kl && alias && (kl.indexOf(alias) !== -1 || alias.indexOf(kl) !== -1)) {
-        return row[k];
-      }
-    }
-  }
-  return '';
+    });
+  };
+  /* Pass1：列名与别名完全一致（优先长别名，避免短别名抢配） */
+  pass(function(kl, alias) { return kl === alias; });
+  /* Pass2：列名包含别名（如「被保险人身份证号」含「被保人身份证」） */
+  pass(function(kl, alias) { return alias && kl.length > alias.length && kl.indexOf(alias) !== -1; });
+  /* Pass3：别名包含列名（如「领取类型」被「生存金领取类型」包含；限制列名≥2字防误配） */
+  pass(function(kl, alias) { return alias && kl.length >= 2 && alias.length > kl.length && alias.indexOf(kl) !== -1; });
+  return map;
+}
+
+/* 按标准字段名从行取值（已构建映射后使用） */
+function lookupCol(row, colMap, standardName) {
+  var key = colMap[standardName];
+  if (!key || !row.hasOwnProperty(key)) return '';
+  var v = row[key];
+  return (v === undefined || v === null) ? '' : v;
 }
 
 /* 日期智能清洗：统一转为YYYYMMDD */
@@ -598,25 +817,29 @@ function _wizFindExistingClient(c) {
 /* 归一化行 -> 客户/保单对象 + 做匹配 */
 function _wizDoMatch() {
   /* StepA: 行转标准对象，按姓名分组(同客户) */
+  var colMap = buildColumnAliasMap(_wiz.headers);
   var groupMap = {};
   var groupKeys = [];
   _wiz.badIdCardCount = 0;
   _wiz.totalPolicies = 0;
   _wiz.rows.forEach(function(row) {
+    var get = function(col) { return lookupCol(row, colMap, col); };
     /* 取投保人姓名，如空则用手机号兜底，都空跳过 */
-    var name = (_wizLookupColumn(row, '投保人姓名') || '').toString().trim();
-    var idCard = (_wizLookupColumn(row, '投保人身份证号') || '').toString().trim();
-    var phone = (_wizLookupColumn(row, '联系电话') || '').toString().trim();
+    var name = (get('投保人姓名') || '').toString().trim();
+    var idCard = (get('投保人身份证号') || '').toString().trim();
+    var phone = (get('联系电话') || '').toString().trim();
     if (!name && !phone) return;
-    var gKey = '###' + (name || '') + '###' + (idCard || '') + '###' + (phone || '');
+    /* 按姓名分组（模板约定：同一客户的多张保单写成多行，姓名相同自动合并为一位客户；
+       姓名缺失时退化为按手机号分组，避免多个无名客户误合并） */
+    var gKey = name ? ('###' + name) : ('#phone#' + phone);
     if (!groupMap[gKey]) {
       groupMap[gKey] = {
         name: name,
         idCard: idCard,
         phone: phone,
-        address: (_wizLookupColumn(row, '通信地址') || '').toString().trim(),
-        workCompany: (_wizLookupColumn(row, '工作单位') || '').toString().trim(),
-        workAddress: (_wizLookupColumn(row, '工作地址') || '').toString().trim(),
+        address: (get('通信地址') || '').toString().trim(),
+        workCompany: (get('工作单位') || '').toString().trim(),
+        workAddress: (get('工作地址') || '').toString().trim(),
         policies: [],
         familyMembers: [],
         contactHistory: []
@@ -627,12 +850,34 @@ function _wizDoMatch() {
       /* 已有客户信息，空白则补齐 */
       if (!groupMap[gKey].idCard && idCard) groupMap[gKey].idCard = idCard;
       if (!groupMap[gKey].phone && phone) groupMap[gKey].phone = phone;
-      if (!groupMap[gKey].address) groupMap[gKey].address = (_wizLookupColumn(row, '通信地址') || '').toString().trim();
-      if (!groupMap[gKey].workCompany) groupMap[gKey].workCompany = (_wizLookupColumn(row, '工作单位') || '').toString().trim();
+      if (!groupMap[gKey].address) groupMap[gKey].address = (get('通信地址') || '').toString().trim();
+      if (!groupMap[gKey].workCompany) groupMap[gKey].workCompany = (get('工作单位') || '').toString().trim();
+      if (!groupMap[gKey].workAddress) groupMap[gKey].workAddress = (get('工作地址') || '').toString().trim();
     }
+    /* 客户画像（个人/家庭情况备注）：首见即录入，后行仅在空白时补齐 */
+    var _personal = (get('个人情况备注') || '').toString().trim();
+    var _family = (get('家庭情况备注') || '').toString().trim();
+    if (_personal || _family) {
+      if (!groupMap[gKey].profile) {
+        groupMap[gKey].profile = { personal: _personal, family: _family, updatedAt: todayStamp() };
+      } else {
+        if (!groupMap[gKey].profile.personal && _personal) groupMap[gKey].profile.personal = _personal;
+        if (!groupMap[gKey].profile.family && _family) groupMap[gKey].profile.family = _family;
+      }
+    }
+    /* 家庭成员：姓名|关系|身份证|电话|备注，多人用分号分隔（按姓名去重） */
+    var _fmStr = (get('家庭成员') || '').toString().trim();
+    if (_fmStr) {
+      parseFamilyMembers(_fmStr).forEach(function(fm) {
+        var exists = groupMap[gKey].familyMembers.some(function(e) { return e.name === fm.name; });
+        if (!exists) groupMap[gKey].familyMembers.push(fm);
+      });
+    }
+    /* 纯客户资源行（无保单代码且无险种名称）：仅录客户信息，不建保单 */
+    if (!rowHasPolicy(get)) return;
     /* 受益人解析 */
     var bene = [];
-    var beneStr = (_wizLookupColumn(row, '受益人') || '').toString().trim();
+    var beneStr = (get('受益人') || '').toString().trim();
     if (beneStr) {
       var bp = beneStr.split(/[\/、,，]/);
       var eachQuota = Math.round(100 / bp.length);
@@ -642,29 +887,35 @@ function _wizDoMatch() {
       });
     }
     /* 保单对象 */
-    var annPremium = _wizNum(_wizLookupColumn(row, '年缴保费（元）'));
-    var sumIns = _wizNum(_wizLookupColumn(row, '保额（元）'));
-    var effDate = _wizNormalizeDate(_wizLookupColumn(row, '生效日'));
+    var annPremium = _wizNum(get('年缴保费（元）'));
+    var sumIns = _wizNum(get('保额（元）'));
+    var effDate = _wizNormalizeDate(get('生效日'));
+    var matDate = _wizNormalizeDate(get('满期日期'));
+    var sbObj = parseSurvivalBenefitFromRow(get);
     var policy = {
-      policyCode: (_wizLookupColumn(row, '保单代码') || '').toString().trim(),
-      insuranceName: (_wizLookupColumn(row, '险种名称') || '').toString().trim(),
-      codeType: (_wizLookupColumn(row, '险种代码') || '').toString().trim(),
-      mainType: (_wizLookupColumn(row, '主险/附加险') || '主险').toString().trim() || '主险',
-      parentPolicyCode: (_wizLookupColumn(row, '关联主险代码') || '').toString().trim(),
-      status: (_wizLookupColumn(row, '保单状态') || '有效').toString().trim() || '有效',
+      policyCode: (get('保单代码') || '').toString().trim(),
+      insuranceName: (get('险种名称') || '').toString().trim(),
+      codeType: (get('险种代码') || '').toString().trim(),
+      mainType: (get('主险/附加险') || '主险').toString().trim() || '主险',
+      parentPolicyCode: (get('关联主险代码') || '').toString().trim(),
+      status: (get('保单状态') || '有效').toString().trim() || '有效',
+      hasDividend: parseYesNo(get('是否有分红')),
       effectiveDate: effDate,
-      paymentMethod: (_wizLookupColumn(row, '缴费方式') || '年缴').toString().trim() || '年缴',
+      maturityDate: matDate,
+      paymentMethod: (get('缴费方式') || '年缴').toString().trim() || '年缴',
       annualPremium: annPremium,
       sumInsured: sumIns,
-      paymentTerm: (_wizLookupColumn(row, '缴费期限（年）') || '').toString().trim(),
-      paymentBank: (_wizLookupColumn(row, '缴费银行') || '').toString().trim(),
-      paymentBankCard: (_wizLookupColumn(row, '银行卡后四位') || '').toString().trim(),
-      insured: (_wizLookupColumn(row, '被保险人') || '').toString().trim(),
-      insuredRelation: (_wizLookupColumn(row, '与被保人关系') || '').toString().trim(),
-      insuredId: (_wizLookupColumn(row, '被保人身份证') || '').toString().trim(),
-      insuredPhone: (_wizLookupColumn(row, '被保人手机号码') || '').toString().trim(),
+      paymentTerm: (get('缴费期限（年）') || '').toString().trim(),
+      paymentBank: (get('缴费银行') || '').toString().trim(),
+      paymentBankCard: (get('银行卡后四位') || '').toString().trim(),
+      insured: (get('被保险人') || '').toString().trim(),
+      insuredRelation: (get('与被保人关系') || '').toString().trim(),
+      insuredId: (get('被保人身份证') || '').toString().trim(),
+      insuredPhone: (get('被保人手机号码') || '').toString().trim(),
+      insuredAddress: (get('被保人地址') || '').toString().trim(),
       beneficiaries: bene,
-      remark: (_wizLookupColumn(row, '备注') || '').toString().trim(),
+      survivalBenefit: sbObj || { type: '', amount: '', startDate: '', lastDate: '', nextDate: '', note: '' },
+      remark: (get('备注') || '').toString().trim(),
       extraFields: {},
       serviceRecords: []
     };
@@ -736,6 +987,23 @@ function wizConfirmImport() {
             if (!ex.address && c.address) ex.address = c.address;
             if (!ex.workCompany && c.workCompany) ex.workCompany = c.workCompany;
             if (!ex.workAddress && c.workAddress) ex.workAddress = c.workAddress;
+            /* 客户画像：空白补齐 */
+            if (c.profile) {
+              if (!ex.profile) {
+                ex.profile = { personal: c.profile.personal || '', family: c.profile.family || '', updatedAt: c.profile.updatedAt || todayStamp() };
+              } else {
+                if (!ex.profile.personal && c.profile.personal) ex.profile.personal = c.profile.personal;
+                if (!ex.profile.family && c.profile.family) ex.profile.family = c.profile.family;
+              }
+            }
+            /* 家庭成员：按姓名去重追加 */
+            (c.familyMembers || []).forEach(function(fm) {
+              var exists = (ex.familyMembers || []).some(function(e) { return e.name === fm.name; });
+              if (!exists) {
+                if (!ex.familyMembers) ex.familyMembers = [];
+                ex.familyMembers.push(fm);
+              }
+            });
             /* 保单去重：保单号一致就覆盖，否则追加 */
             c.policies.forEach(function(np) {
               if (!np.policyCode) { ex.policies.push(np); return; }
@@ -744,7 +1012,19 @@ function wizConfirmImport() {
               if (fIdx === -1) ex.policies.push(np);
               else {
                 /* 非空字段覆盖旧保单 */
-                for (var k in np) if (np[k] !== undefined && np[k] !== '' && np[k] !== null) ex.policies[fIdx][k] = np[k];
+                for (var k in np) {
+                  if (k === 'survivalBenefit') continue; /* 嵌套对象单独合并 */
+                  if (np[k] !== undefined && np[k] !== '' && np[k] !== null) ex.policies[fIdx][k] = np[k];
+                }
+                /* 生存金：子字段级合并（非空覆盖） */
+                if (np.survivalBenefit) {
+                  var oldSb = ex.policies[fIdx].survivalBenefit;
+                  if (!oldSb) oldSb = ex.policies[fIdx].survivalBenefit = { type: '', amount: '', startDate: '', lastDate: '', nextDate: '', note: '' };
+                  for (var sk in np.survivalBenefit) {
+                    var v2 = np.survivalBenefit[sk];
+                    if (v2 !== undefined && v2 !== '' && v2 !== null) oldSb[sk] = v2;
+                  }
+                }
               }
             });
           }

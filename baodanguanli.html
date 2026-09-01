@@ -14,7 +14,7 @@
 <script src="js/04-storage.js?v=20260815i"></script>
 <script src="js/05-render.js?v=20260825b"></script>
 <script src="js/06-crud.js?v=20260822b"></script>
-<script src="js/07-importexport.js?v=20260825a"></script>
+<script src="js/07-importexport.js?v=20260901a"></script>
 <script src="js/08-app.js?v=20260825b"></script>
 </head>
 <body>
@@ -246,7 +246,9 @@
           <button class="btn-danger" onclick="confirmClearData()">清空我的数据</button>
         </div>
         <div style="margin-top:12px;padding:10px 14px;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;font-size:12px;color:#0c4a6e;line-height:1.7;">
-          <strong>💡 导入提示：</strong>「智能模式」支持预览解析结果、灵活列名匹配（可自定义中文列名）、合并去重三种策略（覆盖 / 合并更新 / 仅新增不覆盖）。普通导入则直接覆盖当前数据。
+          <strong>💡 导入提示：</strong>「智能模式」支持预览解析结果、灵活列名匹配（可自定义中文列名，如「姓名/手机/保单号/有无分红」均可识别，且不会串列）、合并去重三种策略（覆盖 / 合并更新 / 仅新增不覆盖）。普通导入同样支持智能列名匹配，但会直接覆盖当前数据。<br>
+          <strong>📋 模板说明：</strong>Excel模板现已覆盖全部信息（37列）：客户基础信息 + 个人/家庭情况画像 + 家庭成员 + 保单全字段（含满期日期、是否有分红）+ 生存金（类型/金额/起领/领取记录）。无保单的纯客户资源行，保单代码与险种名称留空即可。点击「导出Excel模板」可查看含填写说明的完整模板。<br>
+          <strong>✍️ 填写技巧：</strong>日期支持 20230115 / 2023-01-15 / 2023年1月15日 / Excel日期 等多种格式；金额可含千分位（如 12,000）；同一客户多张保单写成多行（姓名相同自动合并）；家庭成员格式：姓名|关系|身份证|电话|备注，多人用分号分隔。
         </div>
         <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importData(event)">
         <input type="file" id="importExcelInput" accept=".xlsx,.xls,.csv" style="display:none;" onchange="importExcelData(event)">
