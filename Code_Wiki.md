@@ -268,7 +268,20 @@ index.html (302跳转)
 ```javascript
 {
   insuranceName: "XX增额终身寿",    // String - 险种名称
-  codeType: "ZE001"                // String - 险种代码
+  codeType: "ZE001",               // String - 险种代码
+  traits: {                        // Object|null - 赔付/领取特征（双领取规则，分红型理财险可两笔钱并存）
+    category: "分红险",             // String - 类别（重疾/防癌/医疗/寿险/年金/万能/意外/两全/分红/教育金/其他）
+    waitingPeriod: "180",          // String - 等待期天数
+    // 第①笔钱：生存金/年金规则
+    annuityStart: "afterYears",    // '' | 'none' | 'afterYears' | 'atAge' | 'fixedDate'
+    annuityStartVal: "5",          // String - 起领数值（N年/岁/指定期限）
+    annuityFreq: "annual",         // '' | annual/semiannual/quarterly/monthly/triennial/lumpsum
+    // 第②笔钱：分红金规则（分红型理财险特有）
+    dividendStart: "nextYear",     // '' | 'none' | 'nextYear' | 'afterYears' | 'fixedDate'
+    dividendStartVal: "",          // String - 分红起领数值（nextYear时为空）
+    dividendFreq: "annual",        // '' | annual/semiannual/quarterly/monthly/lumpsum
+    note: "..."                    // String - 其他赔付特征备注
+  }
 }
 ```
 

@@ -638,7 +638,7 @@ function hasTraitContent(t) {
   if (!t) return false;
   return !!(t.category ||
     (t.waitingPeriod !== '' && t.waitingPeriod !== undefined && t.waitingPeriod !== null) ||
-    t.annuityStart || t.annuityFreq || t.note);
+    t.annuityStart || t.annuityFreq || t.dividendStart || t.note);
 }
 
 /* 类别标签HTML */
@@ -658,6 +658,16 @@ function annuityStartLabel(t) {
   return '';
 }
 
+/* 分红金领取起始可读文案 */
+function dividendStartLabel(t) {
+  var v = (t.dividendStartVal || '').trim();
+  if (t.dividendStart === 'nextYear') return '次年起·保单年满日领';
+  if (t.dividendStart === 'afterYears') return '投保后 ' + (v ? htmlEscape(v.replace(/年$/, '')) : 'N') + ' 年起领';
+  if (t.dividendStart === 'fixedDate') return '按' + (v ? htmlEscape(v) : '指定期限') + '起领';
+  if (t.dividendStart === 'none') return '无分红领取责任';
+  return '';
+}
+
 /* 特征chips HTML */
 function traitChipsHtml(item) {
   var t = item && item.traits;
@@ -672,6 +682,12 @@ function traitChipsHtml(item) {
   }
   if (t.annuityFreq && t.annuityStart && t.annuityStart !== 'none') {
     chips.push('<span class="trait-chip tc-freq">🔁 ' + (TRAIT_META.freqLabels[t.annuityFreq] || htmlEscape(t.annuityFreq)) + '</span>');
+  }
+  /* 分红金（第二笔钱）：起始 + 频率合并为一个chip */
+  var divLbl = dividendStartLabel(t);
+  if (divLbl) {
+    var divFreq = (t.dividendFreq && t.dividendStart !== 'none') ? (TRAIT_META.freqLabels[t.dividendFreq] || htmlEscape(t.dividendFreq)) : '';
+    chips.push('<span class="trait-chip tc-dividend">💰 ' + divLbl + (divFreq ? ' · ' + divFreq : '') + '</span>');
   }
   if (t.note) chips.push('<span class="trait-chip tc-note">📝 ' + htmlEscape(t.note) + '</span>');
   return chips.join('');
@@ -735,6 +751,8 @@ function applyTraitCategory(v) {
   setTraitSeg('traitCategorySeg', 'traitCategory', v);
   refreshTraitWaitSuggest();
   refreshAnnuitySection();
+  refreshDividendSection();
+  refreshDividendSuggest();
 }
 
 function setTraitCategory(v) {
@@ -872,6 +890,132 @@ function setTraitAnnuityFreq(v) {
   applyTraitAnnuityFreq(v);
 }
 
+/* ======== 分红金领取规则（第二笔钱） ======== */
+var dividendManual = false; /* 用户手动切换后不再自动折叠/展开 */
+var traitCtxName = '';       /* 当前编辑的险种名称（用于分红建议判断） */
+
+function toggleDividendSection() {
+  var field = document.getElementById('traitDividendField');
+  if (!field) return;
+  dividendManual = true;
+  field.classList.toggle('collapsed');
+}
+
+/* 是否建议设置分红（类别为分红险，或险种名称含"分红"） */
+function shouldSuggestDividend() {
+  var cat = document.getElementById('traitCategory').value;
+  if (cat === '分红险') return true;
+  return (traitCtxName || '').indexOf('分红') !== -1;
+}
+
+/* 按类别自动折叠/展开分红区块（保障型默认折叠） */
+function refreshDividendSection() {
+  var field = document.getElementById('traitDividendField');
+  if (!field) return;
+  if (dividendManual) return;
+  var hint = document.getElementById('traitDividendHint');
+  var cat = document.getElementById('traitCategory').value;
+  var start = document.getElementById('traitDividendStart').value;
+  if (start) {
+    /* 已有分红规则 → 始终展开 */
+    field.classList.remove('collapsed');
+    field.classList.remove('has-hint');
+    if (hint) hint.innerHTML = '';
+    return;
+  }
+  if (isProtectionCat(cat)) {
+    field.classList.add('collapsed');
+    field.classList.add('has-hint');
+    if (hint) hint.innerHTML = '「' + htmlEscape(cat) + '」通常无分红金领取责任；如确有分红，点击上方标题可展开录入';
+  } else {
+    field.classList.remove('collapsed');
+    field.classList.remove('has-hint');
+    if (hint) hint.innerHTML = '';
+  }
+}
+
+/* 分红起始相关输入项可见性（"次年起·保单年满日"无需填写数值） */
+function refreshDividendInputs() {
+  var start = document.getElementById('traitDividendStart').value;
+  var show = !!start && start !== 'none' && start !== 'nextYear';
+  var valInput = document.getElementById('traitDividendVal');
+  if (valInput) valInput.style.display = show ? 'block' : 'none';
+}
+
+/* 分红建议高亮：未选起始时建议"次年起·保单年满日"，已选起始未选频率时建议"每年" */
+function refreshDividendSuggest() {
+  var start = document.getElementById('traitDividendStart').value;
+  var startSeg = document.getElementById('traitDividendStartSeg');
+  if (startSeg) startSeg.querySelectorAll('button').forEach(function(b) {
+    b.classList.toggle('suggest', !start && shouldSuggestDividend() && b.dataset.v === 'nextYear');
+  });
+  var freq = document.getElementById('traitDividendFreq').value;
+  var freqSeg = document.getElementById('traitDividendFreqSeg');
+  if (freqSeg) freqSeg.querySelectorAll('button').forEach(function(b) {
+    b.classList.toggle('suggest', !freq && !!start && start !== 'none' && b.dataset.v === 'annual');
+  });
+}
+
+/* 分红区块标题右侧徽标（折叠时也能看到当前设置摘要） */
+function refreshDividendBadge() {
+  var badge = document.getElementById('traitDividendBadge');
+  if (!badge) return;
+  var start = document.getElementById('traitDividendStart').value;
+  var freq = document.getElementById('traitDividendFreq').value;
+  var cls = 'trait-collapse-badge ';
+  var txt = '未设置';
+  if (start === 'none') {
+    cls += 'b-none';
+    txt = '无分红领取';
+  } else if (start) {
+    cls += 'b-set';
+    var t = { dividendStart: start, dividendStartVal: document.getElementById('traitDividendVal').value };
+    txt = dividendStartLabel(t);
+    if (freq) txt += ' · ' + (TRAIT_META.freqLabels[freq] || freq);
+  } else {
+    cls += 'b-empty';
+  }
+  badge.className = cls;
+  badge.textContent = txt;
+}
+
+function applyTraitDividendStart(v) {
+  setTraitSeg('traitDividendStartSeg', 'traitDividendStart', v);
+  /* 取消选择或选"无分红"时，联动清空分红频率 */
+  if (!v || v === 'none') {
+    setTraitSeg('traitDividendFreqSeg', 'traitDividendFreq', '');
+  }
+  var input = document.getElementById('traitDividendVal');
+  var ph = {
+    nextYear: '',
+    afterYears: '如：5（投保满5年起，每个保单年满日领取）',
+    fixedDate: '如：2035年1月 / 保单第10个周年日',
+    none: ''
+  };
+  if (ph[v] !== undefined) input.placeholder = ph[v];
+  refreshDividendInputs();
+  refreshDividendBadge();
+  refreshDividendSection();
+  refreshDividendSuggest();
+}
+
+function setTraitDividendStart(v) {
+  /* 再次点击已选项 → 取消选择 */
+  if (v && document.getElementById('traitDividendStart').value === v) v = '';
+  applyTraitDividendStart(v);
+}
+
+function applyTraitDividendFreq(v) {
+  setTraitSeg('traitDividendFreqSeg', 'traitDividendFreq', v);
+  refreshDividendBadge();
+}
+
+function setTraitDividendFreq(v) {
+  /* 再次点击已选频率 → 取消选择 */
+  if (v && document.getElementById('traitDividendFreq').value === v) v = '';
+  applyTraitDividendFreq(v);
+}
+
 /* 打开特征编辑器 */
 function openTraitEditor(idx) {
   var lib = getInsuranceTypeLib();
@@ -881,6 +1025,8 @@ function openTraitEditor(idx) {
   document.getElementById('traitEditTitle').textContent = item.insuranceName || '未命名险种';
   document.getElementById('traitEditCode').textContent = item.codeType || '';
   var t = item.traits || {};
+  traitCtxName = item.insuranceName || '';
+  dividendManual = false;
   /* 类别：未设置时按险种名称自动推荐（附加险/万能险等） */
   var catNote = document.getElementById('traitCatNote');
   if (!t.category) {
@@ -901,10 +1047,17 @@ function openTraitEditor(idx) {
   applyTraitAnnuityStart(t.annuityStart || '');
   document.getElementById('traitAnnuityVal').value = t.annuityStartVal || '';
   applyTraitAnnuityFreq(t.annuityFreq || '');
+  applyTraitDividendStart(t.dividendStart || '');
+  document.getElementById('traitDividendVal').value = t.dividendStartVal || '';
+  applyTraitDividendFreq(t.dividendFreq || '');
   document.getElementById('traitNote').value = t.note || '';
   refreshAnnuityInputs();
   refreshAnnuityBadge();
   refreshAnnuitySection();
+  refreshDividendInputs();
+  refreshDividendBadge();
+  refreshDividendSection();
+  refreshDividendSuggest();
   var nextIdx = findNextIncompleteIdx(idx);
   document.getElementById('traitSaveNextBtn').style.display = (nextIdx === -1) ? 'none' : '';
   openModal('traitModal');
@@ -919,14 +1072,18 @@ function saveTraits(goNext) {
   var waitVal = document.getElementById('traitWait').value;
   if (waitCustom !== '') waitVal = waitCustom;
   var startType = document.getElementById('traitAnnuityStart').value;
-  lib[idx].traits = {
+  var divStartType = document.getElementById('traitDividendStart').value;
+  lib[idx].traits = Object.assign({}, lib[idx].traits, {
     category: document.getElementById('traitCategory').value,
     waitingPeriod: waitVal,
     annuityStart: startType,
     annuityStartVal: (startType === 'none') ? '' : document.getElementById('traitAnnuityVal').value.trim(),
     annuityFreq: document.getElementById('traitAnnuityFreq').value,
+    dividendStart: divStartType,
+    dividendStartVal: (divStartType === 'none' || divStartType === 'nextYear') ? '' : document.getElementById('traitDividendVal').value.trim(),
+    dividendFreq: document.getElementById('traitDividendFreq').value,
     note: document.getElementById('traitNote').value.trim()
-  };
+  });
   saveInsuranceTypeLib(lib);
   renderInsuranceTypeLib();
   if (goNext) {
@@ -990,11 +1147,20 @@ function showPolicyTraitHint(libItem) {
   var f = libItem.traits.annuityFreq;
   var startSet = libItem.traits.annuityStart && libItem.traits.annuityStart !== 'none';
   var map = { annual: 'annual', triennial: 'triennial', lumpsum: 'maturity' };
+  var autoFills = [];
   if (startSet && f && map[f] && sbSelect && !sbSelect.value) {
     sbSelect.value = map[f];
     autoCalcSurvivalNextDate();
-    showToast('已按险种库特征自动填充生存金类型：' + TRAIT_META.freqLabels[f], 'success');
+    autoFills.push('生存金类型「' + TRAIT_META.freqLabels[f] + '」');
   }
+  /* 分红金规则明确（非"无分红"）时自动勾选"本保单有分红" */
+  var divCb = document.getElementById('hasDividend');
+  var divSet = libItem.traits.dividendStart && libItem.traits.dividendStart !== 'none';
+  if (divSet && divCb && !divCb.checked) {
+    divCb.checked = true;
+    autoFills.push('「本保单有分红」');
+  }
+  if (autoFills.length) showToast('已按险种库特征自动填充：' + autoFills.join('、'), 'success');
 }
 
 

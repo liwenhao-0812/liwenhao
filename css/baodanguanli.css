@@ -2312,6 +2312,7 @@ button {
 .tc-freq { background: #f0fdfa; color: #0f766e; }
 .tc-none { background: #f1f5f9; color: #475569; }
 .tc-note { background: #f5f3ff; color: #7c3aed; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.tc-dividend { background: #fff7ed; color: #c2410c; }
 
 /* 类别标签 */
 .trait-cat {
@@ -2365,6 +2366,13 @@ button {
 }
 .trait-collapsible.collapsed.has-hint .trait-collapse-hint { display: block; }
 .trait-collapse-body .trait-field-note { margin-top: 9px; }
+
+/* 分红金领取规则区块（橙色调，与生存金第一笔钱形成视觉区分） */
+.trait-collapsible.trait-dividend { border-color: #fdba74; }
+.trait-collapsible.trait-dividend .trait-collapse-head { background: #fff7ed; }
+.trait-collapsible.trait-dividend .trait-collapse-head:hover { background: #ffedd5; }
+.trait-collapsible.trait-dividend .trait-collapse-title { color: #9a3412; }
+.trait-collapsible.trait-dividend .trait-collapse-body { border-top-color: #fed7aa; }
 
 /* 特征编辑模态框 */
 .trait-modal { max-width: 620px; }
