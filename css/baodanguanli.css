@@ -1706,19 +1706,20 @@ button {
 /* ======== 险种库卡片布局 ======== */
 .inslib-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
 }
 .inslib-card {
   background: #fff;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: 12px 14px;
+  padding: 14px;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 10px;
   transition: box-shadow 0.15s;
+  min-height: 160px;
+  justify-content: space-between;
 }
 .inslib-card:hover {
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
@@ -1731,12 +1732,23 @@ button {
   font-size: 14px;
   font-weight: 600;
   color: #0f172a;
-  word-break: break-all;
+  word-break: break-word;
   line-height: 1.4;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.8em;
+}
+.inslib-card .inslib-code-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
 }
 .inslib-card .inslib-code {
-  font-size: 12px;
+  font-size: 11px;
   font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
   color: #64748b;
   background: #f1f5f9;
@@ -1744,10 +1756,26 @@ button {
   border-radius: 4px;
   display: inline-block;
 }
+.inslib-card .inslib-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 11px;
+}
 .inslib-card .inslib-actions {
   display: flex;
   gap: 6px;
   flex-shrink: 0;
+  padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+}
+.inslib-card .inslib-actions .btn-sm {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  padding: 5px 8px;
+  text-align: center;
 }
 .inslib-card .inslib-edit-input {
   flex: 1;
@@ -1771,10 +1799,13 @@ button {
     grid-template-columns: 1fr;
   }
   .inslib-card {
-    padding: 10px 12px;
+    padding: 12px;
+    min-height: auto;
   }
   .inslib-card .inslib-name {
     font-size: 13px;
+    -webkit-line-clamp: 3;
+    min-height: auto;
   }
 }
 
