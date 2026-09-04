@@ -61,7 +61,7 @@ function refreshCurrentTab() {
     case 'query': handleSearch(); break;
     case 'reminders': renderServiceLeads(); break;
     case 'inslib': renderInsuranceTypeLib(); break;
-    case 'settings': updateSettingSyncStatus(hasGitHubToken()); initTokenStatus(); initSupabaseStatus(); break;
+    case 'settings': updateSettingSyncStatus(hasGitHubToken()); initTokenStatus(); initSupabaseStatus(); initAiFuncStatus(); break;
   }
   updateBottomStats();
 }

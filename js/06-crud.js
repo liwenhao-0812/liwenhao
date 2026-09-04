@@ -1237,6 +1237,7 @@ function renderInsuranceTypeLib() {
       '</div>' +
       '<div class="inslib-actions" id="inslib_actions_' + idx + '">' +
         '<button class="btn-sm ' + (traitDone ? 'btn-outline' : 'btn-warm') + '" onclick="openTraitEditor(' + idx + ')">特征</button>' +
+        '<button class="btn-sm btn-outline" style="border-color:#6366f1;color:#6366f1;" onclick="openClauseUploadModal(' + idx + ')" title="上传条款PDF/图片，AI自动解读特征">📄条款</button>' +
         '<button class="btn-sm btn-outline" onclick="startEditInsuranceType(' + idx + ')">编辑</button>' +
         '<button class="btn-sm btn-danger" onclick="deleteInsuranceTypeByIndex(' + idx + ')">删除</button>' +
       '</div></div>';

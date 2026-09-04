@@ -16,6 +16,8 @@
 <script src="js/06-crud.js?v=20260822b"></script>
 <script src="js/07-importexport.js?v=20260901a"></script>
 <script src="js/08-app.js?v=20260825b"></script>
+<script src="js/09-ai.js?v=20260904a"></script>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 </head>
 <body>
 
@@ -260,6 +262,21 @@
         <button class="btn-primary" onclick="switchTab('inslib')">进入险种库管理</button>
       </div>
       <div class="card">
+        <div class="card-title">AI 辅助功能</div>
+        <div style="font-size:13px;color:#475569;line-height:1.7;margin-bottom:10px;">
+          <strong>📄 条款解读：</strong>在险种库页面，点击险种卡片上的「📄条款」按钮，上传条款 PDF 或图片，AI 自动解读类别、等待期、领取规则等特征。<br>
+          <strong>📷 保单照片识别：</strong>在添加/编辑保单时，点击顶部「📷拍照/截图识别保单」按钮，照片在浏览器本地 OCR 提取文字后由 AI 解析为结构化字段，照片不会上传。<br>
+          <strong>🔒 隐私保护：</strong>条款为公开文件可直接发大模型；保单照片仅本地 OCR，文字经大模型瞬时处理后不存储。
+        </div>
+        <div id="aiFuncStatus" style="font-size:12px;padding:8px 12px;border-radius:6px;background:#f8fafc;border:1px solid #e2e8f0;">
+          <span id="aiFuncStatusText" style="color:#64748b;">检查中...</span>
+          <button class="btn-sm btn-outline" style="margin-left:8px;font-size:11px;" onclick="testAiFunctions()">测试连接</button>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:#94a3b8;">
+          需要在 Supabase 控制台设置 Edge Functions Secrets: DEEPSEEK_API_KEY 和 QWEN_API_KEY
+        </div>
+      </div>
+      <div class="card">
         <div class="card-title">修改密码</div>
         <div class="form-group">
           <label>当前密码</label>
@@ -283,8 +300,9 @@
           <input type="text" id="newInsLibCode" placeholder="险种代码" style="flex:1;min-width:100px;">
           <button class="btn-primary btn-sm" onclick="addInsuranceTypeManually()" style="white-space:nowrap;">添加</button>
         </div>
-        <div style="margin-bottom:12px;">
+        <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;">
           <button class="btn-outline btn-sm" onclick="syncExistingPoliciesToLib();renderInsuranceTypeLib();">从保单数据同步</button>
+          <span style="font-size:11px;color:#6366f1;padding:4px 8px;background:#eef2ff;border-radius:4px;">📄 点击险种卡片上的「条款」按钮上传条款文件，AI自动解读</span>
         </div>
         <div id="inslibTraitProgress" class="itp-banner"></div>
         <div id="insuranceTypeLibTable" class="table-responsive"></div>
@@ -366,6 +384,10 @@
     <div class="modal-body">
       <input type="hidden" id="policyClientIndex" value="-1">
       <input type="hidden" id="policyEditIndex" value="-1">
+      <div style="margin-bottom:12px;padding:8px 12px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="openPolicyOcrModal(parseInt(document.getElementById('policyEditIndex').value)||-1)">
+        <span style="font-size:18px;">📷</span>
+        <span style="font-size:13px;color:#4338ca;font-weight:500;">拍照/截图识别保单（本地OCR+AI解析，照片不上传）</span>
+      </div>
       <div class="form-group">
         <label>保单代码 *</label>
         <input type="text" id="policyCode" placeholder="请输入保单代码" required>
