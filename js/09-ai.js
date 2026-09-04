@@ -215,7 +215,7 @@ function openClauseUploadModal(idx) {
 
       <div style="margin-top:18px;display:flex;gap:10px;justify-content:flex-end;">
         <button onclick="document.getElementById('clauseUploadModal').remove()" style="padding:8px 20px;border:1px solid #cbd5e1;background:#fff;border-radius:8px;cursor:pointer;font-size:14px;color:#475569;">取消</button>
-        <button id="clauseApplyBtn" style="display:none;padding:8px 20px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;" onclick="applyClauseResult(${idx})">应用解读结果</button>
+        <button id="clauseApplyBtn" style="display:none;padding:8px 20px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;" onclick="applyClauseResult(${idx})">应用并进入编辑</button>
       </div>
     </div>
   `;
@@ -313,7 +313,7 @@ function buildClauseResultHtml(traits) {
     html += '<tr><td style="padding:4px 8px;color:#64748b;width:100px;border-bottom:1px solid #f1f5f9;">' + r[0] + '</td><td style="padding:4px 8px;color:#1e293b;border-bottom:1px solid #f1f5f9;">' + r[1] + '</td></tr>';
   });
   html += '</table>';
-  html += '<div style="margin-top:10px;font-size:11px;color:#94a3b8;">点击「应用解读结果」将自动填充到险种特征中，可再手动校对</div>';
+  html += '<div style="margin-top:10px;font-size:11px;color:#94a3b8;">点击「应用并进入编辑」将打开特征编辑器并自动填充，可逐项核对修改后保存</div>';
   html += '</div>';
   return html;
 }
@@ -337,30 +337,61 @@ function formatFreq(freq) {
   return map[freq] || '未识别';
 }
 
-/* 应用解读结果到险种库 */
+/* 应用解读结果 → 打开特征编辑器并自动选中各项 */
 function applyClauseResult(idx) {
   var traits = window._clauseResult;
   if (!traits) return;
-  var lib = getInsuranceTypeLib();
-  if (idx < 0 || idx >= lib.length) return;
 
-  lib[idx].traits = Object.assign({}, lib[idx].traits || {}, {
-    category: traits.category || lib[idx].traits?.category || '',
-    waitingPeriod: traits.waitingPeriod !== '' && traits.waitingPeriod != null ? traits.waitingPeriod : (lib[idx].traits?.waitingPeriod || ''),
-    annuityStart: traits.annuityStart || lib[idx].traits?.annuityStart || '',
-    annuityStartVal: traits.annuityStartVal || lib[idx].traits?.annuityStartVal || '',
-    annuityFreq: traits.annuityFreq || lib[idx].traits?.annuityFreq || '',
-    dividendStart: traits.dividendStart || lib[idx].traits?.dividendStart || '',
-    dividendStartVal: traits.dividendStartVal || lib[idx].traits?.dividendStartVal || '',
-    dividendFreq: traits.dividendFreq || lib[idx].traits?.dividendFreq || '',
-    note: traits.note || lib[idx].traits?.note || '',
-  });
+  /* 先关闭条款上传模态框 */
+  var uploadModal = document.getElementById('clauseUploadModal');
+  if (uploadModal) uploadModal.remove();
 
-  saveInsuranceTypeLib(lib);
-  renderInsuranceTypeLib();
-  var modal = document.getElementById('clauseUploadModal');
-  if (modal) modal.remove();
-  showToast('✅ 条款解读结果已应用到「' + (lib[idx].insuranceName || '') + '」', 'success');
+  /* 打开特征编辑器（会加载现有 traits） */
+  openTraitEditor(idx);
+
+  /* 延迟设置，确保编辑器已打开并初始化 */
+  setTimeout(function() {
+    /* 1. 类别 */
+    if (traits.category && TRAIT_META.cats[traits.category]) {
+      applyTraitCategory(traits.category);
+    }
+
+    /* 2. 等待期 */
+    if (traits.waitingPeriod !== '' && traits.waitingPeriod != null && traits.waitingPeriod !== undefined) {
+      applyTraitWait(traits.waitingPeriod);
+    }
+
+    /* 3. 生存金起始 */
+    if (traits.annuityStart && traits.annuityStart !== 'none') {
+      applyTraitAnnuityStart(traits.annuityStart);
+      if (traits.annuityStartVal) {
+        document.getElementById('traitAnnuityVal').value = traits.annuityStartVal;
+      }
+      /* 4. 生存金频率 */
+      if (traits.annuityFreq && traits.annuityFreq !== 'none') {
+        applyTraitAnnuityFreq(traits.annuityFreq);
+      }
+    }
+
+    /* 5. 分红金起始 */
+    if (traits.dividendStart && traits.dividendStart !== 'none') {
+      applyTraitDividendStart(traits.dividendStart);
+      if (traits.dividendStartVal) {
+        document.getElementById('traitDividendVal').value = traits.dividendStartVal;
+      }
+      /* 6. 分红金频率 */
+      if (traits.dividendFreq && traits.dividendFreq !== 'none') {
+        applyTraitDividendFreq(traits.dividendFreq);
+      }
+    }
+
+    /* 7. 备注 */
+    if (traits.note) {
+      document.getElementById('traitNote').value = traits.note;
+    }
+
+    showToast('✅ 已自动填充解读结果，请核对后保存', 'success');
+  }, 100);
 }
 
 /* ======== UI: 保单照片 OCR 识别 ======== */
