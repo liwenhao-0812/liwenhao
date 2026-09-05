@@ -4073,6 +4073,70 @@
           "status": "已电话联系"
         }
       ]
+    },
+    {
+      "name": "邓志斌",
+      "idCard": "440105197404121214",
+      "phone": "13926672777",
+      "address": "广州市海珠区滨江二巷7号304房",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2008442001S43015048485",
+          "insuranceName": "康宁定期保险",
+          "codeType": "S43",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "hasDividend": false,
+          "effectiveDate": "20080903",
+          "maturityDate": "",
+          "paymentMethod": "年缴",
+          "annualPremium": "1450",
+          "sumInsured": "50000",
+          "paymentTerm": "20",
+          "paymentBank": "中国农业银行",
+          "paymentBankCard": "1243",
+          "insured": "邓志斌",
+          "insuredRelation": "本人",
+          "insuredId": "440105197404121214",
+          "insuredPhone": "13926672777",
+          "insuredAddress": "广州市海珠区滨江二巷7号304房",
+          "beneficiaries": [
+            {
+              "name": "邓柏麒",
+              "quota": "100"
+            }
+          ],
+          "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
+          "extraFields": {},
+          "serviceRecords": [],
+          "_idx": 0
+        }
+      ],
+      "familyMembers": [
+        {
+          "name": "邓柏麒",
+          "relationship": "受益人",
+          "idCard": "",
+          "phone": "",
+          "gender": "男",
+          "birthday": "2007-11-29",
+          "note": ""
+        }
+      ],
+      "contactHistory": [],
+      "profile": null,
+      "doNotContact": false
     }
   ],
   "insuranceTypes": [
@@ -4760,7 +4824,7 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1788583977497",
+  "_timestamp": "1788584051417",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
