@@ -429,14 +429,17 @@ function openPolicyOcrModal(editIdx) {
       <div class="ocr-privacy-note">
         <strong>🔒 隐私保护：</strong>照片在浏览器本地 OCR 提取文字，<strong>图片不会上传</strong>。
         提取的文字经大模型解析为结构化字段，识别结果会预填到表单中供您校对。
+        <br><strong>💡 支持多图：</strong>可同时上传投保人页、保单详情页、被保人页等多张截图，AI 会合并识别。
       </div>
 
       <div id="ocrDropZone" class="ocr-dropzone">
         <div class="ocr-dropzone-icon">📷</div>
         <div class="ocr-dropzone-title">点击上传保单照片</div>
-        <div class="ocr-dropzone-desc">支持 JPG / PNG · APP截图也可 · 最大 20MB</div>
-        <input type="file" id="ocrFileInput" accept="image/jpeg,image/png,image/jpg" capture="environment" style="display:none;">
+        <div class="ocr-dropzone-desc">支持多张 APP 截图 · JPG / PNG · 最大 20MB/张</div>
+        <input type="file" id="ocrFileInput" accept="image/jpeg,image/png,image/jpg" capture="environment" multiple style="display:none;">
       </div>
+
+      <div id="ocrFileList" style="display:none;margin-top:12px;"></div>
 
       <div id="ocrProgress" style="display:none;margin-top:16px;">
         <div style="display:flex;align-items:center;gap:10px;">
@@ -465,14 +468,18 @@ function openPolicyOcrModal(editIdx) {
   var dropZone = modal.querySelector('#ocrDropZone');
   dropZone.addEventListener('click', function() { fileInput.click(); });
   fileInput.addEventListener('change', function() {
-    if (fileInput.files[0]) handlePolicyOcrFile(fileInput.files[0], isEdit ? editIdx : -1);
+    if (fileInput.files.length > 0) {
+      handlePolicyOcrFiles(fileInput.files, isEdit ? editIdx : -1);
+    }
   });
   dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.style.borderColor = '#3b82f6'; });
   dropZone.addEventListener('dragleave', function() { dropZone.style.borderColor = '#cbd5e1'; });
   dropZone.addEventListener('drop', function(e) {
     e.preventDefault();
     dropZone.style.borderColor = '#cbd5e1';
-    if (e.dataTransfer.files[0]) handlePolicyOcrFile(e.dataTransfer.files[0], isEdit ? editIdx : -1);
+    if (e.dataTransfer.files.length > 0) {
+      handlePolicyOcrFiles(e.dataTransfer.files, isEdit ? editIdx : -1);
+    }
   });
 
   /* 点击遮罩关闭 */
@@ -481,41 +488,57 @@ function openPolicyOcrModal(editIdx) {
   });
 }
 
-/* 处理保单照片 */
-async function handlePolicyOcrFile(file, editIdx) {
+/* 处理保单照片（支持多张）*/
+async function handlePolicyOcrFiles(fileList, editIdx) {
   var progressDiv = document.getElementById('ocrProgress');
   var progressText = document.getElementById('ocrProgressText');
   var progressBar = document.getElementById('ocrProgressBar');
   var resultDiv = document.getElementById('ocrResult');
   var applyBtn = document.getElementById('ocrApplyBtn');
   var rawTextDiv = document.getElementById('ocrRawText');
+  var fileListDiv = document.getElementById('ocrFileList');
 
   progressDiv.style.display = 'block';
   resultDiv.style.display = 'none';
   applyBtn.style.display = 'none';
   rawTextDiv.style.display = 'none';
 
-  try {
-    /* 步骤1：本地 OCR 提取文字 */
-    progressText.textContent = '正在本地 OCR 提取文字...';
-    progressBar.style.width = '10%';
-    var ocrText = await extractImageOcr(file, function(pct) {
-      progressBar.style.width = (10 + pct * 0.6) + '%';
-      progressText.textContent = 'OCR 识别中... ' + pct + '%';
-    });
+  /* 显示文件列表 */
+  fileListDiv.style.display = 'block';
+  fileListDiv.innerHTML = '';
+  for (var i = 0; i < fileList.length; i++) {
+    fileListDiv.innerHTML += '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#f1f5f9;border-radius:6px;font-size:12px;color:#475569;margin-bottom:4px;"><span>📄</span><span style="flex:1;">' + fileList[i].name + '</span><span style="color:#94a3b8;">' + (fileList[i].size / 1024 / 1024).toFixed(1) + 'MB</span></div>';
+  }
 
-    if (!ocrText || ocrText.trim().length < 10) {
+  try {
+    /* 步骤1：逐张本地 OCR 提取文字，然后合并 */
+    progressText.textContent = '正在 OCR 识别（共' + fileList.length + '张）...';
+    progressBar.style.width = '5%';
+    var allText = '';
+
+    for (var i = 0; i < fileList.length; i++) {
+      var file = fileList[i];
+      progressText.textContent = 'OCR 识别第 ' + (i + 1) + '/' + fileList.length + ' 张...';
+      var ocrText = await extractImageOcr(file, function(pct) {
+        var basePct = (i / fileList.length) * 60;
+        var filePct = (1 / fileList.length) * 60 * (pct / 100);
+        progressBar.style.width = (5 + basePct + filePct) + '%';
+      });
+      allText += '\n\n===== 第' + (i + 1) + '张图片 =====\n\n' + ocrText;
+    }
+
+    if (!allText || allText.trim().length < 10) {
       throw new Error('OCR 未识别到足够文字，请确保照片清晰、光线充足后重试');
     }
 
     /* 展示原始 OCR 文本 */
     rawTextDiv.style.display = 'block';
-    rawTextDiv.textContent = ocrText.substring(0, 1000) + (ocrText.length > 1000 ? '\n...' : '');
+    rawTextDiv.textContent = allText.substring(0, 2000) + (allText.length > 2000 ? '\n...' : '');
 
     /* 步骤2：调用大模型解析 */
     progressText.textContent = '大模型正在解析保单信息...';
     progressBar.style.width = '80%';
-    var policyData = await aiParsePolicy(ocrText);
+    var policyData = await aiParsePolicy(allText);
 
     progressBar.style.width = '100%';
     progressText.textContent = '解析完成！';
@@ -530,20 +553,22 @@ async function handlePolicyOcrFile(file, editIdx) {
   } catch (e) {
     progressDiv.style.display = 'none';
     resultDiv.style.display = 'block';
-    resultDiv.innerHTML = '<div style="padding:14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#dc2626;font-size:13px;">❌ ' + (e.message || '处理失败') + '</div>';
+    resultDiv.innerHTML = '<div style="padding:14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#dc2626;font-size:13px;">\u274C ' + (e.message || '处理失败') + '</div>';
   }
 }
 
 /* 构建识别结果展示 HTML */
 function buildOcrResultHtml(data) {
   var fieldLabels = {
-    name: '投保人姓名', idCard: '身份证号', phone: '手机号', address: '地址',
     policyCode: '保单号', insuranceName: '险种名称', codeType: '险种代码',
-    insuranceCompany: '保险公司', annualPremium: '年保费', sumInsured: '保额',
-    startDate: '生效日期', maturityDate: '满期日期', hasDividend: '是否有分红',
+    mainType: '主附险', insuranceCompany: '保险公司',
+    annualPremium: '年保费', sumInsured: '保额',
+    effectiveDate: '生效日期', maturityDate: '满期日期', hasDividend: '是否有分红',
     status: '保单状态', paymentMethod: '缴费方式', paymentYears: '缴费年限',
+    paymentBank: '缴费银行', paymentBankCard: '银行卡后四位',
+    policyholderName: '投保人姓名', policyholderIdCard: '投保人身份证', policyholderPhone: '投保人手机',
     insuredName: '被保险人', insuredRelation: '与投保人关系', insuredIdCard: '被保人身份证',
-    insuredPhone: '被保人电话', beneficiary: '受益人',
+    insuredPhone: '被保人电话', insuredAddress: '被保人地址',
     survivalType: '生存金类型', survivalAmount: '生存金金额', survivalStartDate: '起领日期',
     note: '备注'
   };
@@ -553,7 +578,7 @@ function buildOcrResultHtml(data) {
   var survTypeMap = { annual: '每年', triennial: '每三年', maturity: '满期一次性', none: '无' };
 
   var html = '<div style="padding:14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">';
-  html += '<div style="font-weight:600;color:#15803d;margin-bottom:10px;font-size:14px;">✅ 识别结果（请校对后填充到表单）</div>';
+  html += '<div style="font-weight:600;color:#15803d;margin-bottom:10px;font-size:14px;">\u2705 识别结果（请校对后填充到表单）</div>';
   html += '<table style="width:100%;font-size:13px;border-collapse:collapse;">';
 
   Object.keys(fieldLabels).forEach(function(key) {
@@ -565,9 +590,23 @@ function buildOcrResultHtml(data) {
     if (key === 'paymentMethod') display = payMethodMap[val] || val;
     if (key === 'survivalType') display = survTypeMap[val] || val;
 
-    html += '<tr><td style="padding:4px 8px;color:#64748b;width:100px;border-bottom:1px solid #f1f5f9;">' + fieldLabels[key] + '</td>';
+    html += '<tr><td style="padding:4px 8px;color:#64748b;width:110px;border-bottom:1px solid #f1f5f9;">' + fieldLabels[key] + '</td>';
     html += '<td style="padding:4px 8px;color:#1e293b;border-bottom:1px solid #f1f5f9;">' + display + '</td></tr>';
   });
+
+  /* 受益人 */
+  if (data.beneficiaries && data.beneficiaries.length > 0) {
+    html += '<tr><td colspan="2" style="padding:8px 8px 4px;color:#15803d;font-weight:600;border-bottom:1px solid #f1f5f9;">受益人（' + data.beneficiaries.length + '人）</td></tr>';
+    data.beneficiaries.forEach(function(b, i) {
+      var bText = b.name || '';
+      if (b.relationship) bText += ' | 关系：' + b.relationship;
+      if (b.quota) bText += ' | 比例：' + b.quota;
+      if (b.gender) bText += ' | ' + b.gender;
+      if (b.birthday) bText += ' | 生日：' + b.birthday;
+      html += '<tr><td style="padding:4px 8px;color:#64748b;width:110px;border-bottom:1px solid #f1f5f9;">受益人' + (i + 1) + '</td>';
+      html += '<td style="padding:4px 8px;color:#1e293b;border-bottom:1px solid #f1f5f9;">' + bText + '</td></tr>';
+    });
+  }
 
   html += '</table>';
   html += '<div style="margin-top:10px;font-size:11px;color:#94a3b8;">点击「填充到表单」后可逐字段校对修改</div>';
@@ -580,7 +619,6 @@ function applyOcrResult(editIdx) {
   var data = window._ocrResult;
   if (!data) return;
 
-  /* 保单模态框已经打开（OCR 按钮在保单表单内），直接填充字段即可 */
   /* 逐字段填充，空值跳过 */
   var fieldMap = {
     'policyCode': data.policyCode,
@@ -588,31 +626,21 @@ function applyOcrResult(editIdx) {
     'codeType': data.codeType,
     'annualPremium': data.annualPremium,
     'sumInsured': data.sumInsured,
-    'startDate': data.startDate,
+    'effectiveDate': data.effectiveDate,
     'maturityDate': data.maturityDate,
-    'paymentMethod': data.paymentMethod,
     'paymentTerm': data.paymentYears,
+    'paymentBank': data.paymentBank,
+    'paymentBankCard': data.paymentBankCard,
     'insuredName': data.insuredName,
     'insuredRelation': data.insuredRelation,
     'insuredId': data.insuredIdCard,
     'insuredPhone': data.insuredPhone,
+    'insuredAddress': data.insuredAddress,
     'survivalBenefitType': data.survivalType,
     'survivalBenefitAmount': data.survivalAmount,
     'survivalStartDate': data.survivalStartDate,
     'policyRemark': data.note,
   };
-
-  /* 分红复选框 */
-  if (data.hasDividend !== undefined && data.hasDividend !== '') {
-    var divCb = document.getElementById('hasDividend');
-    if (divCb) divCb.checked = (data.hasDividend === true || data.hasDividend === 'true');
-  }
-
-  /* 保单状态下拉 */
-  if (data.status) {
-    var statusSelect = document.getElementById('policyStatus');
-    if (statusSelect) statusSelect.value = data.status;
-  }
 
   Object.keys(fieldMap).forEach(function(fieldId) {
     var val = fieldMap[fieldId];
@@ -620,6 +648,73 @@ function applyOcrResult(editIdx) {
     var el = document.getElementById(fieldId);
     if (el) el.value = val;
   });
+
+  /* 分红复选框 */
+  if (data.hasDividend !== undefined && data.hasDividend !== '' && data.hasDividend !== false && data.hasDividend !== 'false') {
+    var divCb = document.getElementById('hasDividend');
+    if (divCb) divCb.checked = true;
+  }
+
+  /* 保单状态下拉（中文值） */
+  if (data.status) {
+    var statusSelect = document.getElementById('policyStatus');
+    if (statusSelect) {
+      var statusMap = { active: '有效', lapsed: '失效', surrendered: '已退保', matured: '已满期' };
+      var statusVal = statusMap[data.status] || data.status;
+      /* 尝试匹配下拉选项 */
+      for (var i = 0; i < statusSelect.options.length; i++) {
+        if (statusSelect.options[i].value === statusVal) {
+          statusSelect.selectedIndex = i;
+          break;
+        }
+      }
+    }
+  }
+
+  /* 缴费方式下拉（英文枚举转中文） */
+  if (data.paymentMethod) {
+    var paySelect = document.getElementById('paymentMethod');
+    if (paySelect) {
+      var payMap = { annual: '年缴', monthly: '月缴', quarterly: '季缴', semiannual: '半年缴', single: '趸缴' };
+      var payVal = payMap[data.paymentMethod] || data.paymentMethod;
+      for (var j = 0; j < paySelect.options.length; j++) {
+        if (paySelect.options[j].value === payVal) {
+          paySelect.selectedIndex = j;
+          break;
+        }
+      }
+    }
+  }
+
+  /* 主险/附加险下拉 */
+  if (data.mainType) {
+    var mainTypeSelect = document.getElementById('mainType');
+    if (mainTypeSelect) {
+      for (var k = 0; k < mainTypeSelect.options.length; k++) {
+        if (mainTypeSelect.options[k].value === data.mainType) {
+          mainTypeSelect.selectedIndex = k;
+          break;
+        }
+      }
+    }
+  }
+
+  /* 受益人 */
+  if (data.beneficiaries && data.beneficiaries.length > 0) {
+    var benList = document.getElementById('beneficiariesList');
+    if (benList) {
+      benList.innerHTML = '';
+      data.beneficiaries.forEach(function(b) {
+        if (!b.name) return;
+        var div = document.createElement('div');
+        div.innerHTML = buildBeneficiaryField({
+          name: b.name || '',
+          quota: b.quota || ''
+        });
+        benList.appendChild(div.firstElementChild);
+      });
+    }
+  }
 
   /* 触发险种特征提示 */
   var insName = data.insuranceName || '';
@@ -631,7 +726,7 @@ function applyOcrResult(editIdx) {
 
   var modal = document.getElementById('policyOcrModal');
   if (modal) modal.remove();
-  showToast('✅ 识别结果已填充到表单，请校对后保存', 'success');
+  showToast('\u2705 识别结果已填充到表单，请校对后保存', 'success');
 }
 
 /* ======== AI 功能连接测试 ======== */
@@ -732,14 +827,17 @@ function openClientOcrModal() {
         <strong>🔒 隐私保护：</strong>照片在浏览器本地 OCR 提取文字，<strong>图片不会上传</strong>。
         提取的文字经大模型解析为结构化字段，识别结果会预填到表单中供您校对。
         <br>支持身份证、客户信息登记表、投保单等照片。
+        <br><strong>💡 支持多图：</strong>可同时上传身份证、被保人页、客户信息表等多张截图，AI 会合并识别。
       </div>
 
       <div id="clientOcrDropZone" class="ocr-dropzone">
         <div class="ocr-dropzone-icon">📷</div>
         <div class="ocr-dropzone-title">点击上传客户资料照片</div>
-        <div class="ocr-dropzone-desc">支持身份证 / 信息表 / 投保单 · JPG / PNG · 最大 20MB</div>
-        <input type="file" id="clientOcrFileInput" accept="image/jpeg,image/png,image/jpg" capture="environment" style="display:none;">
+        <div class="ocr-dropzone-desc">支持多张截图 · 身份证 / 信息表 / 被保人页 · JPG / PNG</div>
+        <input type="file" id="clientOcrFileInput" accept="image/jpeg,image/png,image/jpg" capture="environment" multiple style="display:none;">
       </div>
+
+      <div id="clientOcrFileList" style="display:none;margin-top:12px;"></div>
 
       <div id="clientOcrProgress" style="display:none;margin-top:16px;">
         <div style="display:flex;align-items:center;gap:10px;">
@@ -768,14 +866,14 @@ function openClientOcrModal() {
   var dropZone = modal.querySelector('#clientOcrDropZone');
   dropZone.addEventListener('click', function() { fileInput.click(); });
   fileInput.addEventListener('change', function() {
-    if (fileInput.files[0]) handleClientOcrFile(fileInput.files[0]);
+    if (fileInput.files.length > 0) handleClientOcrFiles(fileInput.files);
   });
   dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.style.borderColor = '#3b82f6'; });
   dropZone.addEventListener('dragleave', function() { dropZone.style.borderColor = '#cbd5e1'; });
   dropZone.addEventListener('drop', function(e) {
     e.preventDefault();
     dropZone.style.borderColor = '#cbd5e1';
-    if (e.dataTransfer.files[0]) handleClientOcrFile(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files.length > 0) handleClientOcrFiles(e.dataTransfer.files);
   });
 
   /* 点击遮罩关闭 */
@@ -784,41 +882,57 @@ function openClientOcrModal() {
   });
 }
 
-/* 处理客户照片 */
-async function handleClientOcrFile(file) {
+/* 处理客户照片（支持多张）*/
+async function handleClientOcrFiles(fileList) {
   var progressDiv = document.getElementById('clientOcrProgress');
   var progressText = document.getElementById('clientOcrProgressText');
   var progressBar = document.getElementById('clientOcrProgressBar');
   var resultDiv = document.getElementById('clientOcrResult');
   var applyBtn = document.getElementById('clientOcrApplyBtn');
   var rawTextDiv = document.getElementById('clientOcrRawText');
+  var fileListDiv = document.getElementById('clientOcrFileList');
 
   progressDiv.style.display = 'block';
   resultDiv.style.display = 'none';
   applyBtn.style.display = 'none';
   rawTextDiv.style.display = 'none';
 
-  try {
-    /* 步骤1：本地 OCR 提取文字 */
-    progressText.textContent = '正在本地 OCR 提取文字...';
-    progressBar.style.width = '10%';
-    var ocrText = await extractImageOcr(file, function(pct) {
-      progressBar.style.width = (10 + pct * 0.6) + '%';
-      progressText.textContent = 'OCR 识别中... ' + pct + '%';
-    });
+  /* 显示文件列表 */
+  fileListDiv.style.display = 'block';
+  fileListDiv.innerHTML = '';
+  for (var fi = 0; fi < fileList.length; fi++) {
+    fileListDiv.innerHTML += '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#f1f5f9;border-radius:6px;font-size:12px;color:#475569;margin-bottom:4px;"><span>📄</span><span style="flex:1;">' + fileList[fi].name + '</span><span style="color:#94a3b8;">' + (fileList[fi].size / 1024 / 1024).toFixed(1) + 'MB</span></div>';
+  }
 
-    if (!ocrText || ocrText.trim().length < 5) {
+  try {
+    /* 步骤1：逐张本地 OCR 提取文字，然后合并 */
+    progressText.textContent = '正在 OCR 识别（共' + fileList.length + '张）...';
+    progressBar.style.width = '5%';
+    var allText = '';
+
+    for (var fi2 = 0; fi2 < fileList.length; fi2++) {
+      var file2 = fileList[fi2];
+      progressText.textContent = 'OCR 识别第 ' + (fi2 + 1) + '/' + fileList.length + ' 张...';
+      var ocrText2 = await extractImageOcr(file2, function(pct) {
+        var basePct = (fi2 / fileList.length) * 60;
+        var filePct = (1 / fileList.length) * 60 * (pct / 100);
+        progressBar.style.width = (5 + basePct + filePct) + '%';
+      });
+      allText += '\n\n===== 第' + (fi2 + 1) + '张图片 =====\n\n' + ocrText2;
+    }
+
+    if (!allText || allText.trim().length < 5) {
       throw new Error('OCR 未识别到足够文字，请确保照片清晰、光线充足后重试');
     }
 
     /* 展示原始 OCR 文本 */
     rawTextDiv.style.display = 'block';
-    rawTextDiv.textContent = ocrText.substring(0, 1000) + (ocrText.length > 1000 ? '\n...' : '');
+    rawTextDiv.textContent = allText.substring(0, 2000) + (allText.length > 2000 ? '\n...' : '');
 
     /* 步骤2：调用大模型解析 */
     progressText.textContent = '大模型正在解析客户信息...';
     progressBar.style.width = '80%';
-    var clientInfo = await aiParseClient(ocrText);
+    var clientInfo = await aiParseClient(allText);
 
     progressBar.style.width = '100%';
     progressText.textContent = '解析完成！';
@@ -840,7 +954,8 @@ async function handleClientOcrFile(file) {
 /* 构建客户识别结果展示 HTML */
 function buildClientOcrResultHtml(data) {
   var fieldLabels = {
-    name: '客户姓名', idCard: '身份证号', phone: '手机号',
+    name: '客户姓名', gender: '性别', birthday: '出生日期',
+    idCard: '身份证号', phone: '手机号',
     address: '联系地址', workCompany: '工作单位', workAddress: '工作地址',
     note: '备注'
   };
@@ -852,7 +967,7 @@ function buildClientOcrResultHtml(data) {
   Object.keys(fieldLabels).forEach(function(key) {
     var val = data[key];
     if (val === undefined || val === null || val === '') return;
-    html += '<tr><td style="padding:4px 8px;color:#64748b;width:100px;border-bottom:1px solid #f1f5f9;">' + fieldLabels[key] + '</td>';
+    html += '<tr><td style="padding:4px 8px;color:#64748b;width:110px;border-bottom:1px solid #f1f5f9;">' + fieldLabels[key] + '</td>';
     html += '<td style="padding:4px 8px;color:#1e293b;border-bottom:1px solid #f1f5f9;">' + val + '</td></tr>';
   });
 
@@ -862,10 +977,12 @@ function buildClientOcrResultHtml(data) {
     data.familyMembers.forEach(function(fm, i) {
       var fmText = fm.name || '';
       if (fm.relationship) fmText += ' | ' + fm.relationship;
+      if (fm.gender) fmText += ' | ' + fm.gender;
       if (fm.idCard) fmText += ' | ' + fm.idCard;
       if (fm.phone) fmText += ' | ' + fm.phone;
+      if (fm.birthday) fmText += ' | 生日：' + fm.birthday;
       if (fm.note) fmText += ' | ' + fm.note;
-      html += '<tr><td style="padding:4px 8px;color:#64748b;width:100px;border-bottom:1px solid #f1f5f9;">成员' + (i + 1) + '</td>';
+      html += '<tr><td style="padding:4px 8px;color:#64748b;width:110px;border-bottom:1px solid #f1f5f9;">成员' + (i + 1) + '</td>';
       html += '<td style="padding:4px 8px;color:#1e293b;border-bottom:1px solid #f1f5f9;">' + fmText + '</td></tr>';
     });
   }
