@@ -1,13 +1,14 @@
 /* ========================================================================
-   保单管理系统 - 09：AI 辅助功能（条款解读 + 保单照片OCR）
+   保单管理系统 - 09：AI 辅助功能（条款解读 + 保单照片OCR + 客户照片OCR）
    依赖：pdf.js（CDN）、Tesseract.js（CDN）
    架构：浏览器本地提取文本 → Supabase Edge Function 代理 → DeepSeek/通义千问 API
-   隐私：条款（公开文件）直接发大模型；保单照片本地 OCR，仅文本经大模型解析
+   隐私：条款（公开文件）直接发大模型；保单/客户照片本地 OCR，仅文本经大模型解析
    ======================================================================== */
 
 /* ======== Edge Function URL ======== */
 var EF_INTERPRET_CLAUSE = SUPABASE_URL + '/functions/v1/interpret-clause';
 var EF_PARSE_POLICY = SUPABASE_URL + '/functions/v1/parse-policy';
+var EF_PARSE_CLIENT = SUPABASE_URL + '/functions/v1/parse-client';
 
 /* ======== 加载动态依赖（pdf.js / Tesseract.js）======== */
 var _pdfjsLoaded = false;
@@ -687,4 +688,237 @@ function initAiFuncStatus() {
   }
   statusText.textContent = 'Edge Function 就绪，点击「测试连接」验证';
   statusText.style.color = '#64748b';
+}
+
+/* ======== 客户照片 OCR 识别 ======== */
+
+/* 调用 parse-client Edge Function */
+async function aiParseClient(ocrText) {
+  var resp = await fetch(EF_PARSE_CLIENT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + currentSessionToken,
+      'apikey': SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({ text: ocrText }),
+  });
+  var json = await resp.json();
+  if (!resp.ok || !json.ok) {
+    throw new Error(json.error || '客户信息解析失败 (HTTP ' + resp.status + ')');
+  }
+  return json.data;
+}
+
+/* 打开客户照片识别模态框 */
+function openClientOcrModal() {
+  /* 移除已存在的模态框 */
+  var existing = document.getElementById('clientOcrModal');
+  if (existing) existing.remove();
+
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay ocr-modal-overlay';
+  modal.id = 'clientOcrModal';
+  modal.style.cssText = 'display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:16px;';
+
+  modal.innerHTML = `
+    <div class="ocr-modal-box">
+      <div class="ocr-modal-header">
+        <h3>📷 客户照片识别</h3>
+        <button onclick="document.getElementById('clientOcrModal').remove()" class="ocr-modal-close">&times;</button>
+      </div>
+
+      <div class="ocr-privacy-note">
+        <strong>🔒 隐私保护：</strong>照片在浏览器本地 OCR 提取文字，<strong>图片不会上传</strong>。
+        提取的文字经大模型解析为结构化字段，识别结果会预填到表单中供您校对。
+        <br>支持身份证、客户信息登记表、投保单等照片。
+      </div>
+
+      <div id="clientOcrDropZone" class="ocr-dropzone">
+        <div class="ocr-dropzone-icon">📷</div>
+        <div class="ocr-dropzone-title">点击上传客户资料照片</div>
+        <div class="ocr-dropzone-desc">支持身份证 / 信息表 / 投保单 · JPG / PNG · 最大 20MB</div>
+        <input type="file" id="clientOcrFileInput" accept="image/jpeg,image/png,image/jpg" capture="environment" style="display:none;">
+      </div>
+
+      <div id="clientOcrProgress" style="display:none;margin-top:16px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="spinner" style="width:18px;height:18px;border:2px solid #e2e8f0;border-top-color:#3b82f6;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0;"></div>
+          <span id="clientOcrProgressText" style="font-size:13px;color:#475569;">正在处理...</span>
+        </div>
+        <div style="margin-top:8px;height:4px;background:#e2e8f0;border-radius:2px;overflow:hidden;">
+          <div id="clientOcrProgressBar" style="height:100%;background:#3b82f6;width:0%;transition:width 0.3s;"></div>
+        </div>
+      </div>
+
+      <div id="clientOcrRawText" style="display:none;margin-top:16px;max-height:150px;overflow-y:auto;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;color:#64748b;font-family:monospace;white-space:pre-wrap;"></div>
+
+      <div id="clientOcrResult" style="display:none;margin-top:16px;"></div>
+
+      <div class="ocr-modal-footer">
+        <button onclick="document.getElementById('clientOcrModal').remove()" class="ocr-btn-cancel">取消</button>
+        <button id="clientOcrApplyBtn" style="display:none;" class="ocr-btn-apply" onclick="applyClientOcrResult()">填充到表单</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  var fileInput = modal.querySelector('#clientOcrFileInput');
+  var dropZone = modal.querySelector('#clientOcrDropZone');
+  dropZone.addEventListener('click', function() { fileInput.click(); });
+  fileInput.addEventListener('change', function() {
+    if (fileInput.files[0]) handleClientOcrFile(fileInput.files[0]);
+  });
+  dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.style.borderColor = '#3b82f6'; });
+  dropZone.addEventListener('dragleave', function() { dropZone.style.borderColor = '#cbd5e1'; });
+  dropZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    dropZone.style.borderColor = '#cbd5e1';
+    if (e.dataTransfer.files[0]) handleClientOcrFile(e.dataTransfer.files[0]);
+  });
+
+  /* 点击遮罩关闭 */
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) modal.remove();
+  });
+}
+
+/* 处理客户照片 */
+async function handleClientOcrFile(file) {
+  var progressDiv = document.getElementById('clientOcrProgress');
+  var progressText = document.getElementById('clientOcrProgressText');
+  var progressBar = document.getElementById('clientOcrProgressBar');
+  var resultDiv = document.getElementById('clientOcrResult');
+  var applyBtn = document.getElementById('clientOcrApplyBtn');
+  var rawTextDiv = document.getElementById('clientOcrRawText');
+
+  progressDiv.style.display = 'block';
+  resultDiv.style.display = 'none';
+  applyBtn.style.display = 'none';
+  rawTextDiv.style.display = 'none';
+
+  try {
+    /* 步骤1：本地 OCR 提取文字 */
+    progressText.textContent = '正在本地 OCR 提取文字...';
+    progressBar.style.width = '10%';
+    var ocrText = await extractImageOcr(file, function(pct) {
+      progressBar.style.width = (10 + pct * 0.6) + '%';
+      progressText.textContent = 'OCR 识别中... ' + pct + '%';
+    });
+
+    if (!ocrText || ocrText.trim().length < 5) {
+      throw new Error('OCR 未识别到足够文字，请确保照片清晰、光线充足后重试');
+    }
+
+    /* 展示原始 OCR 文本 */
+    rawTextDiv.style.display = 'block';
+    rawTextDiv.textContent = ocrText.substring(0, 1000) + (ocrText.length > 1000 ? '\n...' : '');
+
+    /* 步骤2：调用大模型解析 */
+    progressText.textContent = '大模型正在解析客户信息...';
+    progressBar.style.width = '80%';
+    var clientInfo = await aiParseClient(ocrText);
+
+    progressBar.style.width = '100%';
+    progressText.textContent = '解析完成！';
+    window._clientOcrResult = clientInfo;
+
+    /* 步骤3：展示结果 */
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = buildClientOcrResultHtml(clientInfo);
+    applyBtn.style.display = 'block';
+
+    setTimeout(function() { progressDiv.style.display = 'none'; }, 1000);
+  } catch (e) {
+    progressDiv.style.display = 'none';
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<div style="padding:14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#dc2626;font-size:13px;">\u274C ' + (e.message || '处理失败') + '</div>';
+  }
+}
+
+/* 构建客户识别结果展示 HTML */
+function buildClientOcrResultHtml(data) {
+  var fieldLabels = {
+    name: '客户姓名', idCard: '身份证号', phone: '手机号',
+    address: '联系地址', workCompany: '工作单位', workAddress: '工作地址',
+    note: '备注'
+  };
+
+  var html = '<div style="padding:14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">';
+  html += '<div style="font-weight:600;color:#15803d;margin-bottom:10px;font-size:14px;">\u2705 识别结果（请校对后填充到表单）</div>';
+  html += '<table style="width:100%;font-size:13px;border-collapse:collapse;">';
+
+  Object.keys(fieldLabels).forEach(function(key) {
+    var val = data[key];
+    if (val === undefined || val === null || val === '') return;
+    html += '<tr><td style="padding:4px 8px;color:#64748b;width:100px;border-bottom:1px solid #f1f5f9;">' + fieldLabels[key] + '</td>';
+    html += '<td style="padding:4px 8px;color:#1e293b;border-bottom:1px solid #f1f5f9;">' + val + '</td></tr>';
+  });
+
+  /* 家庭成员 */
+  if (data.familyMembers && data.familyMembers.length > 0) {
+    html += '<tr><td colspan="2" style="padding:8px 8px 4px;color:#15803d;font-weight:600;border-bottom:1px solid #f1f5f9;">家庭成员（' + data.familyMembers.length + '人）</td></tr>';
+    data.familyMembers.forEach(function(fm, i) {
+      var fmText = fm.name || '';
+      if (fm.relationship) fmText += ' | ' + fm.relationship;
+      if (fm.idCard) fmText += ' | ' + fm.idCard;
+      if (fm.phone) fmText += ' | ' + fm.phone;
+      if (fm.note) fmText += ' | ' + fm.note;
+      html += '<tr><td style="padding:4px 8px;color:#64748b;width:100px;border-bottom:1px solid #f1f5f9;">成员' + (i + 1) + '</td>';
+      html += '<td style="padding:4px 8px;color:#1e293b;border-bottom:1px solid #f1f5f9;">' + fmText + '</td></tr>';
+    });
+  }
+
+  html += '</table>';
+  html += '<div style="margin-top:10px;font-size:11px;color:#94a3b8;">点击「填充到表单」后可逐字段校对修改</div>';
+  html += '</div>';
+  return html;
+}
+
+/* 应用客户 OCR 结果到表单 */
+function applyClientOcrResult() {
+  var data = window._clientOcrResult;
+  if (!data) return;
+
+  /* 填充基本字段 */
+  var fieldMap = {
+    'clientName': data.name,
+    'clientIdCard': data.idCard,
+    'clientPhone': data.phone,
+    'clientAddress': data.address,
+    'clientWorkCompany': data.workCompany,
+    'clientWorkAddress': data.workAddress,
+  };
+
+  Object.keys(fieldMap).forEach(function(fieldId) {
+    var val = fieldMap[fieldId];
+    if (val === undefined || val === null || val === '') return;
+    var el = document.getElementById(fieldId);
+    if (el) el.value = val;
+  });
+
+  /* 填充家庭成员 */
+  if (data.familyMembers && data.familyMembers.length > 0) {
+    var fmList = document.getElementById('familyMembersList');
+    if (fmList) {
+      fmList.innerHTML = '';
+      data.familyMembers.forEach(function(fm) {
+        if (!fm.name) return;
+        var div = document.createElement('div');
+        div.innerHTML = buildFamilyMemberField({
+          name: fm.name || '',
+          relationship: fm.relationship || '',
+          idCard: fm.idCard || '',
+          phone: fm.phone || '',
+          note: fm.note || ''
+        });
+        fmList.appendChild(div.firstElementChild);
+      });
+    }
+  }
+
+  var modal = document.getElementById('clientOcrModal');
+  if (modal) modal.remove();
+  showToast('\u2705 识别结果已填充到表单，请校对后保存', 'success');
 }

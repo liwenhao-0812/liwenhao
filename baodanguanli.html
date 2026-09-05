@@ -266,7 +266,8 @@
         <div style="font-size:13px;color:#475569;line-height:1.7;margin-bottom:10px;">
           <strong>📄 条款解读：</strong>在险种库页面，点击险种卡片上的「📄条款」按钮，上传条款 PDF 或图片，AI 自动解读类别、等待期、领取规则等特征。<br>
           <strong>📷 保单照片识别：</strong>在添加/编辑保单时，点击顶部「📷拍照/截图识别保单」按钮，照片在浏览器本地 OCR 提取文字后由 AI 解析为结构化字段，照片不会上传。<br>
-          <strong>🔒 隐私保护：</strong>条款为公开文件可直接发大模型；保单照片仅本地 OCR，文字经大模型瞬时处理后不存储。
+          <strong>📷 客户照片识别：</strong>在添加/编辑客户时，点击顶部「📷拍照识别客户信息」按钮，上传身份证或客户信息表照片，AI 自动提取姓名、身份证号、手机号、地址等，照片不会上传。<br>
+          <strong>🔒 隐私保护：</strong>条款为公开文件可直接发大模型；保单/客户照片仅本地 OCR，文字经大模型瞬时处理后不存储。
         </div>
         <div id="aiFuncStatus" style="font-size:12px;padding:8px 12px;border-radius:6px;background:#f8fafc;border:1px solid #e2e8f0;">
           <span id="aiFuncStatusText" style="color:#64748b;">检查中...</span>
@@ -336,6 +337,14 @@
     </div>
     <div class="modal-body">
       <input type="hidden" id="clientEditIndex" value="-1">
+      <div class="ocr-trigger-btn" onclick="openClientOcrModal()">
+        <span class="ocr-trigger-icon">📷</span>
+        <div class="ocr-trigger-body">
+          <span class="ocr-trigger-title">拍照识别客户信息</span>
+          <span class="ocr-trigger-desc">上传身份证/信息表照片，AI自动识别填充 · 照片不上传</span>
+        </div>
+        <span class="ocr-trigger-arrow">›</span>
+      </div>
       <div class="form-group">
         <label>投保人姓名 *</label>
         <input type="text" id="clientName" placeholder="请输入投保人姓名" required>
