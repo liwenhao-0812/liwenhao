@@ -9,6 +9,7 @@
 var EF_INTERPRET_CLAUSE = SUPABASE_URL + '/functions/v1/interpret-clause';
 var EF_PARSE_POLICY = SUPABASE_URL + '/functions/v1/parse-policy';
 var EF_PARSE_CLIENT = SUPABASE_URL + '/functions/v1/parse-client';
+var EF_PARSE_CLIENT_POLICY = SUPABASE_URL + '/functions/v1/parse-client-policy';
 
 /* ======== 加载动态依赖（pdf.js / Tesseract.js）======== */
 var _pdfjsLoaded = false;
@@ -1038,4 +1039,377 @@ function applyClientOcrResult() {
   var modal = document.getElementById('clientOcrModal');
   if (modal) modal.remove();
   showToast('\u2705 识别结果已填充到表单，请校对后保存', 'success');
+}
+
+/* ========================================================================
+   统一拍照录入：多图上传 → OCR → AI解析客户+多保单 → 审批 → 保存
+   ======================================================================== */
+
+/* 打开统一拍照录入模态框 */
+function openUnifiedOcrModal() {
+  var existing = document.getElementById('unifiedOcrModal');
+  if (existing) existing.remove();
+
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay ocr-modal-overlay';
+  modal.id = 'unifiedOcrModal';
+  modal.style.cssText = 'display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:16px;';
+
+  modal.innerHTML = `
+    <div class="ocr-modal-box" style="max-width:680px;max-height:90vh;overflow-y:auto;">
+      <div class="ocr-modal-header">
+        <h3>📷 拍照录入（客户+保单）</h3>
+        <button onclick="document.getElementById('unifiedOcrModal').remove()" class="ocr-modal-close">&times;</button>
+      </div>
+
+      <div class="ocr-privacy-note">
+        <strong>🔒 隐私保护：</strong>照片在浏览器本地 OCR 提取文字，<strong>图片不会上传</strong>。
+        <br><strong>💡 使用方法：</strong>同时上传投保人页、保单详情页、被保人页、受益人页等多张截图，AI 会自动识别客户信息+所有保单信息，列出结果供您确认后一键保存。
+      </div>
+
+      <div id="unifiedDropZone" class="ocr-dropzone">
+        <div class="ocr-dropzone-icon">📷</div>
+        <div class="ocr-dropzone-title">点击上传保单截图</div>
+        <div class="ocr-dropzone-desc">支持多张 APP 截图 · JPG / PNG · 可一次上传多个保单的截图</div>
+        <input type="file" id="unifiedFileInput" accept="image/jpeg,image/png,image/jpg" capture="environment" multiple style="display:none;">
+      </div>
+
+      <div id="unifiedFileList" style="display:none;margin-top:12px;"></div>
+
+      <div id="unifiedProgress" style="display:none;margin-top:16px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="spinner" style="width:18px;height:18px;border:2px solid #e2e8f0;border-top-color:#6366f1;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0;"></div>
+          <span id="unifiedProgressText" style="font-size:13px;color:#475569;">正在处理...</span>
+        </div>
+        <div style="margin-top:8px;height:4px;background:#e2e8f0;border-radius:2px;overflow:hidden;">
+          <div id="unifiedProgressBar" style="height:100%;background:#6366f1;width:0%;transition:width 0.3s;"></div>
+        </div>
+      </div>
+
+      <div id="unifiedRawText" style="display:none;margin-top:16px;max-height:120px;overflow-y:auto;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;color:#64748b;font-family:monospace;white-space:pre-wrap;"></div>
+
+      <div id="unifiedResult" style="display:none;margin-top:16px;"></div>
+
+      <div class="ocr-modal-footer" id="unifiedFooter" style="display:none;">
+        <button onclick="document.getElementById('unifiedOcrModal').remove()" class="ocr-btn-cancel">取消</button>
+        <button id="unifiedSaveBtn" class="ocr-btn-apply" onclick="saveUnifiedOcrResult()" style="background:#6366f1;">确认保存</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  var fileInput = modal.querySelector('#unifiedFileInput');
+  var dropZone = modal.querySelector('#unifiedDropZone');
+  dropZone.addEventListener('click', function() { fileInput.click(); });
+  fileInput.addEventListener('change', function() {
+    if (fileInput.files.length > 0) handleUnifiedOcrFiles(fileInput.files);
+  });
+  dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.style.borderColor = '#6366f1'; });
+  dropZone.addEventListener('dragleave', function() { dropZone.style.borderColor = '#cbd5e1'; });
+  dropZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    dropZone.style.borderColor = '#cbd5e1';
+    if (e.dataTransfer.files.length > 0) handleUnifiedOcrFiles(e.dataTransfer.files);
+  });
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) modal.remove();
+  });
+}
+
+/* 处理多张截图 → OCR → AI解析 */
+async function handleUnifiedOcrFiles(fileList) {
+  var progressDiv = document.getElementById('unifiedProgress');
+  var progressText = document.getElementById('unifiedProgressText');
+  var progressBar = document.getElementById('unifiedProgressBar');
+  var resultDiv = document.getElementById('unifiedResult');
+  var footerDiv = document.getElementById('unifiedFooter');
+  var rawTextDiv = document.getElementById('unifiedRawText');
+  var fileListDiv = document.getElementById('unifiedFileList');
+
+  progressDiv.style.display = 'block';
+  resultDiv.style.display = 'none';
+  footerDiv.style.display = 'none';
+  rawTextDiv.style.display = 'none';
+
+  /* 显示文件列表 */
+  fileListDiv.style.display = 'block';
+  fileListDiv.innerHTML = '';
+  for (var i = 0; i < fileList.length; i++) {
+    fileListDiv.innerHTML += '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#f1f5f9;border-radius:6px;font-size:12px;color:#475569;margin-bottom:4px;"><span>\u{1F4C4}</span><span style="flex:1;">' + fileList[i].name + '</span><span style="color:#94a3b8;">' + (fileList[i].size / 1024 / 1024).toFixed(1) + 'MB</span></div>';
+  }
+
+  try {
+    /* 步骤1：逐张 OCR */
+    progressText.textContent = '正在 OCR 识别（共' + fileList.length + '张）...';
+    progressBar.style.width = '5%';
+    var allText = '';
+
+    for (var i2 = 0; i2 < fileList.length; i2++) {
+      var file = fileList[i2];
+      progressText.textContent = 'OCR 识别第 ' + (i2 + 1) + '/' + fileList.length + ' 张...';
+      var ocrText = await extractImageOcr(file, function(pct) {
+        var basePct = (i2 / fileList.length) * 55;
+        var filePct = (1 / fileList.length) * 55 * (pct / 100);
+        progressBar.style.width = (5 + basePct + filePct) + '%';
+      });
+      allText += '\n\n===== 第' + (i2 + 1) + '张图片 =====\n\n' + ocrText;
+    }
+
+    if (!allText || allText.trim().length < 10) {
+      throw new Error('OCR 未识别到足够文字，请确保照片清晰后重试');
+    }
+
+    rawTextDiv.style.display = 'block';
+    rawTextDiv.textContent = allText.substring(0, 2000) + (allText.length > 2000 ? '\n...' : '');
+
+    /* 步骤2：调用大模型解析客户+保单 */
+    progressText.textContent = 'AI 正在解析客户和保单信息...';
+    progressBar.style.width = '75%';
+
+    var resp = await fetch(EF_PARSE_CLIENT_POLICY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+      body: JSON.stringify({ text: allText })
+    });
+    var result = await resp.json();
+
+    if (!result.ok) throw new Error(result.error || 'AI 解析失败');
+
+    progressBar.style.width = '100%';
+    progressText.textContent = '解析完成！';
+    window._unifiedOcrResult = result.data;
+
+    /* 步骤3：展示结果 */
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = buildUnifiedResultHtml(result.data);
+    footerDiv.style.display = 'flex';
+
+    setTimeout(function() { progressDiv.style.display = 'none'; }, 1000);
+  } catch (e) {
+    progressDiv.style.display = 'none';
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<div style="padding:14px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#dc2626;font-size:13px;">\u274C ' + (e.message || '处理失败') + '</div>';
+  }
+}
+
+/* 构建统一识别结果展示 HTML */
+function buildUnifiedResultHtml(data) {
+  var html = '';
+
+  /* 客户信息 */
+  var c = data.client || {};
+  html += '<div style="padding:14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;margin-bottom:12px;">';
+  html += '<div style="font-weight:700;color:#1e40af;margin-bottom:8px;font-size:15px;">\u{1F464} 客户信息（投保人）</div>';
+  html += '<table style="width:100%;font-size:13px;border-collapse:collapse;">';
+  var cFields = [
+    ['姓名', c.name], ['性别', c.gender], ['出生日期', c.birthday],
+    ['身份证号', c.idCard], ['手机号', c.phone],
+    ['地址', c.address], ['工作单位', c.workCompany], ['工作地址', c.workAddress]
+  ];
+  cFields.forEach(function(f) {
+    if (f[1]) html += '<tr><td style="padding:3px 8px;color:#64748b;width:90px;border-bottom:1px solid #f1f5f9;">' + f[0] + '</td><td style="padding:3px 8px;color:#1e293b;border-bottom:1px solid #f1f5f9;">' + f[1] + '</td></tr>';
+  });
+  if (c.familyMembers && c.familyMembers.length > 0) {
+    html += '<tr><td colspan="2" style="padding:6px 8px 2px;color:#1e40af;font-weight:600;border-bottom:1px solid #f1f5f9;">家庭成员（' + c.familyMembers.length + '人）</td></tr>';
+    c.familyMembers.forEach(function(fm, i) {
+      var t = fm.name || '';
+      if (fm.relationship) t += ' | ' + fm.relationship;
+      if (fm.idCard) t += ' | ' + fm.idCard;
+      if (fm.phone) t += ' | ' + fm.phone;
+      html += '<tr><td style="padding:3px 8px;color:#64748b;width:90px;border-bottom:1px solid #f1f5f9;">成员' + (i+1) + '</td><td style="padding:3px 8px;color:#1e293b;border-bottom:1px solid #f1f5f9;">' + t + '</td></tr>';
+    });
+  }
+  if (c.note) html += '<tr><td style="padding:3px 8px;color:#64748b;width:90px;">备注</td><td style="padding:3px 8px;color:#1e293b;">' + c.note + '</td></tr>';
+  html += '</table></div>';
+
+  /* 保单信息 */
+  var policies = data.policies || [];
+  if (policies.length === 0) {
+    html += '<div style="padding:14px;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;color:#92400e;font-size:13px;">\u26A0\uFE0F 未识别到保单信息，仅保存客户信息</div>';
+  } else {
+    policies.forEach(function(p, idx) {
+      /* 险种库匹配检查 */
+      var libItem = findLibItem(p.insuranceName, p.codeType);
+      var matchInfo = libItem
+        ? '<span style="color:#16a34a;font-size:11px;">\u2705 险种库已匹配</span>'
+        : '<span style="color:#ea580c;font-size:11px;">\u{1F195} 将自动新增到险种库</span>';
+
+      html += '<div style="padding:14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;margin-bottom:12px;">';
+      html += '<div style="font-weight:700;color:#15803d;margin-bottom:8px;font-size:15px;">\u{1F4CB} 保单' + (idx+1) + ' ' + matchInfo + '</div>';
+      html += '<table style="width:100%;font-size:13px;border-collapse:collapse;">';
+      var pFields = [
+        ['保单号', p.policyCode], ['险种名称', p.insuranceName], ['险种代码', p.codeType],
+        ['主附险', p.mainType], ['年保费', p.annualPremium], ['保额', p.sumInsured],
+        ['生效日期', p.effectiveDate], ['满期日期', p.maturityDate],
+        ['缴费方式', ({annual:'年缴',monthly:'月缴',quarterly:'季缴',semiannual:'半年缴',single:'趸缴'})[p.paymentMethod] || p.paymentMethod],
+        ['缴费年限', p.paymentYears], ['缴费银行', p.paymentBank], ['银行卡后四位', p.paymentBankCard],
+        ['被保人', p.insuredName], ['与投保人关系', p.insuredRelation],
+        ['被保人身份证', p.insuredIdCard], ['被保人电话', p.insuredPhone],
+        ['保单状态', ({active:'有效',lapsed:'失效',surrendered:'已退保',matured:'已满期'})[p.status] || p.status],
+        ['是否有分红', p.hasDividend === true ? '是' : '否']
+      ];
+      pFields.forEach(function(f) {
+        if (f[1]) html += '<tr><td style="padding:3px 8px;color:#64748b;width:100px;border-bottom:1px solid #f1f5f9;">' + f[0] + '</td><td style="padding:3px 8px;color:#1e293b;border-bottom:1px solid #f1f5f9;">' + f[1] + '</td></tr>';
+      });
+      if (p.beneficiaries && p.beneficiaries.length > 0) {
+        html += '<tr><td colspan="2" style="padding:6px 8px 2px;color:#15803d;font-weight:600;border-bottom:1px solid #f1f5f9;">受益人（' + p.beneficiaries.length + '人）</td></tr>';
+        p.beneficiaries.forEach(function(b, bi) {
+          var bt = b.name || '';
+          if (b.relationship) bt += ' | ' + b.relationship;
+          if (b.quota) bt += ' | ' + b.quota;
+          if (b.gender) bt += ' | ' + b.gender;
+          html += '<tr><td style="padding:3px 8px;color:#64748b;width:100px;border-bottom:1px solid #f1f5f9;">受益人' + (bi+1) + '</td><td style="padding:3px 8px;color:#1e293b;border-bottom:1px solid #f1f5f9;">' + bt + '</td></tr>';
+        });
+      }
+      if (p.note) html += '<tr><td style="padding:3px 8px;color:#64748b;width:100px;">备注</td><td style="padding:3px 8px;color:#1e293b;">' + p.note + '</td></tr>';
+      html += '</table></div>';
+    });
+  }
+
+  html += '<div style="padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;color:#64748b;text-align:center;">点击「确认保存」后将自动创建客户和所有保单，并关联险种库</div>';
+  return html;
+}
+
+/* 保存统一OCR结果：创建客户+保单 */
+function saveUnifiedOcrResult() {
+  var data = window._unifiedOcrResult;
+  if (!data || !data.client) {
+    showToast('没有可保存的数据', 'warning');
+    return;
+  }
+
+  var c = data.client;
+  var policies = data.policies || [];
+
+  /* 检查必填字段 */
+  if (!c.name) {
+    showToast('客户姓名不能为空', 'warning');
+    return;
+  }
+
+  /* 检查是否已有同名客户 */
+  var existingClientIdx = -1;
+  for (var i = 0; i < clientData.length; i++) {
+    if (clientData[i].name === c.name) {
+      existingClientIdx = i;
+      break;
+    }
+  }
+
+  var doSave = function() {
+    /* 1. 创建或更新客户 */
+    var clientObj;
+    if (existingClientIdx >= 0) {
+      /* 更新已有客户 */
+      clientObj = clientData[existingClientIdx];
+      if (c.idCard) clientObj.idCard = c.idCard;
+      if (c.phone) clientObj.phone = c.phone;
+      if (c.address) clientObj.address = c.address;
+      if (c.workCompany) clientObj.workCompany = c.workCompany;
+      if (c.workAddress) clientObj.workAddress = c.workAddress;
+      /* 合并家庭成员（去重） */
+      if (c.familyMembers && c.familyMembers.length > 0) {
+        if (!clientObj.familyMembers) clientObj.familyMembers = [];
+        c.familyMembers.forEach(function(fm) {
+          if (!fm.name) return;
+          var exists = clientObj.familyMembers.some(function(e) { return e.name === fm.name; });
+          if (!exists) clientObj.familyMembers.push(fm);
+        });
+      }
+    } else {
+      /* 新建客户 */
+      clientObj = {
+        name: c.name,
+        idCard: c.idCard || '',
+        phone: c.phone || '',
+        address: c.address || '',
+        workCompany: c.workCompany || '',
+        workAddress: c.workAddress || '',
+        policies: [],
+        familyMembers: c.familyMembers || [],
+        contactHistory: [],
+        profile: null,
+        doNotContact: false
+      };
+      clientData.push(clientObj);
+      existingClientIdx = clientData.length - 1;
+    }
+
+    /* 2. 创建保单 */
+    policies.forEach(function(p) {
+      if (!p.policyCode || !p.insuranceName) return; /* 跳过不完整的保单 */
+
+      /* 险种库自动匹配/新增 */
+      if (p.insuranceName && p.codeType) {
+        addToInsuranceTypeLib(p.insuranceName, p.codeType);
+      }
+
+      /* 构建保单对象 */
+      var policyObj = {
+        policyCode: p.policyCode,
+        insuranceName: p.insuranceName,
+        codeType: p.codeType || '',
+        mainType: p.mainType || '\u4E3B\u9669',
+        parentPolicyCode: '',
+        status: p.status === 'active' ? '\u6709\u6548' : (p.status === 'lapsed' ? '\u5931\u6548' : (p.status === 'surrendered' ? '\u5DF2\u9000\u4FDD' : (p.status === 'matured' ? '\u5DF2\u6EE1\u671F' : '\u6709\u6548'))),
+        hasDividend: p.hasDividend === true,
+        effectiveDate: p.effectiveDate || '',
+        maturityDate: p.maturityDate || '',
+        paymentMethod: ({annual:'\u5E74\u7F34',monthly:'\u6708\u7F34',quarterly:'\u5B63\u7F34',semiannual:'\u534A\u5E74\u7F34',single:'\u8EAE\u7F34'})[p.paymentMethod] || '\u5E74\u7F34',
+        annualPremium: p.annualPremium || '',
+        sumInsured: p.sumInsured || '',
+        paymentTerm: p.paymentYears || '',
+        paymentBank: p.paymentBank || '',
+        paymentBankCard: p.paymentBankCard || '',
+        insured: p.insuredName || c.name,
+        insuredRelation: p.insuredRelation || '\u672C\u4EBA',
+        insuredId: p.insuredIdCard || c.idCard || '',
+        insuredPhone: p.insuredPhone || c.phone || '',
+        insuredAddress: p.insuredAddress || c.address || '',
+        beneficiaries: (p.beneficiaries || []).map(function(b) {
+          return { name: b.name || '', quota: b.quota || '' };
+        }),
+        remark: p.note || '',
+        survivalBenefit: {
+          type: p.survivalType || '',
+          amount: p.survivalAmount || '',
+          startDate: p.survivalStartDate || '',
+          lastDate: '', nextDate: '', note: ''
+        },
+        extraFields: {},
+        serviceRecords: []
+      };
+
+      clientObj.policies.push(policyObj);
+    });
+
+    /* 3. 保存 */
+    savePolicyData();
+
+    /* 4. 关闭模态框 */
+    var modal = document.getElementById('unifiedOcrModal');
+    if (modal) modal.remove();
+
+    var msg = '\u2705 \u5BA2\u6237\u300C' + c.name + '\u300D' + (existingClientIdx >= 0 && clientData[existingClientIdx] === clientObj ? '\u5DF2\u66F4\u65B0' : '\u5DF2\u521B\u5EFA');
+    if (policies.length > 0) msg += '\uFF0C\u540C\u65F6\u521B\u5EFA' + policies.length + '\u4E2A\u4FDD\u5355';
+    showToast(msg, 'success');
+
+    /* 5. 刷新界面 */
+    refreshCurrentTab();
+    /* 如果在查询页，跳到该客户详情 */
+    if (existingClientIdx >= 0) {
+      selectedClientIdx = existingClientIdx;
+      if (currentTab === 'query') {
+        renderDetailPanel(existingClientIdx);
+      }
+    }
+  };
+
+  /* 如果已有同名客户，提示是否更新 */
+  if (existingClientIdx >= 0) {
+    showConfirm('\u5BA2\u6237\u300C' + c.name + '\u300D\u5DF2\u5B58\u5728\uFF0C\u662F\u5426\u66F4\u65B0\u5176\u4FE1\u606F\u5E76\u8FFD\u52A0\u4FDD\u5355\uFF1F', doSave);
+  } else {
+    doSave();
+  }
 }
