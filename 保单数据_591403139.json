@@ -4073,27 +4073,6 @@
           "status": "已电话联系"
         }
       ]
-    },
-    {
-      "name": "邓志斌",
-      "idCard": "440105197404121214",
-      "phone": "13926672777",
-      "address": "广州市海珠区滨江二巷7号304房",
-      "workCompany": "",
-      "workAddress": "",
-      "policies": [],
-      "familyMembers": [
-        {
-          "name": "邓柏麒",
-          "relationship": "受益人",
-          "idCard": "",
-          "phone": "",
-          "note": ""
-        }
-      ],
-      "contactHistory": [],
-      "profile": null,
-      "doNotContact": false
     }
   ],
   "insuranceTypes": [
@@ -4781,7 +4760,7 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1788583064288",
+  "_timestamp": "1788583977497",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
