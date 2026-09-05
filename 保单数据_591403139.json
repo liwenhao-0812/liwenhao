@@ -1982,26 +1982,39 @@
           "remark": "",
           "status": "有效",
           "insured": "刘琛",
-          "codeType": "R48",
+          "codeType": "S49",
           "mainType": "主险",
           "insuredId": "/",
           "policyCode": "2001442001S49100002577",
           "sumInsured": "",
           "extraFields": {},
+          "hasDividend": false,
+          "paymentBank": "",
           "paymentTerm": "20",
           "insuredPhone": "/",
+          "maturityDate": "",
           "annualPremium": "290",
           "beneficiaries": [
             {
               "name": "梁雪梅",
-              "quota": 100
+              "quota": "100"
             }
           ],
           "effectiveDate": "20010210",
-          "insuranceName": "国寿附加国寿福豁免保险费疾病保险（2019版）",
+          "insuranceName": "国寿99鸿福两全保险",
           "paymentMethod": "年缴",
+          "insuredAddress": "广东省清远市清城区东城街道东城社区名德幸福里3栋1梯5层05号",
           "serviceRecords": [],
           "insuredRelation": "儿子",
+          "paymentBankCard": "",
+          "survivalBenefit": {
+            "note": "",
+            "type": "",
+            "amount": "",
+            "lastDate": "",
+            "nextDate": "",
+            "startDate": ""
+          },
           "parentPolicyCode": ""
         }
       ],
@@ -2777,6 +2790,7 @@
       "address": "广东省清远市清城区凤城街道和富东城一栋3001",
       "policies": [
         {
+          "_idx": 0,
           "remark": "",
           "status": "有效",
           "insured": "欧梓娟",
@@ -2800,8 +2814,7 @@
           "paymentMethod": "年缴",
           "serviceRecords": [],
           "insuredRelation": "女儿",
-          "parentPolicyCode": "",
-          "_idx": 0
+          "parentPolicyCode": ""
         }
       ],
       "workAddress": "",
@@ -2872,6 +2885,7 @@
       "address": "广东省清远市清城区清远市清城区向群新村七座504号",
       "policies": [
         {
+          "_idx": 0,
           "remark": "",
           "status": "有效",
           "insured": "王镇江",
@@ -2895,10 +2909,10 @@
           "paymentMethod": "年缴",
           "serviceRecords": [],
           "insuredRelation": "儿子",
-          "parentPolicyCode": "",
-          "_idx": 0
+          "parentPolicyCode": ""
         },
         {
+          "_idx": 1,
           "remark": "",
           "status": "有效",
           "insured": "王洁怡",
@@ -2922,8 +2936,7 @@
           "paymentMethod": "年缴",
           "serviceRecords": [],
           "insuredRelation": "女儿",
-          "parentPolicyCode": "",
-          "_idx": 1
+          "parentPolicyCode": ""
         }
       ],
       "workAddress": "",
@@ -3339,44 +3352,44 @@
       "address": "广东省清远市清城区东城街道金湖社区清碧路1号锦江豪庭2座2801房",
       "policies": [
         {
-          "policyCode": "2004442001S50000048630",
-          "insuranceName": "国寿千禧理财（分红型）",
+          "_idx": 0,
+          "remark": "",
+          "status": "有效",
+          "insured": "宋晓宇",
           "codeType": "S50",
           "mainType": "主险",
-          "parentPolicyCode": "",
-          "status": "有效",
-          "hasDividend": false,
-          "effectiveDate": "20041106",
-          "maturityDate": "",
-          "paymentMethod": "年缴",
-          "annualPremium": "800",
-          "sumInsured": "",
-          "paymentTerm": "20",
-          "paymentBank": "",
-          "paymentBankCard": "",
-          "insured": "宋晓宇",
-          "insuredRelation": "儿子",
           "insuredId": "441802200111026912",
+          "policyCode": "2004442001S50000048630",
+          "sumInsured": "",
+          "extraFields": {},
+          "hasDividend": false,
+          "paymentBank": "",
+          "paymentTerm": "20",
           "insuredPhone": "18318702332",
-          "insuredAddress": "广东省清远市清城区东城街道金湖社区清碧路1号锦江豪庭2座2801房",
+          "maturityDate": "",
+          "annualPremium": "800",
           "beneficiaries": [
             {
               "name": "叶海燕",
               "quota": "100"
             }
           ],
-          "remark": "",
+          "effectiveDate": "20041106",
+          "insuranceName": "国寿千禧理财（分红型）",
+          "paymentMethod": "年缴",
+          "insuredAddress": "广东省清远市清城区东城街道金湖社区清碧路1号锦江豪庭2座2801房",
+          "serviceRecords": [],
+          "insuredRelation": "儿子",
+          "paymentBankCard": "",
           "survivalBenefit": {
+            "note": "",
             "type": "triennial",
             "amount": "",
-            "startDate": "",
             "lastDate": "",
             "nextDate": "",
-            "note": ""
+            "startDate": ""
           },
-          "extraFields": {},
-          "serviceRecords": [],
-          "_idx": 0
+          "parentPolicyCode": ""
         }
       ],
       "workAddress": "",
@@ -3635,44 +3648,44 @@
       "address": "广东省清远市清城区凤城街道高基里社区松鹤西街24号古城华景苑",
       "policies": [
         {
-          "policyCode": "2001442011S49200002186",
-          "insuranceName": "国寿99鸿福两全保险",
+          "_idx": 0,
+          "remark": "",
+          "status": "有效",
+          "insured": "卢芷瑶",
           "codeType": "S49",
           "mainType": "主险",
-          "parentPolicyCode": "",
-          "status": "有效",
-          "hasDividend": false,
-          "effectiveDate": "20010605",
-          "maturityDate": "",
-          "paymentMethod": "年缴",
-          "annualPremium": "1180",
-          "sumInsured": "",
-          "paymentTerm": "20",
-          "paymentBank": "",
-          "paymentBankCard": "",
-          "insured": "卢芷瑶",
-          "insuredRelation": "女儿",
           "insuredId": "441802200002080928",
+          "policyCode": "2001442011S49200002186",
+          "sumInsured": "",
+          "extraFields": {},
+          "hasDividend": false,
+          "paymentBank": "",
+          "paymentTerm": "20",
           "insuredPhone": "13553962268",
-          "insuredAddress": "广东省清远市清城区凤城街道高基里社区松鹤西街24号古城华景苑",
+          "maturityDate": "",
+          "annualPremium": "1180",
           "beneficiaries": [
             {
               "name": "张彩美",
               "quota": "100"
             }
           ],
-          "remark": "",
+          "effectiveDate": "20010605",
+          "insuranceName": "国寿99鸿福两全保险",
+          "paymentMethod": "年缴",
+          "insuredAddress": "广东省清远市清城区凤城街道高基里社区松鹤西街24号古城华景苑",
+          "serviceRecords": [],
+          "insuredRelation": "女儿",
+          "paymentBankCard": "",
           "survivalBenefit": {
+            "note": "",
             "type": "triennial",
             "amount": "500",
-            "startDate": "20020605",
             "lastDate": "",
             "nextDate": "20290605",
-            "note": ""
+            "startDate": "20020605"
           },
-          "extraFields": {},
-          "serviceRecords": [],
-          "_idx": 0
+          "parentPolicyCode": ""
         }
       ],
       "workAddress": "",
@@ -4060,6 +4073,27 @@
           "status": "已电话联系"
         }
       ]
+    },
+    {
+      "name": "邓志斌",
+      "idCard": "440105197404121214",
+      "phone": "13926672777",
+      "address": "广州市海珠区滨江二巷7号304房",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [],
+      "familyMembers": [
+        {
+          "name": "邓柏麒",
+          "relationship": "受益人",
+          "idCard": "",
+          "phone": "",
+          "note": ""
+        }
+      ],
+      "contactHistory": [],
+      "profile": null,
+      "doNotContact": false
     }
   ],
   "insuranceTypes": [
@@ -4331,12 +4365,15 @@
       "insuranceName": "国寿千禧理财（分红型）",
       "codeType": "S50",
       "traits": {
-        "note": "",
-        "category": "分红险",
+        "note": "身故保险金根据交费方式计算；红利处理方式可选现金领取或累积生息；责任免除包含两年内自杀等情形。",
+        "category": "两全险",
         "annuityFreq": "triennial",
         "annuityStart": "afterYears",
+        "dividendFreq": "annual",
+        "dividendStart": "nextYear",
         "waitingPeriod": "0",
-        "annuityStartVal": "1"
+        "annuityStartVal": "3",
+        "dividendStartVal": ""
       }
     },
     {
@@ -4403,12 +4440,12 @@
       "insuranceName": "国寿附加国寿福豁免保险费疾病保险（2019版）",
       "codeType": "R48",
       "traits": {
+        "note": "",
         "category": "重疾险",
-        "waitingPeriod": "180",
-        "annuityStart": "",
-        "annuityStartVal": "",
         "annuityFreq": "",
-        "note": ""
+        "annuityStart": "",
+        "waitingPeriod": "180",
+        "annuityStartVal": ""
       }
     },
     {
@@ -4463,36 +4500,36 @@
       "insuranceName": "国寿少儿国寿福终身寿险(庆典版)",
       "codeType": "SK6",
       "traits": {
+        "note": "",
         "category": "寿险",
-        "waitingPeriod": "90",
-        "annuityStart": "",
-        "annuityStartVal": "",
         "annuityFreq": "",
-        "note": ""
+        "annuityStart": "",
+        "waitingPeriod": "90",
+        "annuityStartVal": ""
       }
     },
     {
       "insuranceName": "国寿附加少儿国寿福提前给付重大疾病保险(庆典版)",
       "codeType": "R45",
       "traits": {
+        "note": "",
         "category": "重疾险",
-        "waitingPeriod": "180",
-        "annuityStart": "",
-        "annuityStartVal": "",
         "annuityFreq": "",
-        "note": ""
+        "annuityStart": "",
+        "waitingPeriod": "180",
+        "annuityStartVal": ""
       }
     },
     {
       "insuranceName": "国寿附加少儿国寿福豁免保险费疾病保险(庆典版)",
       "codeType": "R46",
       "traits": {
+        "note": "",
         "category": "重疾险",
-        "waitingPeriod": "180",
-        "annuityStart": "",
-        "annuityStartVal": "",
         "annuityFreq": "",
-        "note": ""
+        "annuityStart": "",
+        "waitingPeriod": "180",
+        "annuityStartVal": ""
       }
     },
     {
@@ -4523,12 +4560,12 @@
       "insuranceName": "国寿附加国寿福提前给付重大疾病保险（2019版）",
       "codeType": "R47",
       "traits": {
+        "note": "",
         "category": "重疾险",
-        "waitingPeriod": "180",
-        "annuityStart": "none",
-        "annuityStartVal": "",
         "annuityFreq": "",
-        "note": ""
+        "annuityStart": "none",
+        "waitingPeriod": "180",
+        "annuityStartVal": ""
       }
     },
     {
@@ -4547,24 +4584,24 @@
       "insuranceName": "国寿附加康宁两全保险（2019版）",
       "codeType": "R36",
       "traits": {
+        "note": "",
         "category": "重疾险",
-        "waitingPeriod": "180",
-        "annuityStart": "",
-        "annuityStartVal": "",
         "annuityFreq": "",
-        "note": ""
+        "annuityStart": "",
+        "waitingPeriod": "180",
+        "annuityStartVal": ""
       }
     },
     {
       "insuranceName": "国寿附加国寿福豁免保险费重大疾病保险（庆典版A款）",
       "codeType": "R43",
       "traits": {
+        "note": "",
         "category": "重疾险",
-        "waitingPeriod": "180",
-        "annuityStart": "none",
-        "annuityStartVal": "",
         "annuityFreq": "",
-        "note": ""
+        "annuityStart": "none",
+        "waitingPeriod": "180",
+        "annuityStartVal": ""
       }
     },
     {
@@ -4619,12 +4656,15 @@
       "insuranceName": "康宁终身保险",
       "codeType": "S42",
       "traits": {
-        "note": "",
+        "note": "终身重疾险，保障重大疾病、身故和高度残疾，保额倍数赔付，含免责条款和减额交清权益。",
         "category": "重疾险",
-        "annuityFreq": "",
-        "annuityStart": "",
-        "waitingPeriod": "",
-        "annuityStartVal": ""
+        "annuityFreq": "none",
+        "annuityStart": "none",
+        "dividendFreq": "none",
+        "dividendStart": "none",
+        "waitingPeriod": "180",
+        "annuityStartVal": "",
+        "dividendStartVal": ""
       }
     },
     {
@@ -4741,7 +4781,7 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1787843240624",
+  "_timestamp": "1788583064288",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
