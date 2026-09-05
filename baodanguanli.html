@@ -384,9 +384,13 @@
     <div class="modal-body">
       <input type="hidden" id="policyClientIndex" value="-1">
       <input type="hidden" id="policyEditIndex" value="-1">
-      <div style="margin-bottom:12px;padding:8px 12px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="openPolicyOcrModal(parseInt(document.getElementById('policyEditIndex').value)||-1)">
-        <span style="font-size:18px;">📷</span>
-        <span style="font-size:13px;color:#4338ca;font-weight:500;">拍照/截图识别保单（本地OCR+AI解析，照片不上传）</span>
+      <div class="ocr-trigger-btn" onclick="openPolicyOcrModal(parseInt(document.getElementById('policyEditIndex').value)||-1)">
+        <span class="ocr-trigger-icon">📷</span>
+        <div class="ocr-trigger-body">
+          <span class="ocr-trigger-title">拍照/截图识别保单</span>
+          <span class="ocr-trigger-desc">点击上传保单照片，AI自动识别填充 · 照片不上传</span>
+        </div>
+        <span class="ocr-trigger-arrow">›</span>
       </div>
       <div class="form-group">
         <label>保单代码 *</label>

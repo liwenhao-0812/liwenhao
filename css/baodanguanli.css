@@ -1672,6 +1672,186 @@ button {
   margin-bottom: 2px;
 }
 
+/* ======== 保单照片OCR触发按钮 ======== */
+.ocr-trigger-btn {
+  margin-bottom: 16px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  border: 2px solid #a5b4fc;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out);
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+.ocr-trigger-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(99,102,241,0.08), transparent);
+  transition: left 0.5s;
+}
+.ocr-trigger-btn:hover {
+  border-color: #6366f1;
+  box-shadow: 0 4px 14px rgba(99,102,241,0.2);
+}
+.ocr-trigger-btn:hover::before {
+  left: 100%;
+}
+.ocr-trigger-btn:active {
+  transform: scale(0.98);
+}
+.ocr-trigger-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.ocr-trigger-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ocr-trigger-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #3730a3;
+  letter-spacing: 0.02em;
+}
+.ocr-trigger-desc {
+  font-size: 12px;
+  color: #6366f1;
+  font-weight: 400;
+  line-height: 1.4;
+}
+.ocr-trigger-arrow {
+  font-size: 22px;
+  color: #818cf8;
+  flex-shrink: 0;
+  font-weight: 300;
+  transition: transform 0.2s;
+}
+.ocr-trigger-btn:hover .ocr-trigger-arrow {
+  transform: translateX(3px);
+}
+
+/* ======== 保单照片OCR模态框 ======== */
+.ocr-modal-box {
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px;
+  max-width: 560px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+}
+.ocr-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.ocr-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #1e293b;
+}
+.ocr-modal-close {
+  background: none;
+  border: none;
+  font-size: 26px;
+  cursor: pointer;
+  color: #64748b;
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.ocr-modal-close:hover { background: #f1f5f9; }
+.ocr-privacy-note {
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #92400e;
+  line-height: 1.6;
+}
+.ocr-dropzone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 36px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #f8fafc;
+}
+.ocr-dropzone:hover {
+  border-color: #6366f1;
+  background: #eef2ff;
+}
+.ocr-dropzone:active {
+  transform: scale(0.98);
+}
+.ocr-dropzone-icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+.ocr-dropzone-title {
+  color: #4338ca;
+  font-size: 16px;
+  font-weight: 600;
+}
+.ocr-dropzone-desc {
+  color: #94a3b8;
+  font-size: 12px;
+  margin-top: 6px;
+}
+.ocr-modal-footer {
+  margin-top: 18px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.ocr-btn-cancel {
+  padding: 10px 22px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #475569;
+  transition: all 0.2s;
+}
+.ocr-btn-cancel:hover { background: #f8fafc; }
+.ocr-btn-apply {
+  padding: 10px 22px;
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.ocr-btn-apply:hover { background: #2563eb; }
+
 /* ======== 手机端适配 ======== */
 @media (max-width: 600px) {
   .top-bar { padding: 10px 14px; }
@@ -1701,6 +1881,24 @@ button {
   .policy-table .col-type { width: 36px; }
   .policy-table .col-status { width: 36px; }
   .policy-table .col-insured { font-size: 12px; }
+  /* OCR触发按钮手机端增强 */
+  .ocr-trigger-btn { padding: 18px 16px; gap: 12px; border-width: 2px; }
+  .ocr-trigger-icon { font-size: 32px; }
+  .ocr-trigger-title { font-size: 16px; }
+  .ocr-trigger-desc { font-size: 12px; }
+  .ocr-trigger-arrow { font-size: 24px; }
+  /* OCR模态框手机端优化 */
+  .ocr-modal-box { padding: 18px; max-height: 90vh; border-radius: 12px; }
+  .ocr-modal-header h3 { font-size: 17px; }
+  .ocr-modal-close { min-width: 44px; min-height: 44px; font-size: 28px; }
+  .ocr-dropzone { padding: 40px 16px; border-width: 2px; }
+  .ocr-dropzone-icon { font-size: 44px; }
+  .ocr-dropzone-title { font-size: 17px; }
+  .ocr-dropzone-desc { font-size: 13px; }
+  .ocr-btn-cancel, .ocr-btn-apply { padding: 12px 24px; font-size: 15px; }
+  .ocr-modal-footer { gap: 12px; }
+  /* 模态框手机端优化 */
+  .modal { max-height: 92vh; }
 }
 
 /* ======== 险种库卡片布局 ======== */

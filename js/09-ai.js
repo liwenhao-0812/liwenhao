@@ -176,34 +176,38 @@ function openClauseUploadModal(idx) {
   if (idx < 0 || idx >= lib.length) return;
   var item = lib[idx];
 
+  /* 移除已存在的模态框 */
+  var existing = document.getElementById('clauseUploadModal');
+  if (existing) existing.remove();
+
   var modal = document.createElement('div');
-  modal.className = 'modal-overlay';
+  modal.className = 'modal-overlay ocr-modal-overlay';
   modal.id = 'clauseUploadModal';
-  modal.style.cssText = 'display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;';
+  modal.style.cssText = 'display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:16px;';
 
   modal.innerHTML = `
-    <div style="background:#fff;border-radius:14px;padding:28px;max-width:560px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-        <h3 style="margin:0;font-size:18px;color:#1e293b;">📄 上传条款 - ${item.insuranceName || ''}</h3>
-        <button onclick="document.getElementById('clauseUploadModal').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#64748b;">&times;</button>
+    <div class="ocr-modal-box">
+      <div class="ocr-modal-header">
+        <h3>📄 上传条款 - ${item.insuranceName || ''}</h3>
+        <button onclick="document.getElementById('clauseUploadModal').remove()" class="ocr-modal-close">&times;</button>
       </div>
 
-      <div style="margin-bottom:16px;padding:10px 14px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;font-size:12px;color:#0c4a6e;line-height:1.6;">
+      <div class="ocr-privacy-note" style="background:#f0f9ff;border-color:#bae6fd;color:#0c4a6e;">
         支持 PDF / 图片（JPG/PNG）格式条款文件。<br>
         条款文本将在浏览器本地提取，然后发送给大模型解读结构化特征。<br>
         <strong>条款是公开文件，发送给大模型无隐私风险。</strong>
       </div>
 
-      <div id="clauseDropZone" style="border:2px dashed #cbd5e1;border-radius:10px;padding:32px 20px;text-align:center;cursor:pointer;transition:border-color 0.2s;background:#f8fafc;">
-        <div style="font-size:36px;margin-bottom:8px;">📄</div>
-        <div style="color:#64748b;font-size:14px;">点击选择文件 或 拖拽条款文件到此</div>
-        <div style="color:#94a3b8;font-size:12px;margin-top:4px;">支持 PDF / JPG / PNG，最大 20MB</div>
+      <div id="clauseDropZone" class="ocr-dropzone">
+        <div class="ocr-dropzone-icon">📄</div>
+        <div class="ocr-dropzone-title">点击上传条款文件</div>
+        <div class="ocr-dropzone-desc">支持 PDF / JPG / PNG · 最大 20MB</div>
         <input type="file" id="clauseFileInput" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
       </div>
 
       <div id="clauseProgress" style="display:none;margin-top:16px;">
         <div style="display:flex;align-items:center;gap:10px;">
-          <div class="spinner" style="width:18px;height:18px;border:2px solid #e2e8f0;border-top-color:#3b82f6;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+          <div class="spinner" style="width:18px;height:18px;border:2px solid #e2e8f0;border-top-color:#3b82f6;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0;"></div>
           <span id="clauseProgressText" style="font-size:13px;color:#475569;">正在处理...</span>
         </div>
         <div style="margin-top:8px;height:4px;background:#e2e8f0;border-radius:2px;overflow:hidden;">
@@ -213,9 +217,9 @@ function openClauseUploadModal(idx) {
 
       <div id="clauseResult" style="display:none;margin-top:16px;"></div>
 
-      <div style="margin-top:18px;display:flex;gap:10px;justify-content:flex-end;">
-        <button onclick="document.getElementById('clauseUploadModal').remove()" style="padding:8px 20px;border:1px solid #cbd5e1;background:#fff;border-radius:8px;cursor:pointer;font-size:14px;color:#475569;">取消</button>
-        <button id="clauseApplyBtn" style="display:none;padding:8px 20px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;" onclick="applyClauseResult(${idx})">应用并进入编辑</button>
+      <div class="ocr-modal-footer">
+        <button onclick="document.getElementById('clauseUploadModal').remove()" class="ocr-btn-cancel">取消</button>
+        <button id="clauseApplyBtn" style="display:none;" class="ocr-btn-apply" onclick="applyClauseResult(${idx})">应用并进入编辑</button>
       </div>
     </div>
   `;
@@ -235,6 +239,11 @@ function openClauseUploadModal(idx) {
     e.preventDefault();
     dropZone.style.borderColor = '#cbd5e1';
     if (e.dataTransfer.files[0]) handleClauseFile(e.dataTransfer.files[0], idx, item.insuranceName);
+  });
+
+  /* 点击遮罩关闭 */
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) modal.remove();
   });
 }
 
@@ -400,33 +409,37 @@ function applyClauseResult(idx) {
 function openPolicyOcrModal(editIdx) {
   var isEdit = editIdx >= 0;
 
+  /* 移除已存在的模态框 */
+  var existing = document.getElementById('policyOcrModal');
+  if (existing) existing.remove();
+
   var modal = document.createElement('div');
-  modal.className = 'modal-overlay';
+  modal.className = 'modal-overlay ocr-modal-overlay';
   modal.id = 'policyOcrModal';
-  modal.style.cssText = 'display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;';
+  modal.style.cssText = 'display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:16px;';
 
   modal.innerHTML = `
-    <div style="background:#fff;border-radius:14px;padding:28px;max-width:560px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-        <h3 style="margin:0;font-size:18px;color:#1e293b;">📷 保单照片识别</h3>
-        <button onclick="document.getElementById('policyOcrModal').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#64748b;">&times;</button>
+    <div class="ocr-modal-box">
+      <div class="ocr-modal-header">
+        <h3>📷 保单照片识别</h3>
+        <button onclick="document.getElementById('policyOcrModal').remove()" class="ocr-modal-close">&times;</button>
       </div>
 
-      <div style="margin-bottom:16px;padding:10px 14px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;font-size:12px;color:#92400e;line-height:1.6;">
-        <strong>隐私保护说明：</strong>照片在浏览器本地 OCR 提取文字，<strong>图片不会上传</strong>。
+      <div class="ocr-privacy-note">
+        <strong>🔒 隐私保护：</strong>照片在浏览器本地 OCR 提取文字，<strong>图片不会上传</strong>。
         提取的文字经大模型解析为结构化字段，识别结果会预填到表单中供您校对。
       </div>
 
-      <div id="ocrDropZone" style="border:2px dashed #cbd5e1;border-radius:10px;padding:32px 20px;text-align:center;cursor:pointer;transition:border-color 0.2s;background:#f8fafc;">
-        <div style="font-size:36px;margin-bottom:8px;">📷</div>
-        <div style="color:#64748b;font-size:14px;">点击选择保单照片 或 拖拽到此</div>
-        <div style="color:#94a3b8;font-size:12px;margin-top:4px;">支持 JPG / PNG，APP 截图也可，最大 20MB</div>
-        <input type="file" id="ocrFileInput" accept=".jpg,.jpeg,.png" style="display:none;">
+      <div id="ocrDropZone" class="ocr-dropzone">
+        <div class="ocr-dropzone-icon">📷</div>
+        <div class="ocr-dropzone-title">点击上传保单照片</div>
+        <div class="ocr-dropzone-desc">支持 JPG / PNG · APP截图也可 · 最大 20MB</div>
+        <input type="file" id="ocrFileInput" accept="image/jpeg,image/png,image/jpg" capture="environment" style="display:none;">
       </div>
 
       <div id="ocrProgress" style="display:none;margin-top:16px;">
         <div style="display:flex;align-items:center;gap:10px;">
-          <div class="spinner" style="width:18px;height:18px;border:2px solid #e2e8f0;border-top-color:#3b82f6;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+          <div class="spinner" style="width:18px;height:18px;border:2px solid #e2e8f0;border-top-color:#3b82f6;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0;"></div>
           <span id="ocrProgressText" style="font-size:13px;color:#475569;">正在处理...</span>
         </div>
         <div style="margin-top:8px;height:4px;background:#e2e8f0;border-radius:2px;overflow:hidden;">
@@ -438,9 +451,9 @@ function openPolicyOcrModal(editIdx) {
 
       <div id="ocrResult" style="display:none;margin-top:16px;"></div>
 
-      <div style="margin-top:18px;display:flex;gap:10px;justify-content:flex-end;">
-        <button onclick="document.getElementById('policyOcrModal').remove()" style="padding:8px 20px;border:1px solid #cbd5e1;background:#fff;border-radius:8px;cursor:pointer;font-size:14px;color:#475569;">取消</button>
-        <button id="ocrApplyBtn" style="display:none;padding:8px 20px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;" onclick="applyOcrResult(${isEdit ? editIdx : -1})">填充到表单</button>
+      <div class="ocr-modal-footer">
+        <button onclick="document.getElementById('policyOcrModal').remove()" class="ocr-btn-cancel">取消</button>
+        <button id="ocrApplyBtn" style="display:none;" class="ocr-btn-apply" onclick="applyOcrResult(${isEdit ? editIdx : -1})">填充到表单</button>
       </div>
     </div>
   `;
@@ -459,6 +472,11 @@ function openPolicyOcrModal(editIdx) {
     e.preventDefault();
     dropZone.style.borderColor = '#cbd5e1';
     if (e.dataTransfer.files[0]) handlePolicyOcrFile(e.dataTransfer.files[0], isEdit ? editIdx : -1);
+  });
+
+  /* 点击遮罩关闭 */
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) modal.remove();
   });
 }
 
