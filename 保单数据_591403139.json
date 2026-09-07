@@ -4146,17 +4146,57 @@
       "profile": null,
       "policies": [
         {
-          "policyCode": "2018442001564015105250",
-          "insuranceName": "国寿百万如意行两全保险",
+          "_idx": 0,
+          "remark": "",
+          "status": "有效",
+          "insured": "杨斌",
           "codeType": "564",
           "mainType": "主险",
-          "parentPolicyCode": "",
+          "insuredId": "430223198908233229",
+          "policyCode": "2018442001564015105250",
+          "sumInsured": "100000",
+          "extraFields": {},
+          "hasDividend": false,
+          "paymentBank": "邮政储汇",
+          "paymentTerm": "10",
+          "insuredPhone": "13487738233",
+          "maturityDate": "",
+          "annualPremium": "1520",
+          "beneficiaries": [
+            {
+              "name": "贺双凤",
+              "quota": ""
+            }
+          ],
+          "effectiveDate": "20180731",
+          "insuranceName": "国寿百万如意行两全保险",
+          "paymentMethod": "年缴",
+          "insuredAddress": "湖南省株洲市攸县皇图岭镇山关村板坑组",
+          "serviceRecords": [],
+          "insuredRelation": "本人",
+          "paymentBankCard": "1622",
+          "survivalBenefit": {
+            "note": "",
+            "type": "",
+            "amount": "",
+            "lastDate": "",
+            "nextDate": "",
+            "startDate": ""
+          },
+          "parentPolicyCode": ""
+        },
+        {
+          "policyCode": "2018442001322300098234",
+          "insuranceName": "国寿附加百万如意行意外伤害住院定额给付医疗保险",
+          "codeType": "322",
+          "mainType": "附加险",
+          "parentPolicyCode": "2018442001564015105250",
           "status": "有效",
           "hasDividend": false,
           "effectiveDate": "20180731",
           "maturityDate": "",
           "paymentMethod": "年缴",
-          "annualPremium": "1520",
+          "annualPremium": "174",
           "sumInsured": "100000",
           "paymentTerm": "10",
           "paymentBank": "邮政储汇",
@@ -4169,7 +4209,7 @@
           "beneficiaries": [
             {
               "name": "贺双凤",
-              "quota": ""
+              "quota": "100"
             }
           ],
           "remark": "",
@@ -4183,13 +4223,23 @@
           },
           "extraFields": {},
           "serviceRecords": [],
-          "_idx": 0
+          "_idx": 1
         }
       ],
       "workAddress": "",
       "workCompany": "",
       "doNotContact": false,
-      "familyMembers": [],
+      "familyMembers": [
+        {
+          "name": "杨斌",
+          "note": "",
+          "phone": "",
+          "gender": "",
+          "idCard": "",
+          "birthday": "",
+          "relationship": "被保险人"
+        }
+      ],
       "contactHistory": []
     }
   ],
@@ -4878,7 +4928,7 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1788748490533",
+  "_timestamp": "1788748968157",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
