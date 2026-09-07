@@ -4076,64 +4076,77 @@
     },
     {
       "name": "邓志斌",
-      "idCard": "440105197404121214",
       "phone": "13926672777",
+      "idCard": "440105197404121214",
       "address": "广州市海珠区滨江二巷7号304房",
-      "workCompany": "",
-      "workAddress": "",
+      "profile": null,
       "policies": [
         {
-          "policyCode": "2008442001S43015048485",
-          "insuranceName": "康宁定期保险",
+          "_idx": 0,
+          "remark": "",
+          "status": "有效",
+          "insured": "邓志斌",
           "codeType": "S43",
           "mainType": "主险",
-          "parentPolicyCode": "",
-          "status": "有效",
-          "hasDividend": false,
-          "effectiveDate": "20080903",
-          "maturityDate": "",
-          "paymentMethod": "年缴",
-          "annualPremium": "1450",
-          "sumInsured": "50000",
-          "paymentTerm": "20",
-          "paymentBank": "中国农业银行",
-          "paymentBankCard": "1243",
-          "insured": "邓志斌",
-          "insuredRelation": "本人",
           "insuredId": "440105197404121214",
+          "policyCode": "2008442001S43015048485",
+          "sumInsured": "50000",
+          "extraFields": {},
+          "hasDividend": false,
+          "paymentBank": "中国农业银行",
+          "paymentTerm": "20",
           "insuredPhone": "13926672777",
-          "insuredAddress": "广州市海珠区滨江二巷7号304房",
+          "maturityDate": "",
+          "annualPremium": "1450",
           "beneficiaries": [
             {
               "name": "邓柏麒",
               "quota": "100"
             }
           ],
-          "remark": "",
+          "effectiveDate": "20080903",
+          "insuranceName": "康宁定期保险",
+          "paymentMethod": "年缴",
+          "insuredAddress": "广州市海珠区滨江二巷7号304房",
+          "serviceRecords": [],
+          "insuredRelation": "本人",
+          "paymentBankCard": "1243",
           "survivalBenefit": {
+            "note": "",
             "type": "",
             "amount": "",
-            "startDate": "",
             "lastDate": "",
             "nextDate": "",
-            "note": ""
+            "startDate": ""
           },
-          "extraFields": {},
-          "serviceRecords": [],
-          "_idx": 0
+          "parentPolicyCode": ""
         }
       ],
+      "workAddress": "",
+      "workCompany": "",
+      "doNotContact": false,
       "familyMembers": [
         {
           "name": "邓柏麒",
-          "relationship": "受益人",
-          "idCard": "",
+          "note": "",
           "phone": "",
           "gender": "男",
+          "idCard": "",
           "birthday": "2007-11-29",
-          "note": ""
+          "relationship": "受益人"
         }
       ],
+      "contactHistory": []
+    },
+    {
+      "name": "贺双凤",
+      "idCard": "430223198908233229",
+      "phone": "13487738233",
+      "address": "湖南省株洲市攸县皇图岭镇山关村板坑组",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [],
+      "familyMembers": [],
       "contactHistory": [],
       "profile": null,
       "doNotContact": false
@@ -4824,9 +4837,9 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1788584051417",
+  "_timestamp": "1788748420504",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
-  "_passwordHash": "Hg10hvh"
+  "_passwordHash": "H143aad"
 }
