@@ -4140,16 +4140,57 @@
     },
     {
       "name": "贺双凤",
-      "idCard": "430223198908233229",
       "phone": "13487738233",
+      "idCard": "430223198908233229",
       "address": "湖南省株洲市攸县皇图岭镇山关村板坑组",
-      "workCompany": "",
-      "workAddress": "",
-      "policies": [],
-      "familyMembers": [],
-      "contactHistory": [],
       "profile": null,
-      "doNotContact": false
+      "policies": [
+        {
+          "policyCode": "2018442001564015105250",
+          "insuranceName": "国寿百万如意行两全保险",
+          "codeType": "564",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "hasDividend": false,
+          "effectiveDate": "20180731",
+          "maturityDate": "",
+          "paymentMethod": "年缴",
+          "annualPremium": "1520",
+          "sumInsured": "100000",
+          "paymentTerm": "10",
+          "paymentBank": "邮政储汇",
+          "paymentBankCard": "1622",
+          "insured": "杨斌",
+          "insuredRelation": "本人",
+          "insuredId": "430223198908233229",
+          "insuredPhone": "13487738233",
+          "insuredAddress": "湖南省株洲市攸县皇图岭镇山关村板坑组",
+          "beneficiaries": [
+            {
+              "name": "贺双凤",
+              "quota": ""
+            }
+          ],
+          "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
+          "extraFields": {},
+          "serviceRecords": [],
+          "_idx": 0
+        }
+      ],
+      "workAddress": "",
+      "workCompany": "",
+      "doNotContact": false,
+      "familyMembers": [],
+      "contactHistory": []
     }
   ],
   "insuranceTypes": [
@@ -4837,7 +4878,7 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1788748420504",
+  "_timestamp": "1788748490533",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
