@@ -1546,22 +1546,26 @@
       "address": "广东省清远市清城区源潭大连村委会东门闸门围4号",
       "policies": [
         {
-          "_idx": 0,
-          "remark": "",
-          "status": "有效",
-          "insured": "雷秋玲",
+          "policyCode": "2017442001512015116744",
+          "insuranceName": "国寿防癌疾病保险",
           "codeType": "512",
           "mainType": "主险",
-          "insuredId": "441882198507141564",
-          "policyCode": "2017442001512015116744",
-          "sumInsured": "",
-          "extraFields": {},
+          "parentPolicyCode": "",
+          "status": "有效",
           "hasDividend": false,
-          "paymentBank": "",
-          "paymentTerm": "20",
-          "insuredPhone": "15219079862",
+          "effectiveDate": "20170910",
           "maturityDate": "",
+          "paymentMethod": "年缴",
           "annualPremium": "1500",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "paymentBank": "",
+          "paymentBankCard": "",
+          "insured": "雷秋玲",
+          "insuredRelation": "本人",
+          "insuredId": "441882198507141564",
+          "insuredPhone": "15219079862",
+          "insuredAddress": "广东省清远市清城区源潭大连村委会东门闸门围4号",
           "beneficiaries": [
             {
               "name": "赖浩宇",
@@ -1572,40 +1576,40 @@
               "quota": "50"
             }
           ],
-          "effectiveDate": "20170910",
-          "insuranceName": "国寿防癌疾病保险",
-          "paymentMethod": "年缴",
-          "insuredAddress": "广东省清远市清城区源潭大连村委会东门闸门围4号",
-          "serviceRecords": [],
-          "insuredRelation": "本人",
-          "paymentBankCard": "",
+          "remark": "",
           "survivalBenefit": {
-            "note": "",
             "type": "",
             "amount": "",
+            "startDate": "",
             "lastDate": "",
             "nextDate": "",
-            "startDate": ""
+            "note": ""
           },
-          "parentPolicyCode": ""
+          "extraFields": {},
+          "serviceRecords": [],
+          "_idx": 0
         },
         {
-          "_idx": 1,
-          "remark": "",
-          "status": "有效",
-          "insured": "雷秋玲",
+          "policyCode": "2017442001321300104973",
+          "insuranceName": "国寿附加防癌两全保险(优享版)",
           "codeType": "321",
           "mainType": "附加险",
-          "insuredId": "441882198507141564",
-          "policyCode": "2017442001321300104973",
-          "sumInsured": "",
-          "extraFields": {},
+          "parentPolicyCode": "2017442001512015116744",
+          "status": "有效",
           "hasDividend": false,
-          "paymentBank": "",
-          "paymentTerm": "20",
-          "insuredPhone": "15219079862",
+          "effectiveDate": "20170910",
           "maturityDate": "",
+          "paymentMethod": "年缴",
           "annualPremium": "440",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "paymentBank": "",
+          "paymentBankCard": "",
+          "insured": "雷秋玲",
+          "insuredRelation": "",
+          "insuredId": "441882198507141564",
+          "insuredPhone": "15219079862",
+          "insuredAddress": "广东省清远市清城区源潭大连村委会东门闸门围4号",
           "beneficiaries": [
             {
               "name": "赖浩宇",
@@ -1616,53 +1620,62 @@
               "quota": "50"
             }
           ],
-          "effectiveDate": "20170910",
-          "insuranceName": "国寿附加防癌两全保险(优享版)",
-          "paymentMethod": "年缴",
-          "insuredAddress": "广东省清远市清城区源潭大连村委会东门闸门围4号",
-          "serviceRecords": [],
-          "insuredRelation": "",
-          "paymentBankCard": "",
+          "remark": "",
           "survivalBenefit": {
-            "note": "",
             "type": "",
             "amount": "",
+            "startDate": "",
             "lastDate": "",
             "nextDate": "",
-            "startDate": ""
+            "note": ""
           },
-          "parentPolicyCode": "2017442001512015116744"
+          "extraFields": {},
+          "serviceRecords": [],
+          "_idx": 1
         },
         {
-          "_idx": 2,
-          "remark": "",
-          "status": "有效",
-          "insured": "赖浩宇",
+          "policyCode": "2017442001512015116760",
+          "insuranceName": "国寿防癌疾病保险",
           "codeType": "512",
           "mainType": "主险",
-          "insuredId": "441802201107150499",
-          "policyCode": "2017442001512015116760",
-          "sumInsured": "",
-          "extraFields": {},
-          "paymentTerm": "20",
-          "insuredPhone": "15219079862",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "hasDividend": false,
+          "effectiveDate": "20170910",
+          "maturityDate": "",
+          "paymentMethod": "年缴",
           "annualPremium": "660",
+          "sumInsured": "",
+          "paymentTerm": "20",
+          "paymentBank": "",
+          "paymentBankCard": "",
+          "insured": "赖浩宇",
+          "insuredRelation": "儿子",
+          "insuredId": "441802201107150499",
+          "insuredPhone": "15219079862",
+          "insuredAddress": "广东省清远市清城区源潭大连村委会东门闸门围4号",
           "beneficiaries": [
             {
               "name": "雷秋玲",
-              "quota": 50
+              "quota": "50"
             },
             {
               "name": "赖水松",
-              "quota": 50
+              "quota": "50"
             }
           ],
-          "effectiveDate": "20170910",
-          "insuranceName": "国寿防癌疾病保险",
-          "paymentMethod": "年缴",
+          "remark": "",
+          "survivalBenefit": {
+            "type": "",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
+          "extraFields": {},
           "serviceRecords": [],
-          "insuredRelation": "儿子",
-          "parentPolicyCode": ""
+          "_idx": 2
         },
         {
           "_idx": 3,
@@ -4186,44 +4199,44 @@
           "parentPolicyCode": ""
         },
         {
-          "policyCode": "2018442001322300098234",
-          "insuranceName": "国寿附加百万如意行意外伤害住院定额给付医疗保险",
+          "_idx": 1,
+          "remark": "",
+          "status": "有效",
+          "insured": "杨斌",
           "codeType": "322",
           "mainType": "附加险",
-          "parentPolicyCode": "2018442001564015105250",
-          "status": "有效",
-          "hasDividend": false,
-          "effectiveDate": "20180731",
-          "maturityDate": "",
-          "paymentMethod": "年缴",
-          "annualPremium": "174",
-          "sumInsured": "100000",
-          "paymentTerm": "10",
-          "paymentBank": "邮政储汇",
-          "paymentBankCard": "1622",
-          "insured": "杨斌",
-          "insuredRelation": "本人",
           "insuredId": "430223198908233229",
+          "policyCode": "2018442001322300098234",
+          "sumInsured": "100000",
+          "extraFields": {},
+          "hasDividend": false,
+          "paymentBank": "邮政储汇",
+          "paymentTerm": "10",
           "insuredPhone": "13487738233",
-          "insuredAddress": "湖南省株洲市攸县皇图岭镇山关村板坑组",
+          "maturityDate": "",
+          "annualPremium": "174",
           "beneficiaries": [
             {
               "name": "贺双凤",
               "quota": "100"
             }
           ],
-          "remark": "",
+          "effectiveDate": "20180731",
+          "insuranceName": "国寿附加百万如意行意外伤害住院定额给付医疗保险",
+          "paymentMethod": "年缴",
+          "insuredAddress": "湖南省株洲市攸县皇图岭镇山关村板坑组",
+          "serviceRecords": [],
+          "insuredRelation": "本人",
+          "paymentBankCard": "1622",
           "survivalBenefit": {
+            "note": "",
             "type": "",
             "amount": "",
-            "startDate": "",
             "lastDate": "",
             "nextDate": "",
-            "note": ""
+            "startDate": ""
           },
-          "extraFields": {},
-          "serviceRecords": [],
-          "_idx": 1
+          "parentPolicyCode": "2018442001564015105250"
         }
       ],
       "workAddress": "",
@@ -4928,7 +4941,7 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1788748968157",
+  "_timestamp": "1789690094010",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
