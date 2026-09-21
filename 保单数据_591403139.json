@@ -1996,6 +1996,7 @@
       "address": "广东省清远市清城区东城街道大学西路222号时代倾城25座1304号",
       "policies": [
         {
+          "_idx": 0,
           "remark": "",
           "status": "有效",
           "insured": "梁荣劲",
@@ -2019,8 +2020,7 @@
           "paymentMethod": "年缴",
           "serviceRecords": [],
           "insuredRelation": "本人",
-          "parentPolicyCode": "",
-          "_idx": 0
+          "parentPolicyCode": ""
         }
       ],
       "workAddress": "",
@@ -2028,15 +2028,15 @@
       "familyMembers": [],
       "contactHistory": [],
       "scriptTracking": {
-        "currentNodeId": "n_1786687488874",
         "lastUsedAt": "2026-09-18T00:10:28.108Z",
         "pathHistory": [
           {
+            "at": "2026-09-18T00:10:28.106Z",
             "id": "n_1786687488874",
-            "title": "开场白",
-            "at": "2026-09-18T00:10:28.106Z"
+            "title": "开场白"
           }
-        ]
+        ],
+        "currentNodeId": "n_1786687488874"
       }
     },
     {
@@ -4309,6 +4309,68 @@
         }
       ],
       "contactHistory": []
+    },
+    {
+      "name": "黄建伟",
+      "idCard": "440226196209223314",
+      "phone": "13727006737",
+      "address": "广东省珠海市香洲区广东珠海香洲殿前北路138号雄怡花园3栋505",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "remark": "投保单号：440101495661；保险期间：25年；被保险人客户号：2003442006000004764",
+          "status": "有效",
+          "insured": "黄建伟",
+          "codeType": "S56",
+          "mainType": "主险",
+          "insuredId": "",
+          "policyCode": "2003442006S56000005606",
+          "sumInsured": "30000",
+          "extraFields": {},
+          "hasDividend": false,
+          "paymentBank": "邮政储汇",
+          "paymentTerm": "20",
+          "insuredPhone": "",
+          "maturityDate": "",
+          "annualPremium": "1179",
+          "beneficiaries": [
+            {
+              "name": "黄雪梅",
+              "quota": ""
+            }
+          ],
+          "effectiveDate": "2003-03-16",
+          "insuranceName": "国寿福世两全保险",
+          "paymentMethod": "年缴",
+          "insuredAddress": "",
+          "serviceRecords": [],
+          "insuredRelation": "本人",
+          "paymentBankCard": "4609",
+          "survivalBenefit": {
+            "note": "",
+            "type": "none",
+            "amount": "",
+            "lastDate": "",
+            "nextDate": "",
+            "startDate": ""
+          },
+          "parentPolicyCode": "",
+          "_idx": 0
+        }
+      ],
+      "familyMembers": [
+        {
+          "name": "黄雪梅",
+          "relationship": "受益人",
+          "idCard": "",
+          "phone": "",
+          "note": ""
+        }
+      ],
+      "contactHistory": [],
+      "profile": null,
+      "doNotContact": false
     }
   ],
   "insuranceTypes": [
@@ -4905,6 +4967,11 @@
         "waitingPeriod": "",
         "annuityStartVal": ""
       }
+    },
+    {
+      "insuranceName": "国寿福世两全保险",
+      "codeType": "S56",
+      "traits": null
     }
   ],
   "salesScripts": {
@@ -4996,7 +5063,7 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1789690235626",
+  "_timestamp": "1789959994179",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
