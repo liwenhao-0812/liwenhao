@@ -25,7 +25,20 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
-*~*.idsig
+*~
 
 # Build artifacts
 *.idsig
+
+# PWA / APK (已废弃，不再需要)
+*.apk
+apk-qrcode.png
+icon-*.png
+manifest.json
+sw.js
+
+# 用户数据快照（含敏感信息，不应入库）
+保单数据_*.json
+
+# Supabase CLI 临时文件
+supabase/.temp/

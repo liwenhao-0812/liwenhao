@@ -31,9 +31,9 @@
 - 将 `parse-policy/index.ts` 的内容粘贴到编辑器
 - 点击 Deploy
 
-> 注意：`_shared/cors.ts` 的内容需要内联到每个 Function 中。部署时请将 cors.ts 中的代码合并到每个 index.ts 的顶部。
+> 注意：CLI 部署会自动处理 `_shared/cors.ts` 的导入；控制台在线部署时需将 `cors.ts` 的代码内联到每个 index.ts 顶部。
 
-### 方式二：CLI 部署
+### 方式二：CLI 部署（推荐）
 
 ```bash
 # 安装 Supabase CLI
@@ -45,9 +45,11 @@ supabase login
 # 关联项目
 supabase link --project-ref mmvjtllkichjqnxebflw
 
-# 部署 Edge Functions
+# 部署 Edge Functions（_shared/cors.ts 会自动被 import 引用）
 supabase functions deploy interpret-clause
 supabase functions deploy parse-policy
+supabase functions deploy parse-client
+supabase functions deploy parse-client-policy
 
 # 设置 Secrets（如果尚未通过控制台设置）
 supabase secrets set DEEPSEEK_API_KEY=sk-你的密钥
@@ -66,11 +68,15 @@ supabase secrets set QWEN_API_KEY=你的通义千问密钥
 supabase/
   functions/
     _shared/
-      cors.ts          # 共享 CORS 头和 LLM 调用逻辑
+      cors.ts                   # 共享 CORS 头和 LLM 调用逻辑（DeepSeek 主/通义千问备）
     interpret-clause/
-      index.ts          # 条款解读 Edge Function
+      index.ts                   # 条款解读 Edge Function
+    parse-client/
+      index.ts                   # 客户照片 OCR 解析
     parse-policy/
-      index.ts          # 保单解析 Edge Function
+      index.ts                   # 保单照片 OCR 解析
+    parse-client-policy/
+      index.ts                   # 统一拍照录入（客户+多保单）解析
 ```
 
 ## 注意事项

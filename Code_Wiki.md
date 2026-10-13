@@ -33,7 +33,7 @@
 | 收益试算计算器 | 年金/分红险收益模拟、万能账户追加、银行存款对比、多场景(低/中/高)推演 |
 | 销售话术导航 | 树形话术节点管理、节点编辑、上下文面包屑导航、多分类标签 |
 | 多端同步 | localStorage加密本地存储、Supabase PostgreSQL云同步+实时订阅、GitHub仓库冷备份 |
-| 用户系统 | 用户名密码注册登录、密码本地哈希、多用户数据物理隔离 |
+| 用户系统 | Supabase Auth 邮箱+密码登录、RLS行级安全隔离、多用户数据物理隔离 |
 
 ### 1.3 目标用户
 
@@ -108,14 +108,11 @@
 |-----|------|---------|
 | **Supabase (PostgreSQL)** | 主云同步存储 + Realtime实时订阅 | 可通过设置页配置任意项目 |
 | **GitHub Contents API** | 跨设备数据恢复 + 冷备份 | 可配置任意Token |
-| **PWA Service Worker** | 已禁用(自毁版本) | 如需离线缓存可重新启用 |
+| **PWA Service Worker** | 已移除（PWA 功能已废弃，纯 GitHub Pages 部署） | — |
 
 ### 3.4 移动端
 
-| 产物 | 说明 |
-|-----|------|
-| `baodan-app.apk` | Android安装包，基于WebView打包 |
-| `manifest.json` | PWA清单，支持添加到桌面 |
+系统通过响应式 CSS 适配移动端浏览器，直接在手机浏览器中打开即可使用，无需安装 APK。
 
 ---
 
@@ -126,23 +123,37 @@
 ```
 /workspace/
 ├── index.html                     # [入口] 跳转页，自动重定向到主系统
-├── baodanguanli.html              # [核心] 保单管理主系统 (~5000行)
+├── baodanguanli.html              # [核心] 保单管理主系统
 ├── fenhongjisuanqi.html           # [工具] 分红收益试算计算器
 ├── sales_script.html              # [工具] 销售话术流程导航
 │
-├── manifest.json                  # PWA应用清单
-├── sw.js                          # Service Worker(自毁版，已禁用缓存)
-├── supabase_migration.sql         # Supabase数据库建表/迁移脚本
+├── css/
+│   └── baodanguanli.css           # 主系统样式
+├── js/
+│   ├── 01-config.js               # 全局配置 + Supabase Auth REST + 数据读写
+│   ├── 02-utils.js                # 工具函数 + 加密存储
+│   ├── 03-auth.js                 # 登录/注册/退出
+│   ├── 04-storage.js              # 数据存储 + 三层同步
+│   ├── 05-render.js               # 渲染层 + 服务锦囊 + 历史导航
+│   ├── 06-crud.js                 # CRUD + 险种特征编辑器 + 客户画像
+│   ├── 07-importexport.js         # Excel 导入导出
+│   ├── 08-app.js                  # 话术同步 + 应用逻辑
+│   └── 09-ai.js                   # AI 辅助：OCR + 条款解读
 │
-├── icon-192.png                   # PWA图标 192x192
-├── icon-512.png                   # PWA图标 512x512
-├── apk-qrcode.png                 # APK下载二维码
-├── baodan-app.apk                 # Android安装包
+├── supabase/                      # Edge Functions（AI 辅助后端）
+│   ├── README.md                  # 部署指南
+│   └── functions/
+│       ├── _shared/cors.ts        # 共享 CORS + LLM 调用
+│       ├── interpret-clause/      # 条款解读
+│       ├── parse-client/          # 客户照片 OCR
+│       ├── parse-policy/          # 保单照片 OCR
+│       └── parse-client-policy/   # 统一拍照录入
 │
-├── .uploads/                      # 用户上传资源目录
-│   └── 保单备份_*.json            # 用户手动导出的数据备份
+├── supabase_migration_v2_auth.sql # 建表 + RLS + Realtime
+├── supabase_migration_v3_scripts.sql # 话术列迁移
+├── 客户保单导入模板.xlsx           # Excel 导入模板
 │
-└── .trae-html-share-packages/     # 共享打包目录(部署用)
+└── .nojekyll                      # GitHub Pages 兼容
 ```
 
 ### 4.2 页面路由关系
@@ -558,29 +569,31 @@ index.html (302跳转)
 
 | Key | 数据类型 | 说明 |
 |-----|---------|------|
-| `pms_users` | User[] | 全局用户列表(明文) |
-| `pms_currentUser` | String | 当前登录用户名 |
-| `policy_data_{user}` | Client[] (加密) | 用户主业务数据 |
-| `policy_data_{user}_timestamp` | ISO String | 本地数据最后更新时间 |
-| `insurance_type_lib_{user}` | InsuranceType[] (加密) | 险种库 |
-| `gh_token_{user}` | String (加密) | GitHub PAT，keyHint独立盐值 |
-| `supabase_url_{user}` / `supabase_key_{user}` | String (加密) | Supabase配置，keyHint=supabase_config |
+| `pms_users` | User[] | 旧版本地用户列表(向后兼容) |
+| `sb_session` | Object (加密) | Supabase 会话（access_token/refresh_token/expires_at） |
+| `policy_data_{user_id}` | Client[] (加密) | 用户主业务数据，按 auth.uid() 隔离 |
+| `policy_data_{user_id}_timestamp` | ISO String | 本地数据最后更新时间 |
+| `insurance_type_lib_{user_id}` | InsuranceType[] (加密) | 险种库 |
+| `gh_token_{username}` | String (加密) | GitHub PAT，keyHint独立盐值 |
 | `sales_script_data` | ScriptNode | 话术数据(独立存储，未加密) |
+| `sb_session_salt` | — | 会话加密盐值（清除登录时移除） |
 
 ### 8.3 Supabase数据库表结构
 
-参考 [supabase_migration.sql](file:///workspace/supabase_migration.sql)：
+参考 [supabase_migration_v2_auth.sql](file:///workspace/supabase_migration_v2_auth.sql)：
 
 ```sql
 CREATE TABLE user_data (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  username    TEXT UNIQUE NOT NULL,             -- 用户名(业务主键)
-  data        JSONB NOT NULL DEFAULT '[]',      -- 存 clientData[]
-  reminders   JSONB NOT NULL DEFAULT '[]',      -- 预留提醒字段
-  insurance_types JSONB NOT NULL DEFAULT '[]',  -- 存险种库
-  updated_at  TIMESTAMPTZ DEFAULT NOW()
+  id              BIGSERIAL PRIMARY KEY,
+  created_at      TIMESTAMPTZ DEFAULT now(),
+  updated_at      TIMESTAMPTZ DEFAULT now(),
+  user_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE, -- 行级隔离键
+  username        TEXT,
+  data            JSONB NOT NULL DEFAULT '[]',      -- 存 clientData[]
+  insurance_types JSONB NOT NULL DEFAULT '[]',      -- 存险种库
+  sales_scripts   JSONB DEFAULT NULL                -- 存话术数据（V3迁移新增）
 );
--- RLS策略已开启(允许所有操作，个人使用场景)
+-- RLS：FORCE ROW LEVEL SECURITY，仅允许 auth.uid() = user_id 的行操作
 -- Realtime Publication已添加user_data表
 ```
 
@@ -637,9 +650,9 @@ index.html
 baodanguanli.html
 fenhongjisuanqi.html
 sales_script.html
-manifest.json
-icon-192.png
-icon-512.png
+css/baodanguanli.css
+js/01-config.js ~ 09-ai.js
+.nojekyll
 ```
 
 ### 9.4 首次使用流程
@@ -647,25 +660,23 @@ icon-512.png
 ```
 浏览器打开 → index.html → 自动跳转到登录页
                         ↓
-            [注册Tab] → 用户名+密码(≥6位) → 注册成功
+            [注册Tab] → 显示名称+邮箱+密码(≥6位) → 注册成功
                         ↓
-            [登录Tab] → 输入账号 → 进入主系统
+            [登录Tab] → 邮箱+密码 → 进入主系统（Supabase 自动配置）
                         ↓
-            (可选) 设置页 → 配置Supabase URL+Key → 连接测试
             (可选) 设置页 → 配置GitHub Token → 开启冷备份
                         ↓
             查询页 → 添加客户 → 添加保单 → 开始使用
 ```
 
-### 9.5 初始化管理员账号
+### 9.5 用户注册
 
-系统内置特殊用户名 `admin`，登录后自动显示「管理员面板」Tab，可查看所有用户的数据量统计。
-首次使用先注册一个用户名为 `admin` 的账号即可。
+系统使用 Supabase Auth（邮箱+密码），首次使用在登录页切换到「注册」Tab，填写显示名称+邮箱+密码即可。管理员面板（首页底部）仅对特定用户显示。
 
 ### 9.6 Supabase后端初始化步骤
 
 1. 注册 supabase.com → 新建项目 → 选择区域
-2. SQL Editor → 粘贴执行 [supabase_migration.sql](file:///workspace/supabase_migration.sql) 全部内容
+2. SQL Editor → 粘贴执行 [supabase_migration_v2_auth.sql](file:///workspace/supabase_migration_v2_auth.sql) 全部内容
 3. Dashboard → Database → Replication → 启用 `user_data` 表的Realtime（WebSocket实时同步）
 4. Dashboard → Project Settings → API → 复制 `Project URL` 和 `anon public` key
 5. 进入系统设置页 → Supabase配置 → 粘贴URL和Key → 保存 → 连接测试通过即可
@@ -680,9 +691,10 @@ icon-512.png
 
 | 常量名 | 文件位置 | 默认值 | 说明 |
 |-------|---------|--------|------|
-| `SUPABASE_DEFAULTS` | baodanguanli.html L2234 | YOUR_PROJECT_ID | 首次进入时的默认Supabase配置 |
-| `GITHUB_OWNER` / `GITHUB_REPO` / `GITHUB_BRANCH` | L2930-2932 | `liwenhao-0812/liwenhao/master` | GitHub备份仓库，建议改为自有私有仓库 |
-| `ENC_SALT` | L2566 | `PMSecureVault_2024_X7k9` | XOR加密盐值，建议首次部署修改并保持一致 |
+| `SUPABASE_URL` | js/01-config.js L16 | 硬编码项目URL | Supabase项目地址（硬编码，所有用户共享） |
+| `SUPABASE_ANON_KEY` | js/01-config.js L17 | 硬编码anon key | Supabase公钥（RLS保障安全，anon key 设计为公开） |
+| `GITHUB_OWNER` / `GITHUB_REPO` / `GITHUB_BRANCH` | js/04-storage.js L94-96 | `liwenhao-0812/liwenhao/master` | GitHub备份仓库，建议改为自有私有仓库 |
+| `ENC_SALT` | js/02-utils.js L116 | `PMSecureVault_2024_X7k9` | XOR加密盐值（弱加密，建议未来升级为AES-GCM） |
 
 #### 用户级配置（系统设置页配置，无需改代码）
 
@@ -692,12 +704,9 @@ icon-512.png
 | Supabase Project URL | 云同步主存储 | Supabase Dashboard → Settings → API |
 | Supabase Anon Key | 云同步公钥 | 同上 |
 
-### 10.2 Android APK签名与更新
+### 10.2 移动端适配
 
-项目已提供 `baodan-app.apk`，如需重新打包：
-1. 使用 Capacitor / Cordova / PWABuilder 将 baodanguanli.html 包装为 Android App
-2. App内WebView需允许 `localStorage`、`third-party cookies`、跨域请求
-3. 配置 `WebViewClient` + `WebChromeClient` 启用 file input、alert等原生交互
+系统通过响应式 CSS 直接适配手机浏览器，无需打包 APK。如未来需要原生 App，可使用 Capacitor / PWABuilder 重新打包。
 
 ---
 
@@ -726,10 +735,9 @@ A: 同时修改三处：① saveClient()的表单收集和clientObj构建 ② ed
 |---------|-------------|
 | **保费到期提醒推送** | 接入企业微信/钉钉/飞书Webhook，在renderDashboard中计算30天内缴费到期 → 调用webhook发送 |
 | **多租户团队版** | 改造Supabase RLS策略：增加team_id字段 → Realtime filter改为team级别 → 新增成员邀请模块 |
-| **保单OCR录入** | 接入百度/腾讯OCR API → 上传保单照片 → 解析后自动填充addPolicy表单 |
 | **产品对比矩阵** | 新建compare.html，根据insuranceTypeLib关联的产品参数（需在险种库扩展字段：预定利率、保障范围、公司评级）生成对比表 |
-| **客户画像标签** | 在Client对象增加`tags: []`字段 → 查询页增加标签筛选 → 首页仪表盘增加标签云 |
-| **数据备份加密** | 当前secureSetItem为XOR，可升级为AES-GCM（引入crypto-js库或Web Crypto API） |
+| **客户画像标签筛选** | 在查询页增加画像标签维度筛选 → 首页仪表盘增加标签云 |
+| **加密存储升级** | 当前secureSetItem为XOR弱加密，可升级为AES-GCM（引入Web Crypto API，无需第三方库） |
 
 ### 11.3 源码定位速查表
 

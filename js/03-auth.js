@@ -136,7 +136,7 @@ async function handleRegister(e) {
       return;
     }
     /* 需邮箱确认 */
-    errEl.innerHTML = '<span style="color:#059669;">注册成功！</span> 请到 <strong>' + email + '</strong> 的收件箱点击验证链接，验证后即可登录。';
+    errEl.innerHTML = '<span style="color:#059669;">注册成功！</span> 请到 <strong>' + htmlEscape(email) + '</strong> 的收件箱点击验证链接，验证后即可登录。';
     showToast('注册成功，请验证邮箱后登录', 'success');
     /* 3秒后自动切到登录 Tab */
     setTimeout(function() {
