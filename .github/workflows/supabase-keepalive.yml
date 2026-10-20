@@ -63,7 +63,9 @@ jobs:
       # ---------- ③ 心跳提交到独立分支 ----------
       # 目的：防止 GitHub 在仓库 60 天无提交后自动停用 scheduled workflow
       # 做法：孤儿分支 + force push 到 keepalive 分支，不污染 main、不触发 Pages 重建
+      # 注：若仓库 Actions 权限为只读，此步会失败，但不影响探活效果（核心步骤 ①② 已完成）
       - name: Heartbeat commit (keepalive branch)
+        continue-on-error: true
         run: |
           set -e
           git config user.name "github-actions[bot]"
