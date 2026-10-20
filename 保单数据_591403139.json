@@ -1178,7 +1178,18 @@
       "workAddress": "",
       "workCompany": "",
       "familyMembers": [],
-      "contactHistory": []
+      "contactHistory": [],
+      "scriptTracking": {
+        "currentNodeId": "n_1786687488874",
+        "lastUsedAt": "2026-10-20T01:24:47.526Z",
+        "pathHistory": [
+          {
+            "id": "n_1786687488874",
+            "title": "开场白",
+            "at": "2026-10-20T01:24:47.524Z"
+          }
+        ]
+      }
     },
     {
       "name": "陈文泓",
@@ -4312,13 +4323,13 @@
     },
     {
       "name": "黄建伟",
-      "idCard": "440226196209223314",
       "phone": "13727006737",
+      "idCard": "440226196209223314",
       "address": "广东省珠海市香洲区广东珠海香洲殿前北路138号雄怡花园3栋505",
-      "workCompany": "",
-      "workAddress": "",
+      "profile": null,
       "policies": [
         {
+          "_idx": 0,
           "remark": "投保单号：440101495661；保险期间：25年；被保险人客户号：2003442006000004764",
           "status": "有效",
           "insured": "黄建伟",
@@ -4355,22 +4366,22 @@
             "nextDate": "",
             "startDate": ""
           },
-          "parentPolicyCode": "",
-          "_idx": 0
+          "parentPolicyCode": ""
         }
       ],
+      "workAddress": "",
+      "workCompany": "",
+      "doNotContact": false,
       "familyMembers": [
         {
           "name": "黄雪梅",
-          "relationship": "受益人",
-          "idCard": "",
+          "note": "",
           "phone": "",
-          "note": ""
+          "idCard": "",
+          "relationship": "受益人"
         }
       ],
-      "contactHistory": [],
-      "profile": null,
-      "doNotContact": false
+      "contactHistory": []
     }
   ],
   "insuranceTypes": [
@@ -5063,7 +5074,7 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1789959994179",
+  "_timestamp": "1792459495049",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
