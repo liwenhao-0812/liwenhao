@@ -108,7 +108,7 @@
 |-----|------|---------|
 | **Supabase (PostgreSQL)** | 主云同步存储 + Realtime实时订阅 | 可通过设置页配置任意项目 |
 | **GitHub Contents API** | 跨设备数据恢复 + 冷备份 | 可配置任意Token |
-| **PWA Service Worker** | 已移除（PWA 功能已废弃，纯 GitHub Pages 部署） | — |
+| **GitHub Actions** | 定时探活保活（防止 Supabase 免费层项目被暂停） | 见 10.3 节 |
 
 ### 3.4 移动端
 
@@ -148,6 +148,10 @@
 │       ├── parse-client/          # 客户照片 OCR
 │       ├── parse-policy/          # 保单照片 OCR
 │       └── parse-client-policy/   # 统一拍照录入
+│
+├── .github/
+│   └── workflows/
+│       └── supabase-keepalive.yml # Supabase 项目保活（每2天探活，详见 10.3）
 │
 ├── supabase_migration_v2_auth.sql # 建表 + RLS + Realtime
 ├── supabase_migration_v3_scripts.sql # 话术列迁移
@@ -707,6 +711,49 @@ js/01-config.js ~ 09-ai.js
 ### 10.2 移动端适配
 
 系统通过响应式 CSS 直接适配手机浏览器，无需打包 APK。如未来需要原生 App，可使用 Capacitor / PWABuilder 重新打包。
+
+### 10.3 运维：Supabase 项目保活
+
+#### 背景
+
+Supabase 免费层项目若**连续 7 天无活动**会被自动暂停（暂停后需登录控制台手动 Restore，较为麻烦）。
+
+**官方定义的活动**包括：REST/Auth/Storage API 请求、数据库查询、用户登录。
+
+#### 实现
+
+[.github/workflows/supabase-keepalive.yml](file:///workspace/.github/workflows/supabase-keepalive.yml) —— GitHub Actions 定时工作流，默认每 **2 天**（UTC 03:17）执行一次：
+
+| 步骤 | 动作 | 作用 |
+|-----|------|------|
+| ① | `GET /rest/v1/user_data?select=id&limit=1` | 触发 PostgREST → PostgreSQL **真实数据库查询** |
+| ② | `GET /auth/v1/health` | 触发 **Auth API 活动** |
+| ③ | force push 心跳到独立 `keepalive` 分支 | 防止 GitHub 在仓库 60 天无提交后停用 scheduled workflow |
+
+#### 关键特性
+
+| 特性 | 说明 |
+|-----|------|
+| **存储零占用** | 仅只读 `SELECT`，不写入、不新增行，数据库空间零增长 |
+| **双端点覆盖** | REST（数据库活动）+ Auth（API 活动），覆盖两种活动判定口径 |
+| **零配置可用** | 凭据采用「仓库 Secrets 优先 → 内联默认值兜底」双模式（内联 anon key 与 [js/01-config.js](file:///workspace/js/01-config.js#L16-L17) 一致且公开可访问，无额外风险） |
+| **不污染 main** | 心跳提交走独立 `keepalive` 分支（每次 force 覆盖，不累积历史），且不触发 Pages 重建 |
+| **失败余量** | 7 天窗口内探活 3 次，单次失败不影响；心跳步骤设 `continue-on-error` |
+| **可选加固** | 可叠加第三方 cron（如 cron-job.org 每 3 天 ping 同一 URL）实现跨平台双保险 |
+
+#### 验证方式
+
+打开 https://github.com/liwenhao-0812/liwenhao/actions/workflows/supabase-keepalive.yml → 点 **Run workflow**，三个步骤均 ✅ 即为链路完全打通。
+
+#### 调整频率
+
+修改 workflow 的 `cron` 表达式（默认 `'17 3 */2 * *'` = 每 2 天）。**建议不低于每 3 天**，以保留失败重试余量。
+
+#### 注意事项
+
+- GitHub 免费层 scheduled workflow 在高峰期可能**延迟或跳过**，每 2 天频率已留足缓冲
+- 若项目**已被暂停**，本机制只能维持"不再暂停"，**无法自动 Restore**（需人工在控制台恢复）
+- 需在仓库 Settings → Actions → General 确认 Workflow permissions 为 **Read and write**，心跳提交才能生效；若为只读，仅心跳失败，不影响探活效果
 
 ---
 
