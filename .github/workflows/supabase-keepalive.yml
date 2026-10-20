@@ -1,0 +1,105 @@
+# ========================================================================
+# Supabase 项目保活
+# 目的：防止免费层项目因连续 7 天无活动被自动暂停
+# 原理：定期发起 HTTP 请求，触发 REST(数据库查询) 与 Auth API 活动
+# 存储影响：仅只读 SELECT，零写入、零存储增长
+# ========================================================================
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    # 每 2 天 UTC 03:17 执行（避开整点高峰，7 天窗口内可探活 3 次）
+    - cron: '17 3 */2 * *'
+  # 支持手动触发（用于补探活 / 首次验证配置是否正确）
+  workflow_dispatch:
+
+# 心跳提交需要写权限
+permissions:
+  contents: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ---------- 前置检查：确保 Secrets 已配置 ----------
+      - name: Verify secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ]; then
+            echo "::error::缺少 Secret: SUPABASE_URL —— 请在仓库 Settings → Secrets and variables → Actions 中添加"
+            exit 1
+          fi
+          if [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::缺少 Secret: SUPABASE_ANON_KEY —— 请在仓库 Settings → Secrets and variables → Actions 中添加"
+            exit 1
+          fi
+          echo "Secrets 检查通过"
+
+      # ---------- ① 触发真实数据库查询（PostgREST → PostgreSQL） ----------
+      - name: Ping Supabase REST (database query)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          URL="${SUPABASE_URL}/rest/v1/user_data?select=id&limit=1"
+          CODE=$(curl -s -o /dev/null -w '%{http_code}' -m 20 \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            "$URL")
+          echo "REST 响应码: $CODE"
+          # 200/206 表示查询已成功执行（即使 RLS 让结果为 []，SQL 也已在库内执行）
+          if [ "$CODE" != "200" ] && [ "$CODE" != "206" ]; then
+            echo "::warning::REST 探活返回 $CODE（可能项目已暂停或网络异常）"
+            exit 1
+          fi
+
+      # ---------- ② 触发 Auth API 活动（轻量、必定计为项目活动） ----------
+      - name: Ping Supabase Auth (auth api)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          URL="${SUPABASE_URL}/auth/v1/health"
+          CODE=$(curl -s -o /dev/null -w '%{http_code}' -m 20 \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            "$URL")
+          echo "Auth 响应码: $CODE"
+          if [ "$CODE" != "200" ]; then
+            echo "::warning::Auth 探活返回 $CODE"
+            exit 1
+          fi
+
+      # ---------- ③ 心跳提交到独立分支 ----------
+      # 目的：防止 GitHub 在仓库 60 天无提交后自动停用 scheduled workflow
+      # 做法：孤儿分支 + force push 到 keepalive 分支，不污染 main、不触发 Pages 重建
+      - name: Heartbeat commit (keepalive branch)
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # 创建唯一命名的孤儿分支，避免与本地残留分支冲突
+          BR="keepalive-heartbeat-${GITHUB_RUN_ID}"
+          git checkout --orphan "$BR"
+          git rm -rf . --cached --quiet 2>/dev/null || true
+
+          echo "last keepalive: $(date -u +%Y-%m-%dT%H:%M:%SZ)" > last-ping.txt
+          git add -f last-ping.txt
+          git commit -m "keepalive heartbeat $(date -u +%Y-%m-%d)" --quiet
+
+          # force push 到远端 keepalive 分支（每次覆盖，不累积历史）
+          git push -f origin "HEAD:keepalive"
+          echo "心跳已提交到 keepalive 分支"
+
+      - name: Summary
+        run: |
+          echo "### Supabase 保活完成" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- REST 探活：已触发数据库查询" >> $GITHUB_STEP_SUMMARY
+          echo "- Auth 探活：已触发 Auth API 活动" >> $GITHUB_STEP_SUMMARY
+          echo "- 执行时间：$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
