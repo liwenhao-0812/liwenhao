@@ -3,6 +3,10 @@
 # 目的：防止免费层项目因连续 7 天无活动被自动暂停
 # 原理：定期发起 HTTP 请求，触发 REST(数据库查询) 与 Auth API 活动
 # 存储影响：仅只读 SELECT，零写入、零存储增长
+#
+# 凭据策略：优先读取仓库 Secrets（若已配置），否则回退到内联默认值。
+#   内联的 anon key 与 js/01-config.js 中的硬编码一致，且 GitHub Pages 公开可访问，
+#   因此不产生额外安全风险。若后续配置了 Secrets，将自动优先使用。
 # ========================================================================
 name: Supabase Keep-Alive
 
@@ -20,31 +24,16 @@ permissions:
 jobs:
   keepalive:
     runs-on: ubuntu-latest
+    env:
+      # Secrets 优先，未配置时回退内联默认值
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mmvjtllkichjqnxebflw.supabase.co' }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tdmp0bGxraWNoanFueGViZmx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwODQ2NzMsImV4cCI6MjEwMTY2MDY3M30.BTMK7Hy-KGAmGpegAecBbafdTS2JCwg857fmNBtvqpI' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ---------- 前置检查：确保 Secrets 已配置 ----------
-      - name: Verify secrets
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-        run: |
-          if [ -z "$SUPABASE_URL" ]; then
-            echo "::error::缺少 Secret: SUPABASE_URL —— 请在仓库 Settings → Secrets and variables → Actions 中添加"
-            exit 1
-          fi
-          if [ -z "$SUPABASE_ANON_KEY" ]; then
-            echo "::error::缺少 Secret: SUPABASE_ANON_KEY —— 请在仓库 Settings → Secrets and variables → Actions 中添加"
-            exit 1
-          fi
-          echo "Secrets 检查通过"
-
       # ---------- ① 触发真实数据库查询（PostgREST → PostgreSQL） ----------
       - name: Ping Supabase REST (database query)
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           URL="${SUPABASE_URL}/rest/v1/user_data?select=id&limit=1"
           CODE=$(curl -s -o /dev/null -w '%{http_code}' -m 20 \
@@ -60,9 +49,6 @@ jobs:
 
       # ---------- ② 触发 Auth API 活动（轻量、必定计为项目活动） ----------
       - name: Ping Supabase Auth (auth api)
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           URL="${SUPABASE_URL}/auth/v1/health"
           CODE=$(curl -s -o /dev/null -w '%{http_code}' -m 20 \
