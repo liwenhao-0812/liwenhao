@@ -4453,7 +4453,7 @@
           "parentPolicyCode": "",
           "status": "有效",
           "hasDividend": true,
-          "effectiveDate": "2002-11-09",
+          "effectiveDate": "20021109",
           "maturityDate": "",
           "paymentMethod": "年缴",
           "annualPremium": "1600",
@@ -4474,15 +4474,16 @@
           ],
           "remark": "投保单号：440101121692；保险期间：999；客户号：投保人2001442009010109973，被保险人2002442001000334016",
           "survivalBenefit": {
-            "type": "none",
-            "amount": "",
+            "type": "triennial",
+            "amount": "1000",
             "startDate": "",
-            "lastDate": "",
-            "nextDate": "",
+            "lastDate": "20291109",
+            "nextDate": "20291109",
             "note": ""
           },
           "extraFields": {},
-          "serviceRecords": []
+          "serviceRecords": [],
+          "_idx": 0
         }
       ],
       "familyMembers": [
@@ -5195,7 +5196,7 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1793410371935",
+  "_timestamp": "1793410503720",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
