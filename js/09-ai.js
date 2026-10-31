@@ -1149,15 +1149,19 @@ function openUnifiedOcrModal() {
 
       <div class="ocr-privacy-note">
         <strong>🔒 隐私保护：</strong>照片在浏览器本地 OCR 提取文字，<strong>图片不会上传</strong>。
-        <br><strong>💡 使用方法：</strong>同时上传投保人页、保单详情页、被保人页、受益人页等多张截图，AI 会自动识别客户信息+所有保单信息，列出结果供您确认后一键保存。
+        <br><strong>💡 多图合并识别：</strong>可分别上传/拍照「投保人页、保单详情页、被保人页、受益人页」等多张照片，全部添加后点「开始识别」，AI 会合并所有页面识别客户+保单信息。
       </div>
 
       <div id="unifiedDropZone" class="ocr-dropzone">
         <div class="ocr-dropzone-icon">📷</div>
-        <div class="ocr-dropzone-title">点击上传保单截图</div>
-        <div class="ocr-dropzone-desc">支持多张 APP 截图 · JPG / PNG · 可一次上传多个保单的截图</div>
+        <div class="ocr-dropzone-title">点击上传/拍照保单截图</div>
+        <div class="ocr-dropzone-desc">可多次添加 · JPG / PNG · 可包含多个保单</div>
         <input type="file" id="unifiedFileInput" accept="image/jpeg,image/png,image/jpg" capture="environment" multiple style="display:none;">
       </div>
+
+      <div id="unifiedQueue" style="margin-top:12px;"></div>
+
+      <button id="unifiedStartBtn" type="button" style="display:none;margin-top:14px;width:100%;padding:12px;background:#6366f1;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;">开始识别（<span id="unifiedQueueCount">0</span>张）</button>
 
       <div id="unifiedFileList" style="display:none;margin-top:12px;"></div>
 
@@ -1184,19 +1188,74 @@ function openUnifiedOcrModal() {
 
   document.body.appendChild(modal);
 
+  /* ====== 累积队列：拍照/选图只加入队列，点「开始识别」才统一处理 ====== */
+  var pendingFiles = [];
+
+  function renderQueue() {
+    var q = document.getElementById('unifiedQueue');
+    var countEl = document.getElementById('unifiedQueueCount');
+    var startBtn = document.getElementById('unifiedStartBtn');
+    countEl.textContent = pendingFiles.length;
+    if (pendingFiles.length === 0) {
+      q.innerHTML = '';
+      startBtn.style.display = 'none';
+      return;
+    }
+    startBtn.style.display = 'block';
+    var html = '<div style="font-size:12px;color:#64748b;margin-bottom:6px;">已选 ' + pendingFiles.length + ' 张（建议顺序：投保人 → 保单详情 → 被保人/受益人）</div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
+    pendingFiles.forEach(function(f, idx) {
+      var url = URL.createObjectURL(f);
+      html += '<div style="position:relative;width:84px;height:84px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;background:#f8fafc;">'
+        + '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;" alt="照片' + (idx + 1) + '">'
+        + '<button type="button" data-del="' + idx + '" style="position:absolute;top:3px;right:3px;width:22px;height:22px;background:rgba(0,0,0,0.65);color:#fff;border:none;border-radius:50%;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;">&times;</button>'
+        + '<div style="position:absolute;left:0;bottom:0;width:100%;background:rgba(0,0,0,0.55);color:#fff;font-size:11px;text-align:center;padding:1px 0;">第' + (idx + 1) + '张</div>'
+        + '</div>';
+    });
+    html += '</div>';
+    q.innerHTML = html;
+  }
+
+  function addFiles(files) {
+    for (var i = 0; i < files.length; i++) {
+      pendingFiles.push(files[i]);
+    }
+    renderQueue();
+  }
+
   var fileInput = modal.querySelector('#unifiedFileInput');
   var dropZone = modal.querySelector('#unifiedDropZone');
   dropZone.addEventListener('click', function() { fileInput.click(); });
   fileInput.addEventListener('change', function() {
-    if (fileInput.files.length > 0) handleUnifiedOcrFiles(fileInput.files);
+    if (fileInput.files.length > 0) {
+      addFiles(fileInput.files);
+      fileInput.value = '';   /* 清空，允许重复选择/拍照 */
+    }
   });
   dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.style.borderColor = '#6366f1'; });
   dropZone.addEventListener('dragleave', function() { dropZone.style.borderColor = '#cbd5e1'; });
   dropZone.addEventListener('drop', function(e) {
     e.preventDefault();
     dropZone.style.borderColor = '#cbd5e1';
-    if (e.dataTransfer.files.length > 0) handleUnifiedOcrFiles(e.dataTransfer.files);
+    if (e.dataTransfer.files.length > 0) addFiles(e.dataTransfer.files);
   });
+
+  /* 删除按钮（事件委托） */
+  document.getElementById('unifiedQueue').addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-del]');
+    if (btn) {
+      var idx = parseInt(btn.getAttribute('data-del'), 10);
+      pendingFiles.splice(idx, 1);
+      renderQueue();
+    }
+  });
+
+  /* 开始识别：把队列里所有照片一起合并识别 */
+  document.getElementById('unifiedStartBtn').addEventListener('click', function() {
+    if (pendingFiles.length === 0) return;
+    handleUnifiedOcrFiles(pendingFiles);
+  });
+
   modal.addEventListener('click', function(e) {
     if (e.target === modal) modal.remove();
   });
@@ -1211,6 +1270,12 @@ async function handleUnifiedOcrFiles(fileList) {
   var footerDiv = document.getElementById('unifiedFooter');
   var rawTextDiv = document.getElementById('unifiedRawText');
   var fileListDiv = document.getElementById('unifiedFileList');
+
+  /* 隐藏队列与开始按钮，显示处理进度，避免重复点击 */
+  var queueDiv = document.getElementById('unifiedQueue');
+  var startBtn = document.getElementById('unifiedStartBtn');
+  if (queueDiv) queueDiv.style.display = 'none';
+  if (startBtn) startBtn.style.display = 'none';
 
   progressDiv.style.display = 'block';
   resultDiv.style.display = 'none';
