@@ -4500,6 +4500,69 @@
       "contactHistory": [],
       "profile": null,
       "doNotContact": false
+    },
+    {
+      "name": "钟析芳",
+      "idCard": "441802196807240221",
+      "phone": "13376673623",
+      "address": "广东省清远市清城区丽景大厦三座803",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [
+        {
+          "policyCode": "2009442001S50115049066",
+          "insuranceName": "国寿千禧理财两全保险(分红型)",
+          "codeType": "S50",
+          "mainType": "主险",
+          "parentPolicyCode": "",
+          "status": "有效",
+          "hasDividend": true,
+          "effectiveDate": "2009-10-23",
+          "maturityDate": "",
+          "paymentMethod": "年缴",
+          "annualPremium": "2620",
+          "sumInsured": "20000",
+          "paymentTerm": "10",
+          "paymentBank": "中国农业银行",
+          "paymentBankCard": "4504",
+          "insured": "黄嘉蕾",
+          "insuredRelation": "女儿",
+          "insuredId": "44180220031125002X",
+          "insuredPhone": "13376673623",
+          "insuredAddress": "广东省清远市清城区松岗路6号9幢401号",
+          "beneficiaries": [
+            {
+              "name": "BHEXN",
+              "quota": ""
+            }
+          ],
+          "remark": "投保单号：1110440100129843；保险期间：999；客户号：2001442009010109973",
+          "survivalBenefit": {
+            "type": "none",
+            "amount": "",
+            "startDate": "",
+            "lastDate": "",
+            "nextDate": "",
+            "note": ""
+          },
+          "extraFields": {},
+          "serviceRecords": []
+        }
+      ],
+      "familyMembers": [
+        {
+          "name": "黄嘉蕾",
+          "relationship": "女儿",
+          "idCard": "44180220031125002X",
+          "phone": "13376673623",
+          "gender": "女",
+          "birthday": "2003-11-25",
+          "note": "被保险人"
+        }
+      ],
+      "contactHistory": [],
+      "profile": null,
+      "doNotContact": false
     }
   ],
   "insuranceTypes": [
@@ -5196,7 +5259,7 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1793410503720",
+  "_timestamp": "1793410638090",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
