@@ -4439,129 +4439,67 @@
     },
     {
       "name": "钟碧芳",
-      "idCard": "441802196807240221",
       "phone": "13376673623",
+      "idCard": "441802196807240221",
       "address": "广东省清远市清城区丽景大厦三座803",
-      "workCompany": "",
-      "workAddress": "",
+      "profile": null,
       "policies": [
         {
-          "policyCode": "2002442001S50000024353",
-          "insuranceName": "国寿千禧理财两全保险(分红型)",
+          "_idx": 0,
+          "remark": "投保单号：440101121692；保险期间：999；客户号：投保人2001442009010109973，被保险人2002442001000334016",
+          "status": "有效",
+          "insured": "黄嘉仪",
           "codeType": "S50",
           "mainType": "主险",
-          "parentPolicyCode": "",
-          "status": "有效",
-          "hasDividend": true,
-          "effectiveDate": "20021109",
-          "maturityDate": "",
-          "paymentMethod": "年缴",
-          "annualPremium": "1600",
-          "sumInsured": "20000",
-          "paymentTerm": "20",
-          "paymentBank": "中国农业银行",
-          "paymentBankCard": "4504",
-          "insured": "黄嘉仪",
-          "insuredRelation": "女儿",
           "insuredId": "441802200108280020",
+          "policyCode": "2002442001S50000024353",
+          "sumInsured": "20000",
+          "extraFields": {},
+          "hasDividend": true,
+          "paymentBank": "中国农业银行",
+          "paymentTerm": "20",
           "insuredPhone": "13376673623",
-          "insuredAddress": "清远市小市嘉语苑D座402",
+          "maturityDate": "",
+          "annualPremium": "1600",
           "beneficiaries": [
             {
               "name": "钟碧芳",
               "quota": "100%"
             }
           ],
-          "remark": "投保单号：440101121692；保险期间：999；客户号：投保人2001442009010109973，被保险人2002442001000334016",
+          "effectiveDate": "20021109",
+          "insuranceName": "国寿千禧理财两全保险(分红型)",
+          "paymentMethod": "年缴",
+          "insuredAddress": "清远市小市嘉语苑D座402",
+          "serviceRecords": [],
+          "insuredRelation": "女儿",
+          "paymentBankCard": "4504",
           "survivalBenefit": {
+            "note": "",
             "type": "triennial",
             "amount": "1000",
-            "startDate": "",
             "lastDate": "20291109",
             "nextDate": "20291109",
-            "note": ""
+            "startDate": ""
           },
-          "extraFields": {},
-          "serviceRecords": [],
-          "_idx": 0
+          "parentPolicyCode": ""
         }
       ],
+      "workAddress": "",
+      "workCompany": "",
+      "doNotContact": false,
       "familyMembers": [
         {
           "name": "黄嘉仪",
-          "relationship": "女儿",
-          "idCard": "441802200108280020",
+          "note": "被保险人",
           "phone": "",
           "gender": "女",
+          "idCard": "441802200108280020",
           "birthday": "2001-08-28",
-          "note": "被保险人"
+          "relationship": "女儿"
         }
       ],
-      "contactHistory": [],
-      "profile": null,
-      "doNotContact": false
-    },
-    {
-      "name": "钟碧芳",
-      "idCard": "441802196807240221",
-      "phone": "13376673623",
-      "address": "广东省清远市清城区丽景大厦三座803",
-      "workCompany": "",
-      "workAddress": "",
-      "policies": [
-        {
-          "policyCode": "2009442001S50115049066",
-          "insuranceName": "国寿千禧理财两全保险(分红型)",
-          "codeType": "S50",
-          "mainType": "主险",
-          "parentPolicyCode": "",
-          "status": "有效",
-          "hasDividend": true,
-          "effectiveDate": "2009-10-23",
-          "maturityDate": "",
-          "paymentMethod": "年缴",
-          "annualPremium": "2620",
-          "sumInsured": "20000",
-          "paymentTerm": "10",
-          "paymentBank": "中国农业银行",
-          "paymentBankCard": "4504",
-          "insured": "黄嘉蕾",
-          "insuredRelation": "女儿",
-          "insuredId": "44180220031125002X",
-          "insuredPhone": "13376673623",
-          "insuredAddress": "广东省清远市清城区松岗路6号9幢401号",
-          "beneficiaries": [
-            {
-              "name": "BHEXN",
-              "quota": ""
-            }
-          ],
-          "remark": "投保单号：1110440100129843；保险期间：999；客户号：2001442009010109973",
-          "survivalBenefit": {
-            "type": "none",
-            "amount": "",
-            "startDate": "",
-            "lastDate": "",
-            "nextDate": "",
-            "note": ""
-          },
-          "extraFields": {},
-          "serviceRecords": [],
-          "_idx": 0
-        }
-      ],
-      "familyMembers": [
-        {
-          "name": "黄嘉蕾",
-          "relationship": "女儿",
-          "idCard": "44180220031125002X",
-          "phone": "13376673623",
-          "note": "被保险人"
-        }
-      ],
-      "contactHistory": [],
-      "profile": null,
-      "doNotContact": false
+      "contactHistory": []
     }
   ],
   "insuranceTypes": [
@@ -5163,10 +5101,6 @@
       "insuranceName": "国寿福世两全保险",
       "codeType": "S56",
       "traits": null
-    },
-    {
-      "insuranceName": "国寿千禧理财两全保险(分红型)",
-      "codeType": "S50"
     }
   ],
   "salesScripts": {
@@ -5258,7 +5192,7 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1793410803177",
+  "_timestamp": "1793410884844",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
