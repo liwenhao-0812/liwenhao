@@ -75,22 +75,46 @@ async function extractPdfText(file) {
 }
 
 /* ======== 图片 OCR 提取（浏览器本地，图片不离开浏览器）======== */
+var _ocrWorker = null;          /* Tesseract worker 单例：加载一次语言包，多张复用，提升速度与稳定性 */
+var _ocrWorkerLoading = null;
+
+/* 获取/创建复用的 OCR worker（避免每张图都重新加载几十MB的中文语言包） */
+async function getOcrWorker() {
+  if (_ocrWorker) return _ocrWorker;
+  if (_ocrWorkerLoading) return _ocrWorkerLoading;
+  _ocrWorkerLoading = (async function() {
+    await loadTesseract();
+    try {
+      var w = await Tesseract.createWorker('chi_sim+eng', 1, {});
+      _ocrWorker = w;
+      return w;
+    } finally {
+      _ocrWorkerLoading = null;
+    }
+  })();
+  return _ocrWorkerLoading;
+}
+
 async function extractImageOcr(file, onProgress) {
-  await loadTesseract();
   var imageData = await fileToImageData(file);
 
-  var result = await Tesseract.recognize(
-    imageData,
-    'chi_sim+eng',
-    {
+  /* 优先用复用 worker（快、稳定） */
+  try {
+    var worker = await getOcrWorker();
+    var res = await worker.recognize(imageData);
+    return res.data.text || '';
+  } catch (e) {
+    /* 兜底：创建临时 worker 识别（Tesseract.recognize 会自动创建/销毁） */
+    await loadTesseract();
+    var result = await Tesseract.recognize(imageData, 'chi_sim+eng', {
       logger: function(m) {
         if (m.status === 'recognizing text' && onProgress) {
           onProgress(Math.round(m.progress * 100));
         }
       }
-    }
-  );
-  return result.data.text || '';
+    });
+    return result.data.text || '';
+  }
 }
 
 /* 图片预处理：转灰度 + 对比度增强，提升 OCR 精度 */
@@ -430,15 +454,19 @@ function openPolicyOcrModal(editIdx) {
       <div class="ocr-privacy-note">
         <strong>🔒 隐私保护：</strong>照片在浏览器本地 OCR 提取文字，<strong>图片不会上传</strong>。
         提取的文字经大模型解析为结构化字段，识别结果会预填到表单中供您校对。
-        <br><strong>💡 支持多图：</strong>可同时上传投保人页、保单详情页、被保人页等多张截图，AI 会合并识别。
+        <br><strong>💡 多图合并识别：</strong>可分别上传/拍照「保单详情页、投保人页、被保人页」等多张照片，全部添加后点「开始识别」，AI 会合并所有页面识别。
       </div>
 
       <div id="ocrDropZone" class="ocr-dropzone">
         <div class="ocr-dropzone-icon">📷</div>
-        <div class="ocr-dropzone-title">点击上传保单照片</div>
-        <div class="ocr-dropzone-desc">支持多张 APP 截图 · JPG / PNG · 最大 20MB/张</div>
+        <div class="ocr-dropzone-title">点击上传/拍照保单照片</div>
+        <div class="ocr-dropzone-desc">可多次添加 · JPG / PNG · 最大 20MB/张</div>
         <input type="file" id="ocrFileInput" accept="image/jpeg,image/png,image/jpg" capture="environment" multiple style="display:none;">
       </div>
+
+      <div id="ocrQueue" style="margin-top:12px;"></div>
+
+      <button id="ocrStartBtn" type="button" style="display:none;margin-top:14px;width:100%;padding:12px;background:#3b82f6;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;">开始识别（<span id="ocrQueueCount">0</span>张）</button>
 
       <div id="ocrFileList" style="display:none;margin-top:12px;"></div>
 
@@ -465,12 +493,49 @@ function openPolicyOcrModal(editIdx) {
 
   document.body.appendChild(modal);
 
+  /* ====== 累积队列：拍照/选图只加入队列，点「开始识别」才统一处理 ======
+     解决移动端 <input capture multiple> 一次只能拍一张、多次拍照互相覆盖的问题 */
+  var pendingFiles = [];
+
+  function renderQueue() {
+    var q = document.getElementById('ocrQueue');
+    var countEl = document.getElementById('ocrQueueCount');
+    var startBtn = document.getElementById('ocrStartBtn');
+    countEl.textContent = pendingFiles.length;
+    if (pendingFiles.length === 0) {
+      q.innerHTML = '';
+      startBtn.style.display = 'none';
+      return;
+    }
+    startBtn.style.display = 'block';
+    var html = '<div style="font-size:12px;color:#64748b;margin-bottom:6px;">已选 ' + pendingFiles.length + ' 张（建议顺序：保单详情 → 投保人 → 被保人）</div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
+    pendingFiles.forEach(function(f, idx) {
+      var url = URL.createObjectURL(f);
+      html += '<div style="position:relative;width:84px;height:84px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;background:#f8fafc;">'
+        + '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;" alt="保单照片' + (idx + 1) + '">'
+        + '<button type="button" data-del="' + idx + '" style="position:absolute;top:3px;right:3px;width:22px;height:22px;background:rgba(0,0,0,0.65);color:#fff;border:none;border-radius:50%;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;">&times;</button>'
+        + '<div style="position:absolute;left:0;bottom:0;width:100%;background:rgba(0,0,0,0.55);color:#fff;font-size:11px;text-align:center;padding:1px 0;">第' + (idx + 1) + '张</div>'
+        + '</div>';
+    });
+    html += '</div>';
+    q.innerHTML = html;
+  }
+
+  function addFiles(files) {
+    for (var i = 0; i < files.length; i++) {
+      pendingFiles.push(files[i]);
+    }
+    renderQueue();
+  }
+
   var fileInput = modal.querySelector('#ocrFileInput');
   var dropZone = modal.querySelector('#ocrDropZone');
   dropZone.addEventListener('click', function() { fileInput.click(); });
   fileInput.addEventListener('change', function() {
     if (fileInput.files.length > 0) {
-      handlePolicyOcrFiles(fileInput.files, isEdit ? editIdx : -1);
+      addFiles(fileInput.files);
+      fileInput.value = '';   /* 清空，允许重复选择/拍照 */
     }
   });
   dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.style.borderColor = '#3b82f6'; });
@@ -478,9 +543,23 @@ function openPolicyOcrModal(editIdx) {
   dropZone.addEventListener('drop', function(e) {
     e.preventDefault();
     dropZone.style.borderColor = '#cbd5e1';
-    if (e.dataTransfer.files.length > 0) {
-      handlePolicyOcrFiles(e.dataTransfer.files, isEdit ? editIdx : -1);
+    if (e.dataTransfer.files.length > 0) addFiles(e.dataTransfer.files);
+  });
+
+  /* 删除按钮（事件委托） */
+  document.getElementById('ocrQueue').addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-del]');
+    if (btn) {
+      var idx = parseInt(btn.getAttribute('data-del'), 10);
+      pendingFiles.splice(idx, 1);
+      renderQueue();
     }
+  });
+
+  /* 开始识别：把队列里所有照片一起合并识别 */
+  document.getElementById('ocrStartBtn').addEventListener('click', function() {
+    if (pendingFiles.length === 0) return;
+    handlePolicyOcrFiles(pendingFiles, isEdit ? editIdx : -1);
   });
 
   /* 点击遮罩关闭 */
@@ -498,6 +577,12 @@ async function handlePolicyOcrFiles(fileList, editIdx) {
   var applyBtn = document.getElementById('ocrApplyBtn');
   var rawTextDiv = document.getElementById('ocrRawText');
   var fileListDiv = document.getElementById('ocrFileList');
+
+  /* 隐藏队列与开始按钮，显示处理进度，避免重复点击 */
+  var queueDiv = document.getElementById('ocrQueue');
+  var startBtn = document.getElementById('ocrStartBtn');
+  if (queueDiv) queueDiv.style.display = 'none';
+  if (startBtn) startBtn.style.display = 'none';
 
   progressDiv.style.display = 'block';
   resultDiv.style.display = 'none';
