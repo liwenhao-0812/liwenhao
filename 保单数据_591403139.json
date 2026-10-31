@@ -1180,15 +1180,15 @@
       "familyMembers": [],
       "contactHistory": [],
       "scriptTracking": {
-        "currentNodeId": "n_1786687488874",
         "lastUsedAt": "2026-10-20T01:24:47.526Z",
         "pathHistory": [
           {
+            "at": "2026-10-20T01:24:47.524Z",
             "id": "n_1786687488874",
-            "title": "开场白",
-            "at": "2026-10-20T01:24:47.524Z"
+            "title": "开场白"
           }
-        ]
+        ],
+        "currentNodeId": "n_1786687488874"
       }
     },
     {
@@ -4382,6 +4382,19 @@
         }
       ],
       "contactHistory": []
+    },
+    {
+      "name": "刘间凤",
+      "idCard": "441802196702206924",
+      "phone": "18926668916",
+      "address": "广东省清远市清城区凤城街道桥北社区桥北一路112号御景湖畔8号楼1401号",
+      "workCompany": "",
+      "workAddress": "",
+      "policies": [],
+      "familyMembers": [],
+      "contactHistory": [],
+      "profile": null,
+      "doNotContact": false
     }
   ],
   "insuranceTypes": [
@@ -5074,7 +5087,7 @@
     "jumpTo": "n_1786687627825",
     "_syncTs": "2026-08-15T11:54:01.406Z"
   },
-  "_timestamp": "1792459495049",
+  "_timestamp": "1793407484635",
   "_user": "liwenhao",
   "_userId": "fc2ce9be-c334-45cc-b2fc-3e6ee882ee4a",
   "_userEmail": "591403139@qq.com",
