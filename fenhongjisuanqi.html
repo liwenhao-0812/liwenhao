@@ -588,6 +588,9 @@ body {
 .model-toolbar .model-mini-btn { flex: 0 0 auto; }
 .model-toolbar .model-file-btn { display: inline-flex; align-items: center; gap: 6px; }
 .model-toolbar .model-file-btn input { display: none; }
+.model-sample-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px; background: var(--purple-50); border: 1px solid #e9d5ff; border-radius: 8px; margin-bottom: 10px; }
+.model-sample-bar label { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--gray-700); flex: 1 1 200px; }
+.model-sample-bar select { flex: 1; min-width: 0; padding: 8px 10px; border: 1.5px solid var(--gray-300); border-radius: 6px; font-size: 13px; background: #fff; font-family: inherit; }
 .model-paste-area { display: none; margin-bottom: 10px; }
 .model-paste-area textarea { width: 100%; height: 96px; padding: 10px; border: 1.5px solid var(--gray-300); border-radius: 8px; font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; resize: vertical; }
 .model-paste-area textarea:focus { outline: none; border-color: var(--blue-500); }
@@ -669,30 +672,25 @@ body {
 <div class="container">
   <!-- 左侧表单 -->
   <div class="left-panel">
-    <!-- 计划书导入 -->
-    <div class="card section-cyan">
-      <div class="card-header"><span class="icon-dot" style="background:#06b6d4;"></span>计划书导入（可选）</div>
-      <div class="form-hint" style="margin-bottom:10px;font-size:12px;color:var(--gray-500);line-height:1.6;">上传国寿分红险计划书 PDF，自动提取「现金价值 + 分红演示」，并生成「计划书原表」试算。文件仅在本机浏览器解析，不会上传服务器。</div>
+    <!-- 险种模型：上传计划书与建模在同一个规则条目 -->
+    <div class="card section-purple">
+      <div class="card-header"><span class="icon-dot" style="background:#a855f7;"></span>险种模型（可选）</div>
+      <div class="form-hint" style="margin-bottom:10px;font-size:12px;color:var(--gray-500);line-height:1.6;">一个险种只有一个模型。上传同一险种、不同年龄/性别的计划书会自动归入同一模型；至少 2 份不同年龄或性别的样本才算「已验证」。也可以导入 Excel/CSV、粘贴表格或直接改数。计划书仅在本机解析，不会上传服务器。</div>
       <label class="plan-file-btn">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        上传计划书 PDF
+        上传计划书 PDF（自动加入险种模型）
         <input type="file" id="planFileInput" accept="application/pdf,.pdf" onchange="handlePlanFile(event)">
       </label>
       <div id="planImportStatus" class="form-hint" style="margin-top:8px;font-size:12px;color:var(--gray-500);"></div>
-    </div>
-
-    <!-- 我的模型 -->
-    <div class="card section-purple">
-      <div class="card-header"><span class="icon-dot" style="background:#a855f7;"></span>我的模型（可选）</div>
-      <div class="form-hint" style="margin-bottom:10px;font-size:12px;color:var(--gray-500);line-height:1.6;">把计划书或任意逐年数据保存为模型，可反复试算。支持 Excel/CSV、粘贴表格或页面内直接改数。</div>
-      <button class="model-mini-btn primary" style="width:100%;margin-bottom:8px;" onclick="openModelEditor(null, true)">新建模型（用当前数据预填）</button>
-      <select id="savedModelSelect" style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-300);border-radius:8px;font-size:13px;color:var(--gray-700);background:#fff;font-family:inherit;margin-bottom:8px;"></select>
+      <div id="modelStatus" class="form-hint" style="margin-top:8px;font-size:12px;color:var(--gray-500);">暂无险种模型</div>
+      <div style="height:1px;background:var(--gray-100);margin:12px 0;"></div>
+      <button class="model-mini-btn primary" style="width:100%;margin-bottom:8px;" onclick="openModelEditor(null, true)">新建空白险种模型</button>
+      <select id="savedModelSelect" onchange="onModelSelectChange()" style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-300);border-radius:8px;font-size:13px;color:var(--gray-700);background:#fff;font-family:inherit;margin-bottom:8px;"></select>
       <div style="display:flex;gap:8px;">
         <button class="model-mini-btn" style="flex:1;" onclick="editSelectedModel()">编辑</button>
         <button class="model-mini-btn" style="flex:1;" onclick="applySavedModel()">应用</button>
         <button class="model-mini-btn" style="flex:1;" onclick="deleteSavedModel()">删除</button>
       </div>
-      <div id="modelStatus" class="form-hint" style="margin-top:8px;font-size:12px;color:var(--gray-500);"></div>
     </div>
 
     <!-- 产品信息 -->
@@ -836,10 +834,16 @@ body {
         <span class="icon-dot" style="background:#f59e0b;"></span>红利试算
         <label style="margin-left:auto;display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--gray-700);">
           <input type="checkbox" id="enableDividend" checked onchange="toggleDividendSection()" style="width:18px;height:18px;accent-color:#f59e0b;">
-          启用红利试算
+          <span id="dividendToggleText">启用红利试算</span>
         </label>
       </div>
       <div id="dividendSection">
+      <div id="planDividendInfo" style="display:none;">
+        <div class="form-hint" style="padding:10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:12px;color:var(--gray-600);line-height:1.6;margin-bottom:10px;">
+          <strong style="color:#16a34a;">模型 / 计划书红利</strong><br>
+          直接使用导入的逐年红利演示数据，不需要再勾选或填写下面的低/中/高档红利参数。
+        </div>
+      </div>
       <div class="form-group">
         <label>红利模式</label>
         <div class="radio-group" id="dividendModeGroup">
@@ -1007,9 +1011,15 @@ body {
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
       模型编辑
     </h3>
-    <div class="modal-desc" id="modelModalDesc">模型是一套可反复使用的逐年利益数据。可先导入计划书/Excel/CSV，再在表格中直接改数。</div>
+    <div class="modal-desc" id="modelModalDesc">一个险种一个模型，可包含多份不同年龄/性别的计划书样本。样本至少 2 份且年龄/性别不同才算验证通过。</div>
+    <div class="model-sample-bar">
+      <label>当前样本<select id="modelSampleSelect" onchange="switchModelSample(this.value)"></select></label>
+      <button class="model-mini-btn" onclick="modelAddSample()">新增样本</button>
+      <button class="model-mini-btn" id="modelDeleteSampleBtn" onclick="modelDeleteSample()">删除样本</button>
+    </div>
+    <div id="modelValidationHint" class="form-hint" style="margin-bottom:10px;font-size:12px;color:var(--gray-500);"></div>
     <div class="plan-meta-grid">
-      <label>模型名称<input id="modelName" type="text" placeholder="如：30岁男·鑫泰金生"></label>
+      <label>险种名称<input id="modelName" type="text" placeholder="如：鑫泰金生（分红型）"></label>
       <label>产品名称<input id="modelProduct" type="text" placeholder="可选"></label>
       <label>投保年龄<input id="modelAge" type="number" min="0" max="100" value="30"></label>
       <label>性别<select id="modelGender"><option value="male">男</option><option value="female">女</option></select></label>
@@ -1127,7 +1137,37 @@ function toggleDividendSection() {
 function isSJJMode() {
   return getRadioVal('dividendMode') === 'sjj';
 }
+function hasPlanDividendSource() {
+  return !!(planImportData && planImportData.rows && planImportData.rows.length >= 2);
+}
+function syncPlanModeDividendUI() {
+  var cb = document.getElementById('enableDividend');
+  var info = document.getElementById('planDividendInfo');
+  var mode = document.getElementById('dividendModeGroup');
+  var manual = document.getElementById('manualDividendInputs');
+  var sjj = document.getElementById('sjjDividendInfo');
+  var toggleText = document.getElementById('dividendToggleText');
+  if (!cb || !info) return;
+  if (hasPlanDividendSource()) {
+    cb.checked = true;
+    cb.disabled = true;
+    var section = document.getElementById('dividendSection');
+    if (section) section.style.display = '';
+    info.style.display = '';
+    if (mode) mode.style.display = 'none';
+    if (manual) manual.style.display = 'none';
+    if (sjj) sjj.style.display = 'none';
+    if (toggleText) toggleText.textContent = '红利来源：模型/计划书（自动）';
+  } else {
+    cb.disabled = false;
+    info.style.display = 'none';
+    if (mode) mode.style.display = '';
+    if (toggleText) toggleText.textContent = '启用红利试算';
+    toggleDividendMode();
+  }
+}
 function toggleDividendMode() {
+  if (hasPlanDividendSource()) { syncPlanModeDividendUI(); return; }
   var isSJJ = isSJJMode();
   document.getElementById('manualDividendInputs').style.display = isSJJ ? 'none' : '';
   document.getElementById('sjjDividendInfo').style.display = isSJJ ? '' : 'none';
@@ -1216,33 +1256,192 @@ var PLAN_FIELDS = ['year','age','premium','cumPremium','survival','maturity','de
 var planImportData = null;
 var planPdfJsPromise = null;
 
-// ======== 我的模型 ========
+// ======== 险种模型：一个险种一个模型，可包含多份不同年龄/性别的计划书样本 ========
 var MODEL_STORAGE_KEY = 'fh_models_v1';
 var MODEL_FIELDS = ['year','age','premium','cumPremium','survival','maturity','death','cashValue','divProjected'];
 var savedModels = loadSavedModels();
 var editingModelId = null;
+var editingModelDraft = null;
+var editingSampleId = null;
 var modelEditorRows = [];
 
+function newSampleId() {
+  return 's_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+}
+function sampleDisplayName(meta) {
+  var m = meta || {};
+  return (m.issueAge != null ? m.issueAge : '?') + '岁' + (m.gender === 'female' ? '女' : '男');
+}
+function normalizeSample(s, idx) {
+  var meta = Object.assign({}, (s && s.meta) || {});
+  return {
+    id: (s && s.id) || ('s_' + (idx + 1)),
+    name: (s && s.name) || sampleDisplayName(meta),
+    meta: meta,
+    rows: Array.isArray(s && s.rows) ? s.rows : []
+  };
+}
+function normalizeModelRecord(m, idx) {
+  if (!m) return null;
+  var samples;
+  if (Array.isArray(m.samples)) samples = m.samples.map(normalizeSample);
+  else {
+    var meta = Object.assign({}, m.meta || {});
+    samples = [{ id: 's_1', name: sampleDisplayName(meta), meta: meta, rows: m.rows || [] }];
+  }
+  if (!samples.length) samples = [normalizeSample({ meta: {}, rows: [] }, 0)];
+  var product = m.productName || samples[0].meta.productName || '';
+  var name = m.name || product || ('模型' + (idx + 1));
+  name = String(name).replace(/\s*·\s*\d+岁\s*$/, '').trim();
+  if (!name) name = product || ('模型' + (idx + 1));
+  return {
+    id: m.id || ('m_' + Date.now() + '_' + idx),
+    name: name,
+    productName: product || name,
+    samples: samples,
+    createdAt: m.createdAt || Date.now(),
+    updatedAt: m.updatedAt || Date.now()
+  };
+}
 function loadSavedModels() {
   try {
     var raw = localStorage.getItem(MODEL_STORAGE_KEY);
     var list = raw ? JSON.parse(raw) : [];
-    return Array.isArray(list) ? list : [];
+    if (!Array.isArray(list)) return [];
+    return mergeDuplicateModels(list.map(normalizeModelRecord).filter(Boolean));
   } catch (e) { return []; }
+}
+// 兼容旧版本：同一险种被拆成多个模型时，加载后自动合并为一个
+function mergeDuplicateModels(list) {
+  var out = [];
+  list.forEach(function(m) {
+    var key = productKey(m.productName || m.name);
+    var existing = null;
+    if (key) {
+      for (var i = 0; i < out.length; i++) {
+        if (productKey(out[i].productName || out[i].name) === key) { existing = out[i]; break; }
+      }
+    }
+    if (!existing) { out.push(m); return; }
+    mergeSamplesInto(existing, m.samples || []);
+    existing.name = existing.name || m.name;
+    existing.productName = existing.productName || m.productName;
+    existing.createdAt = Math.min(existing.createdAt || Date.now(), m.createdAt || Date.now());
+    existing.updatedAt = Math.max(existing.updatedAt || 0, m.updatedAt || 0);
+  });
+  return out;
 }
 function persistSavedModels() {
   try { localStorage.setItem(MODEL_STORAGE_KEY, JSON.stringify(savedModels)); } catch (e) {}
 }
+function productKey(s) {
+  return String(s || '').replace(/\s/g, '').replace(/[（）()]/g, '').replace(/国寿|中国人寿|保险股份有限公司/g, '').replace(/产品组合计划书|计划书/g, '');
+}
+function findModelByProduct(productName) {
+  var key = productKey(productName);
+  if (!key) return null;
+  for (var i = 0; i < savedModels.length; i++) {
+    if (productKey(savedModels[i].productName || savedModels[i].name) === key || productKey(savedModels[i].name) === key) return savedModels[i];
+  }
+  return null;
+}
+function modelSampleCount(m) { return m && m.samples ? m.samples.length : 0; }
+function isModelValidated(m) {
+  if (!m || !m.samples || m.samples.length < 2) return false;
+  var keys = {};
+  m.samples.forEach(function(s) {
+    var meta = s.meta || {};
+    keys[String(meta.issueAge) + '|' + String(meta.gender || 'male')] = 1;
+  });
+  return Object.keys(keys).length >= 2;
+}
+function modelValidationText(m) {
+  var n = modelSampleCount(m);
+  if (n < 2) return '待验证：还需上传至少1份不同年龄或性别的计划书样本';
+  if (!isModelValidated(m)) return '待验证：现有样本年龄/性别相同，请上传不同年龄或性别的计划书';
+  var names = m.samples.map(function(s) { return sampleDisplayName(s.meta); });
+  return '已验证：' + n + ' 份样本（' + names.join('、') + '）';
+}
+function pickModelSample(m, age, gender) {
+  if (!m || !m.samples || !m.samples.length) return null;
+  var g = gender === 'female' ? 'female' : 'male';
+  var sameGender = m.samples.filter(function(s) { return (s.meta.gender === 'female' ? 'female' : 'male') === g; });
+  var pool = sameGender.length ? sameGender : m.samples;
+  var targetAge = isFinite(age) ? age : (pool[0].meta.issueAge || 0);
+  var best = pool[0], bestDiff = Infinity;
+  pool.forEach(function(s) {
+    var d = Math.abs((s.meta.issueAge != null ? s.meta.issueAge : 0) - targetAge);
+    if (d < bestDiff) { bestDiff = d; best = s; }
+  });
+  return best;
+}
+function getSampleById(m, id) {
+  if (!m || !m.samples) return null;
+  for (var i = 0; i < m.samples.length; i++) { if (m.samples[i].id === id) return m.samples[i]; }
+  return null;
+}
+function upsertPlanSample(plan) {
+  var meta = Object.assign({}, (plan && plan.meta) || {});
+  var product = meta.productName || '未命名险种';
+  var model = findModelByProduct(product);
+  if (!model) {
+    model = {
+      id: 'm_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+      name: product,
+      productName: product,
+      samples: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+    savedModels.push(model);
+  }
+  var sample = {
+    id: newSampleId(),
+    name: sampleDisplayName(meta),
+    meta: meta,
+    rows: (plan.rows || []).map(function(r) { return Object.assign({}, r); })
+  };
+  var existing = null;
+  model.samples.forEach(function(s) {
+    if (s.meta.issueAge === meta.issueAge && (s.meta.gender || 'male') === (meta.gender || 'male')) existing = s;
+  });
+  if (existing) {
+    sample.id = existing.id;
+    existing.meta = sample.meta;
+    existing.name = sample.name;
+    existing.rows = sample.rows;
+  } else {
+    model.samples.push(sample);
+  }
+  model.productName = product;
+  if (!model.name || model.name === '未命名险种') model.name = product;
+  model.updatedAt = Date.now();
+  persistSavedModels();
+  refreshModelSelect();
+  var sel = document.getElementById('savedModelSelect');
+  if (sel) sel.value = model.id;
+  var status = document.getElementById('modelStatus');
+  if (status) status.textContent = model.name + '：' + modelValidationText(model);
+  showToast('已加入险种模型「' + model.name + '」：' + modelValidationText(model), isModelValidated(model) ? 'success' : 'warning');
+  return model;
+}
 function refreshModelSelect() {
   var sel = document.getElementById('savedModelSelect');
   if (!sel) return;
-  var html = '<option value="">选择已保存模型…</option>';
+  var html = '<option value="">选择已保存险种…</option>';
   savedModels.forEach(function(m) {
-    html += '<option value="' + m.id + '">' + m.name + '（' + m.rows.length + '年）</option>';
+    html += '<option value="' + m.id + '">' + m.name + '（' + modelSampleCount(m) + '份样本' + (isModelValidated(m) ? '·已验证' : '·待验证') + '）</option>';
   });
   sel.innerHTML = html;
   var status = document.getElementById('modelStatus');
-  if (status) status.textContent = savedModels.length ? '已保存 ' + savedModels.length + ' 个模型' : '暂无保存的模型';
+  if (status) status.textContent = savedModels.length ? '已保存 ' + savedModels.length + ' 个险种模型' : '暂无险种模型';
+}
+function onModelSelectChange() {
+  var sel = document.getElementById('savedModelSelect');
+  var model = sel && sel.value ? getSavedModel(sel.value) : null;
+  var status = document.getElementById('modelStatus');
+  if (!status) return;
+  status.textContent = model ? (model.name + '：' + modelValidationText(model)) : (savedModels.length ? '已保存 ' + savedModels.length + ' 个险种模型' : '暂无险种模型');
 }
 function getSavedModel(id) {
   for (var i = 0; i < savedModels.length; i++) { if (savedModels[i].id === id) return savedModels[i]; }
@@ -1551,6 +1750,7 @@ function handlePlanFile(ev) {
       planImportData = plan;
       plan.meta.isModel = false;
       updatePlanTabLabel();
+      syncPlanModeDividendUI();
       status.innerHTML = plan.hasFail
         ? '<span style="color:#b91c1c;">解析完成，但勾稽校验未通过，请核对计划书</span>'
         : '<span style="color:#15803d;">解析完成：' + plan.rows.length + ' 个保单年度，待核对</span>';
@@ -1571,8 +1771,20 @@ function handlePlanFile(ev) {
 function openPlanModal(plan) {
   var m = plan.meta;
   var overlay = document.getElementById('planModalOverlay');
+  var target = findModelByProduct(m.productName);
+  var targetText;
+  if (target) {
+    var sameSample = target.samples.some(function(s) {
+      return s.meta.issueAge === m.issueAge && (s.meta.gender || 'male') === (m.gender || 'male');
+    });
+    targetText = sameSample
+      ? '将更新模型「' + target.name + '」中 ' + sampleDisplayName(m) + ' 的样本'
+      : '将作为第 ' + (target.samples.length + 1) + ' 份样本加入模型「' + target.name + '」';
+  } else {
+    targetText = '将新建险种模型「' + (m.productName || '未命名险种') + '」';
+  }
   document.getElementById('planModalDesc').textContent =
-    '已解析 ' + plan.rows.length + ' 个保单年度（第1–' + plan.rows.length + '年，至' + m.finalAge + '岁）。请核对下方参数与抽查数据，确认无误后生成试算。';
+    targetText + '。已解析 ' + plan.rows.length + ' 个保单年度（第1–' + plan.rows.length + '年，至' + m.finalAge + '岁）。请核对下方参数与抽查数据，确认无误后生成试算。';
   var checksHtml = '<div class="plan-check-list">';
   plan.checks.forEach(function(c) {
     checksHtml += '<div class="plan-check-item ' + (c.ok ? 'pass' : 'fail') + '">' +
@@ -1663,14 +1875,21 @@ function confirmPlanImport() {
 
   document.getElementById('enableDividend').checked = true;
   document.getElementById('dividendSection').style.display = '';
-  document.querySelector('input[name="dividendMode"][value="manual"]').checked = true;
-  document.getElementById('manualDividendInputs').style.display = '';
-  document.getElementById('sjjDividendInfo').style.display = 'none';
 
+  plan.meta.issueAge = age;
+  plan.meta.gender = gender;
+  plan.meta.annualPremium = premium;
+  plan.meta.paymentYears = payYears;
+  plan.meta.coverageYears = period;
+  plan.meta.annualSurvivalBenefit = survival;
+  plan.meta.survivalStartAge = startAge;
+  if (product) plan.meta.productName = product;
   plan.manual = { age: age, premium: premium, payYears: payYears, period: period, survival: survival, startAge: startAge };
+  var addedModel = upsertPlanSample(plan);
+  syncPlanModeDividendUI();
 
   closePlanModal();
-  document.getElementById('planImportStatus').innerHTML = '<span style="color:#15803d;">已导入：' + plan.rows.length + ' 年 · ' + product + '</span>';
+  document.getElementById('planImportStatus').innerHTML = '<span style="color:#15803d;">已导入：' + plan.rows.length + ' 年 · ' + product + (addedModel ? ' · 已加入险种模型「' + addedModel.name + '」' : '') + '</span>';
   calculate(true);
 }
 
@@ -1687,7 +1906,7 @@ function buildPlanScenario(plan, params) {
     } else if (params.survivalBenefitStartAge != null && r.age >= params.survivalBenefitStartAge) {
       survival = params.annualSurvivalBenefit || 0;
     }
-    var dividend = params.enableDividend ? (r.divProjected || 0) : 0;
+    var dividend = (params.planMode || params.enableDividend) ? (r.divProjected || 0) : 0;
     var cash = r.cashValue || 0;
     bank = (bank + (r.premium || 0)) * (1 + interest);
     data.push({
@@ -1794,8 +2013,6 @@ function metaFromLeftForm() {
 
 function fillModelMetaFields(meta) {
   var m = meta || {};
-  document.getElementById('modelName').value = m.name || '';
-  document.getElementById('modelProduct').value = m.productName || '';
   document.getElementById('modelAge').value = m.issueAge != null ? m.issueAge : 30;
   document.getElementById('modelGender').value = m.gender === 'female' ? 'female' : 'male';
   document.getElementById('modelPremium').value = m.annualPremium != null ? m.annualPremium : 12000;
@@ -1895,6 +2112,95 @@ function normalizeModelRows(rows, meta) {
   return list;
 }
 
+function cloneModelData(v) {
+  return JSON.parse(JSON.stringify(v == null ? {} : v));
+}
+
+function refreshModelSampleSelect() {
+  var sel = document.getElementById('modelSampleSelect');
+  if (!sel || !editingModelDraft) return;
+  var html = '';
+  editingModelDraft.samples.forEach(function(s) {
+    html += '<option value="' + s.id + '">' + (s.name || sampleDisplayName(s.meta)) +
+      '（' + (s.rows ? s.rows.length : 0) + ' 行）</option>';
+  });
+  sel.innerHTML = html;
+  if (editingSampleId) sel.value = editingSampleId;
+  var delBtn = document.getElementById('modelDeleteSampleBtn');
+  if (delBtn) delBtn.style.display = editingModelDraft.samples.length > 1 ? '' : 'none';
+}
+
+function updateModelValidationHint() {
+  var el = document.getElementById('modelValidationHint');
+  if (!el || !editingModelDraft) return;
+  var ok = isModelValidated(editingModelDraft);
+  el.innerHTML = '<span style="color:' + (ok ? '#16a34a' : '#b45309') + ';font-weight:700;">' +
+    (ok ? '已验证' : '待验证') + '</span> · ' + modelValidationText(editingModelDraft);
+}
+
+function fillModelSampleEditor(sample) {
+  var meta = (sample && sample.meta) || {};
+  fillModelMetaFields(meta);
+  renderModelRows((sample && sample.rows) || []);
+}
+
+function collectCurrentSample() {
+  if (!editingModelDraft) return null;
+  var sample = getSampleById(editingModelDraft, editingSampleId);
+  if (!sample) return null;
+  var meta = collectModelMeta();
+  var rows = collectModelRowsFromTable();
+  if (rows.length) {
+    var normalized = normalizeModelRows(rows, meta);
+    meta.coverageYears = normalized[normalized.length - 1].year;
+    if (meta.paymentYears > meta.coverageYears) meta.paymentYears = meta.coverageYears;
+    sample.rows = normalized;
+  } else {
+    sample.rows = [];
+  }
+  sample.meta = meta;
+  sample.name = sampleDisplayName(meta);
+  return sample;
+}
+
+function switchModelSample(id) {
+  if (!editingModelDraft) return;
+  collectCurrentSample();
+  editingSampleId = id;
+  var s = getSampleById(editingModelDraft, id);
+  if (s) fillModelSampleEditor(s);
+  refreshModelSampleSelect();
+  updateModelValidationHint();
+}
+
+function modelAddSample() {
+  if (!editingModelDraft) return;
+  collectCurrentSample();
+  var cur = getSampleById(editingModelDraft, editingSampleId);
+  var meta = Object.assign({}, (cur && cur.meta) || metaFromLeftForm());
+  meta.issueAge = Math.min(100, (meta.issueAge != null ? meta.issueAge : 30) + 10);
+  meta.isModel = true;
+  var sample = { id: newSampleId(), name: sampleDisplayName(meta), meta: meta, rows: [] };
+  editingModelDraft.samples.push(sample);
+  editingSampleId = sample.id;
+  fillModelSampleEditor(sample);
+  refreshModelSampleSelect();
+  updateModelValidationHint();
+  document.getElementById('modelModalDesc').textContent = '已新增空白样本，请修改年龄/性别，并导入或粘贴该样本的逐年数据。';
+}
+
+function modelDeleteSample() {
+  if (!editingModelDraft) return;
+  if (editingModelDraft.samples.length <= 1) { showToast('每个险种模型至少保留 1 份样本', 'warning'); return; }
+  var s = getSampleById(editingModelDraft, editingSampleId);
+  if (!confirm('确定删除样本「' + (s ? s.name : '') + '」？')) return;
+  editingModelDraft.samples = editingModelDraft.samples.filter(function(x) { return x.id !== editingSampleId; });
+  editingSampleId = editingModelDraft.samples[0].id;
+  fillModelSampleEditor(editingModelDraft.samples[0]);
+  refreshModelSampleSelect();
+  updateModelValidationHint();
+}
+
 function openModelEditor(prefillModel, forceNew) {
   var model = null;
   if (prefillModel && typeof prefillModel === 'object') model = prefillModel;
@@ -1903,30 +2209,43 @@ function openModelEditor(prefillModel, forceNew) {
     var sel = document.getElementById('savedModelSelect');
     if (sel && sel.value) model = getSavedModel(sel.value);
   }
-  var meta, rows;
+
   if (model) {
+    editingModelDraft = normalizeModelRecord(cloneModelData(model), 0);
     editingModelId = model.id;
-    meta = Object.assign({}, model.meta);
-    rows = model.rows || [];
-    document.getElementById('modelModalDesc').textContent = '正在编辑模型：' + model.name + '。修改后保存会覆盖该模型。';
+    editingSampleId = editingModelDraft.samples[0].id;
+    document.getElementById('modelModalDesc').textContent = '正在编辑险种模型「' + model.name + '」。一个险种只有一个模型，可包含多份不同年龄/性别的样本。';
     document.getElementById('modelDeleteBtn').style.display = '';
   } else {
     editingModelId = null;
-    if (planImportData && planImportData.rows && planImportData.rows.length >= 2) {
-      meta = Object.assign({}, planImportData.meta || {});
-      meta.name = meta.name || ((meta.productName || '计划书') + ' · ' + (meta.issueAge != null ? meta.issueAge + '岁' : '模板'));
-      rows = planImportData.rows.map(function(r) { return Object.assign({}, r); });
-      document.getElementById('modelModalDesc').textContent = '已用当前' + (meta.isModel ? '模型' : '计划书') + '数据预填 ' + rows.length + ' 行，可改数、导入或另存为新模型。';
+    var samples = [];
+    if (!forceNew && planImportData && planImportData.rows && planImportData.rows.length >= 2) {
+      var pm = Object.assign({}, planImportData.meta || {});
+      if (!pm.productName) pm.productName = getVal('productName') || '未命名险种';
+      samples.push({
+        id: newSampleId(), name: sampleDisplayName(pm), meta: pm,
+        rows: planImportData.rows.map(function(r) { return Object.assign({}, r); })
+      });
+      document.getElementById('modelModalDesc').textContent = '已用当前计划书数据预填 1 份样本（' + samples[0].name + '，' + samples[0].rows.length + ' 行），可继续导入其他样本数据。';
     } else {
-      meta = metaFromLeftForm();
-      meta.name = (meta.productName || '新模型') + ' · ' + meta.issueAge + '岁';
-      rows = [];
-      document.getElementById('modelModalDesc').textContent = '空白模型：可导入 Excel/CSV、粘贴表格，或在下方表格新增行后手动填数。';
+      var lm = metaFromLeftForm();
+      if (!lm.productName) lm.productName = '未命名险种';
+      samples.push({ id: newSampleId(), name: sampleDisplayName(lm), meta: lm, rows: [] });
+      document.getElementById('modelModalDesc').textContent = '空白险种模型：填写险种名称后，为样本导入 Excel/CSV、粘贴表格或手动填数。至少需要 2 份不同年龄/性别的样本才能验证并应用。';
     }
+    editingModelDraft = { id: null, name: '', productName: '', samples: samples, createdAt: Date.now(), updatedAt: Date.now() };
+    editingSampleId = samples[0].id;
     document.getElementById('modelDeleteBtn').style.display = 'none';
   }
-  fillModelMetaFields(meta);
-  renderModelRows(rows);
+
+  var firstMeta = (editingModelDraft.samples[0] && editingModelDraft.samples[0].meta) || {};
+  if (!editingModelDraft.name) editingModelDraft.name = firstMeta.productName || '';
+  if (!editingModelDraft.productName) editingModelDraft.productName = firstMeta.productName || '';
+  document.getElementById('modelName').value = editingModelDraft.name || '';
+  document.getElementById('modelProduct').value = editingModelDraft.productName || '';
+  fillModelSampleEditor(getSampleById(editingModelDraft, editingSampleId));
+  refreshModelSampleSelect();
+  updateModelValidationHint();
   document.getElementById('modelPasteArea').style.display = 'none';
   document.getElementById('modelImportFile').value = '';
   document.getElementById('modelModalOverlay').style.display = 'flex';
@@ -1934,6 +2253,9 @@ function openModelEditor(prefillModel, forceNew) {
 
 function closeModelModal() {
   document.getElementById('modelModalOverlay').style.display = 'none';
+  editingModelDraft = null;
+  editingSampleId = null;
+  editingModelId = null;
 }
 
 function toggleModelPaste() {
@@ -2071,6 +2393,9 @@ function applyImportedMatrix(matrix) {
   var normalized = normalizeModelRows(rows, collectModelMeta());
   renderModelRows(normalized);
   document.getElementById('modelModalDesc').textContent = '已导入 ' + normalized.length + ' 行' + (headerIdx >= 0 ? '（已识别表头）' : '（无表头，按默认列序）') + '，请核对数据后保存或试算。';
+  collectCurrentSample();
+  refreshModelSampleSelect();
+  updateModelValidationHint();
   showToast('已导入 ' + normalized.length + ' 行数据', 'success');
 }
 
@@ -2161,58 +2486,145 @@ function downloadModelTemplate() {
   setTimeout(function() { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
 
-function saveModel(applyNow) {
-  var meta = collectModelMeta();
-  if (!meta.name) meta.name = (meta.productName || '新模型') + ' · ' + (meta.issueAge != null ? meta.issueAge + '岁' : '');
-  var rows = collectModelRowsFromTable();
-  if (rows.length < 2) { showToast('至少需要 2 行逐年数据', 'warning'); return; }
-  var normalized = normalizeModelRows(rows, meta);
-  meta.coverageYears = normalized[normalized.length - 1].year;
-  if (meta.paymentYears > meta.coverageYears) meta.paymentYears = meta.coverageYears;
+function mergeSamplesInto(model, samples) {
+  samples.forEach(function(sample) {
+    var existing = null;
+    model.samples.forEach(function(s) {
+      if (s.meta.issueAge === sample.meta.issueAge && (s.meta.gender || 'male') === (sample.meta.gender || 'male')) existing = s;
+    });
+    if (existing) {
+      existing.meta = sample.meta;
+      existing.name = sample.name;
+      existing.rows = sample.rows;
+    } else {
+      model.samples.push(sample);
+    }
+  });
+}
 
-  var model = {
-    id: editingModelId || ('m_' + Date.now() + '_' + Math.floor(Math.random() * 1000)),
-    name: meta.name,
-    meta: meta,
-    rows: normalized,
-    createdAt: editingModelId ? (getSavedModel(editingModelId) || {}).createdAt || Date.now() : Date.now(),
-    updatedAt: Date.now()
-  };
-  var exists = editingModelId && getSavedModel(editingModelId);
-  if (exists) {
-    for (var i = 0; i < savedModels.length; i++) { if (savedModels[i].id === editingModelId) { savedModels[i] = model; break; } }
-  } else {
-    savedModels.push(model);
+function saveModel(applyNow) {
+  if (!editingModelDraft) return;
+  collectCurrentSample();
+  var d = editingModelDraft;
+  var nameInput = document.getElementById('modelName').value.trim();
+  var productInput = document.getElementById('modelProduct').value.trim();
+  var product = productInput || nameInput;
+  if (!product) { showToast('请填写险种名称', 'warning'); return; }
+
+  var badRows = d.samples.filter(function(s) { return !s.rows || s.rows.length < 2; });
+  if (badRows.length) {
+    showToast('样本「' + (badRows[0].name || '') + '」至少需要 2 行逐年数据，请先导入或补全', 'warning');
+    if (badRows[0].id !== editingSampleId) switchModelSample(badRows[0].id);
+    return;
   }
-  editingModelId = model.id;
+  var badAge = d.samples.filter(function(s) { return !isFinite(s.meta.issueAge) || s.meta.issueAge < 0 || s.meta.issueAge > 100; });
+  if (badAge.length) {
+    showToast('样本「' + badAge[0].name + '」投保年龄需在 0-100 岁之间', 'warning');
+    if (badAge[0].id !== editingSampleId) switchModelSample(badAge[0].id);
+    return;
+  }
+
+  d.name = nameInput || product;
+  d.productName = product;
+  d.samples.forEach(function(s) {
+    if (!s.meta) s.meta = {};
+    s.meta.productName = product;
+    s.meta.name = d.name;
+    s.name = sampleDisplayName(s.meta);
+  });
+  d.updatedAt = Date.now();
+
+  var self = editingModelId ? getSavedModel(editingModelId) : null;
+  var sameProduct = findModelByProduct(product);
+  var target = null;
+  var removedSelfId = null;
+
+  if (self && sameProduct && sameProduct.id !== self.id) {
+    target = sameProduct;
+    mergeSamplesInto(target, d.samples);
+    savedModels = savedModels.filter(function(m) { return m.id !== self.id; });
+    removedSelfId = self.id;
+  } else if (self) {
+    self.name = d.name;
+    self.productName = d.productName;
+    self.samples = d.samples;
+    self.updatedAt = Date.now();
+    target = self;
+  } else if (sameProduct) {
+    target = sameProduct;
+    mergeSamplesInto(target, d.samples);
+    target.updatedAt = Date.now();
+  } else {
+    target = {
+      id: 'm_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+      name: d.name,
+      productName: product,
+      samples: d.samples,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+    savedModels.push(target);
+  }
+  target.name = d.name;
+  target.productName = product;
+  if (removedSelfId && planImportData && planImportData.meta && planImportData.meta.modelId === removedSelfId) {
+    planImportData.meta.modelId = target.id;
+    planImportData.meta.modelName = target.name;
+  }
+
   persistSavedModels();
   refreshModelSelect();
-  document.getElementById('savedModelSelect').value = model.id;
+  var sel = document.getElementById('savedModelSelect');
+  if (sel) sel.value = target.id;
+  var sampleId = editingSampleId;
+  var validated = isModelValidated(target);
   closeModelModal();
-  if (applyNow) applyModelToCalc(model);
-  else {
-    document.getElementById('modelStatus').textContent = '已保存模型：' + model.name;
-    showToast('模型已保存：' + model.name, 'success');
+
+  if (applyNow && validated) {
+    applyModelToCalc(target, sampleId);
+    return;
+  }
+  document.getElementById('modelStatus').textContent = target.name + '：' + modelValidationText(target);
+  if (applyNow && !validated) {
+    showToast('模型已保存，但还需再上传/新增一份不同年龄或性别的计划书样本，验证通过后才能应用试算', 'warning');
+  } else {
+    showToast('模型已保存：' + target.name + '（' + modelValidationText(target) + '）', validated ? 'success' : 'warning');
   }
 }
 
-function applyModelToCalc(model) {
-  if (!model) return;
-  var rows = normalizeModelRows(model.rows, model.meta);
-  if (rows.length < 2) { showToast('该模型数据不足 2 行，无法试算', 'warning'); return; }
-  var meta = Object.assign({}, model.meta);
+function applyModelToCalc(model, sampleId) {
+  if (!model) return false;
+  if (!isModelValidated(model)) {
+    showToast('该险种模型尚未验证：至少需要 2 份不同年龄或性别的计划书样本，请再上传一份后再应用', 'warning');
+    return false;
+  }
+  var sample = sampleId ? getSampleById(model, sampleId) : null;
+  if (!sample) {
+    sample = pickModelSample(model, modelNumber(document.getElementById('insuredAge').value), getRadioVal('gender') || 'male');
+  }
+  if (!sample) { showToast('该模型没有可用样本', 'warning'); return false; }
+  var rows = normalizeModelRows(sample.rows, sample.meta);
+  if (rows.length < 2) { showToast('样本「' + (sample.name || '') + '」数据不足 2 行，无法试算', 'warning'); return false; }
+  var meta = Object.assign({}, sample.meta);
   meta.coverageYears = rows[rows.length - 1].year;
   meta.finalAge = rows[rows.length - 1].age;
   meta.isModel = true;
-  meta.name = model.name;
   meta.modelId = model.id;
-  meta.productName = meta.productName || model.name;
+  meta.modelName = model.name;
+  meta.sampleId = sample.id;
+  meta.sampleName = sample.name;
+  meta.productName = meta.productName || model.productName || model.name;
+  meta.name = model.name;
   planImportData = { rows: rows, meta: meta, checks: [], hasFail: false, isModel: true };
   fillMainFormFromModelMeta(meta);
   updatePlanTabLabel();
-  document.getElementById('savedModelSelect').value = model.id;
-  document.getElementById('modelStatus').textContent = '已应用模型：' + model.name;
+  syncPlanModeDividendUI();
+  var sel = document.getElementById('savedModelSelect');
+  if (sel) sel.value = model.id;
+  var status = document.getElementById('modelStatus');
+  if (status) status.textContent = '已应用模型：' + model.name + '（样本 ' + sample.name + '）';
   calculate(true);
+  return true;
 }
 
 function fillMainFormFromModelMeta(meta) {
@@ -2242,11 +2654,8 @@ function fillMainFormFromModelMeta(meta) {
     }
     sel.value = String(payYears);
   }
-  document.getElementById('enableDividend').checked = true;
   document.getElementById('dividendSection').style.display = '';
-  document.querySelector('input[name="dividendMode"][value="manual"]').checked = true;
-  document.getElementById('manualDividendInputs').style.display = '';
-  document.getElementById('sjjDividendInfo').style.display = 'none';
+  syncPlanModeDividendUI();
 }
 
 function editSelectedModel() {
@@ -2259,24 +2668,29 @@ function editSelectedModel() {
 function applySavedModel() {
   var sel = document.getElementById('savedModelSelect');
   var model = sel && sel.value ? getSavedModel(sel.value) : null;
-  if (!model) { showToast('请先选择一个已保存模型', 'warning'); return; }
-  applyModelToCalc(model);
-  showToast('已按模型试算：' + model.name, 'success');
+  if (!model) { showToast('请先选择一个已保存险种模型', 'warning'); return; }
+  if (!isModelValidated(model)) {
+    showToast('「' + model.name + '」还未验证：请再上传一份不同年龄或性别的计划书样本后再应用', 'warning');
+    return;
+  }
+  if (applyModelToCalc(model)) showToast('已按模型试算：' + model.name, 'success');
 }
 
 function deleteSavedModel() {
   var sel = document.getElementById('savedModelSelect');
   var model = sel && sel.value ? getSavedModel(sel.value) : null;
   if (!model) { showToast('请先选择要删除的模型', 'warning'); return; }
-  if (!confirm('确定删除模型「' + model.name + '」？')) return;
+  if (!confirm('确定删除险种模型「' + model.name + '」及其全部样本？')) return;
   savedModels = savedModels.filter(function(m) { return m.id !== model.id; });
   if (planImportData && planImportData.meta && planImportData.meta.modelId === model.id) {
     planImportData = null;
     updatePlanTabLabel();
+    syncPlanModeDividendUI();
   }
+  if (editingModelId === model.id) editingModelId = null;
   persistSavedModels();
   refreshModelSelect();
-  document.getElementById('modelStatus').textContent = '已删除模型：' + model.name;
+  document.getElementById('modelStatus').textContent = '已删除险种模型：' + model.name;
   showToast('模型已删除', 'success');
 }
 
@@ -2284,16 +2698,17 @@ function deleteEditingModel() {
   if (!editingModelId) return;
   var model = getSavedModel(editingModelId);
   if (!model) { closeModelModal(); return; }
-  if (!confirm('确定删除模型「' + model.name + '」？')) return;
+  if (!confirm('确定删除险种模型「' + model.name + '」及其全部样本？')) return;
   savedModels = savedModels.filter(function(m) { return m.id !== model.id; });
   if (planImportData && planImportData.meta && planImportData.meta.modelId === model.id) {
     planImportData = null;
     updatePlanTabLabel();
+    syncPlanModeDividendUI();
   }
-  editingModelId = null;
   persistSavedModels();
   refreshModelSelect();
   closeModelModal();
+  document.getElementById('modelStatus').textContent = '已删除险种模型：' + model.name;
   showToast('模型已删除', 'success');
 }
 
@@ -3583,11 +3998,8 @@ function resetAll() {
   document.getElementById('compareSurvivalBenefit').value = 2000;
   document.getElementById('ageCompareSection').style.display = 'none';
   document.getElementById('enableDividend').checked = true;
+  document.getElementById('enableDividend').disabled = false;
   document.getElementById('dividendSection').style.display = '';
-  // 重置红利模式为手动
-  document.querySelector('input[name="dividendMode"][value="manual"]').checked = true;
-  document.getElementById('manualDividendInputs').style.display = '';
-  document.getElementById('sjjDividendInfo').style.display = 'none';
 
   calcResult = null;
   planImportData = null;
@@ -3600,9 +4012,12 @@ function resetAll() {
   updatePlanTabLabel();
   var modelSel = document.getElementById('savedModelSelect');
   if (modelSel) modelSel.value = '';
-  var modelStatus = document.getElementById('modelStatus');
-  if (modelStatus) modelStatus.textContent = savedModels.length ? '已保存 ' + savedModels.length + ' 个模型' : '暂无保存的模型';
+  refreshModelSelect();
   editingModelId = null;
+  editingModelDraft = null;
+  editingSampleId = null;
+  document.querySelector('input[name="dividendMode"][value="manual"]').checked = true;
+  syncPlanModeDividendUI();
   closePlanModal();
   closeModelModal();
   document.getElementById('emptyState').style.display = '';
