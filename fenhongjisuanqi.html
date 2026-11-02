@@ -557,6 +557,31 @@ body {
   font-family: inherit;
 }
 .share-modal .modal-close-btn:hover { background: var(--gray-200); }
+/* 计划书导入 */
+.plan-modal { max-width: 760px; max-height: 86vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.plan-meta-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+.plan-meta-grid label { font-size: 12px; font-weight: 600; color: var(--gray-600); display: flex; flex-direction: column; gap: 5px; }
+.plan-meta-grid input, .plan-meta-grid select { padding: 8px 10px; border: 1.5px solid var(--gray-300); border-radius: 8px; font-size: 13px; font-family: inherit; color: var(--gray-800); background: #fff; }
+.plan-meta-grid input:focus, .plan-meta-grid select:focus { outline: none; border-color: var(--blue-500); }
+.plan-check-list { margin-bottom: 14px; border: 1px solid var(--gray-200); border-radius: 8px; overflow: hidden; }
+.plan-check-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px; font-size: 12px; border-bottom: 1px solid var(--gray-100); line-height: 1.5; }
+.plan-check-item:last-child { border-bottom: none; }
+.plan-check-item .pc-badge { flex: 0 0 auto; font-weight: 800; font-size: 11px; padding: 1px 7px; border-radius: 10px; }
+.plan-check-item.pass .pc-badge { background: #dcfce7; color: #15803d; }
+.plan-check-item.fail .pc-badge { background: #fee2e2; color: #b91c1c; }
+.plan-check-item.fail { background: #fef2f2; color: #b91c1c; }
+.plan-anchor-wrap { overflow-x: auto; margin-bottom: 8px; border: 1px solid var(--gray-200); border-radius: 8px; }
+.plan-anchor-table { width: 100%; border-collapse: collapse; font-size: 11px; white-space: nowrap; }
+.plan-anchor-table th { background: var(--gray-50); color: var(--gray-600); font-weight: 700; padding: 7px 8px; text-align: right; border-bottom: 1px solid var(--gray-200); }
+.plan-anchor-table td { padding: 7px 8px; text-align: right; color: var(--gray-700); border-bottom: 1px solid var(--gray-100); }
+.plan-anchor-table tr:last-child td { border-bottom: none; }
+.plan-anchor-table td:first-child, .plan-anchor-table th:first-child { text-align: center; }
+.plan-file-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; border: 1.5px dashed var(--blue-500); border-radius: 10px; background: var(--blue-50); color: var(--blue-700); font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s; }
+.plan-file-btn:active { background: var(--blue-100); }
+.plan-file-btn input { display: none; }
+@media (max-width: 600px) {
+  .plan-meta-grid { grid-template-columns: 1fr; }
+}
 /* Share image generation loading */
 .share-loading-overlay {
   position: fixed;
@@ -623,6 +648,18 @@ body {
 <div class="container">
   <!-- 左侧表单 -->
   <div class="left-panel">
+    <!-- 计划书导入 -->
+    <div class="card section-cyan">
+      <div class="card-header"><span class="icon-dot" style="background:#06b6d4;"></span>计划书导入（可选）</div>
+      <div class="form-hint" style="margin-bottom:10px;font-size:12px;color:var(--gray-500);line-height:1.6;">上传国寿分红险计划书 PDF，自动提取「现金价值 + 分红演示」，并生成「计划书原表」试算。文件仅在本机浏览器解析，不会上传服务器。</div>
+      <label class="plan-file-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        上传计划书 PDF
+        <input type="file" id="planFileInput" accept="application/pdf,.pdf" onchange="handlePlanFile(event)">
+      </label>
+      <div id="planImportStatus" class="form-hint" style="margin-top:8px;font-size:12px;color:var(--gray-500);"></div>
+    </div>
+
     <!-- 产品信息 -->
     <div class="card section-blue">
       <div class="card-header"><span class="icon-dot" style="background:#3b82f6;"></span>产品信息</div>
@@ -870,6 +907,7 @@ body {
         <button class="scenario-tab active" data-scenario="low">低档（保底）</button>
         <button class="scenario-tab" data-scenario="medium">中档（平均）</button>
         <button class="scenario-tab" data-scenario="high">高档（理想）</button>
+        <button class="scenario-tab" data-scenario="plan" id="planTab" style="display:none;">计划书原表</button>
       </div>
 
       <!-- 年度收益趋势图 -->
@@ -907,6 +945,22 @@ body {
         <h3>历年收益明细表</h3>
         <div class="table-wrap" id="dataTableWrap"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- 计划书解析核对弹窗 -->
+<div class="share-modal-overlay" id="planModalOverlay" style="display:none;">
+  <div class="share-modal plan-modal">
+    <h3>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      计划书解析核对
+    </h3>
+    <div class="modal-desc" id="planModalDesc"></div>
+    <div id="planModalBody"></div>
+    <div class="modal-close-bar" style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="modal-close-btn" onclick="closePlanModal()">取消</button>
+      <button class="copy-btn" id="planConfirmBtn" style="align-self:auto;" onclick="confirmPlanImport()">生成试算</button>
     </div>
   </div>
 </div>
@@ -1073,6 +1127,512 @@ function updateAddCapHint() {
   toggleAddMethod();
 })();
 
+// ======== 计划书 PDF 本地解析 ========
+var PLAN_FIELDS = ['year','age','premium','cumPremium','survival','maturity','death','cashValue','divGuaranteed','divProjected'];
+var planImportData = null;
+var planPdfJsPromise = null;
+
+// 按需加载 pdf.js（仅在用户上传计划书时加载）
+function loadPlanPdfJs() {
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  if (planPdfJsPromise) return planPdfJsPromise;
+  planPdfJsPromise = new Promise(function(resolve, reject) {
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.min.js';
+    s.onload = function() {
+      if (!window.pdfjsLib) { reject(new Error('PDF 解析组件加载失败')); return; }
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.worker.min.js';
+      resolve(window.pdfjsLib);
+    };
+    s.onerror = function() { reject(new Error('PDF 解析组件加载失败，请检查网络后重试')); };
+    document.head.appendChild(s);
+  });
+  return planPdfJsPromise;
+}
+
+function planNum(str) {
+  if (str == null) return null;
+  var s = String(str).replace(/,/g, '').replace(/，/g, '').replace(/\s/g, '');
+  if (!/^-?\d+(\.\d+)?$/.test(s)) return null;
+  return parseFloat(s);
+}
+
+function planGroupCenter(list) {
+  var min = Infinity, max = -Infinity;
+  list.forEach(function(it) {
+    if (it.x < min) min = it.x;
+    if (it.x + (it.w || 0) > max) max = it.x + (it.w || 0);
+  });
+  return (min + max) / 2;
+}
+
+// 动态定位表头：不依赖固定坐标，按当前页文字位置计算每列中心
+function planFindHeader(items) {
+  var candidates = items.filter(function(it) { return it.s === '保单年度'; });
+  var found = null;
+  candidates.forEach(function(cand) {
+    var band = items.filter(function(it) { return Math.abs(it.y - cand.y) <= 26; });
+    function pick(fn) { return band.filter(fn); }
+    var groups = {};
+    groups.year = pick(function(s) { return s.s === '保单年度'; });
+    groups.age = pick(function(s) { return s.s === '年末年龄'; });
+    groups.premium = pick(function(s) { return s.s === '年初保费'; });
+    groups.cumPremium = pick(function(s) { return s.s === '累计保费'; });
+    groups.survival = pick(function(s) { return s.s === '生存给付'; });
+    groups.maturity = pick(function(s) { return s.s === '满期给付'; });
+    groups.death = pick(function(s) { return s.s === '身故保障'; });
+    groups.cashValue = pick(function(s) { return s.s.indexOf('退保金') >= 0 || s.s.indexOf('现金价值') >= 0; });
+    var divs = pick(function(s) { return s.s === '周年红利'; }).sort(function(a, b) { return a.x - b.x; });
+    if (divs.length >= 2) {
+      groups.divGuaranteed = [divs[0]];
+      groups.divProjected = [divs[1]];
+    } else if (divs.length === 1) {
+      groups.divProjected = [divs[0]];
+    }
+    // 必须识别出主要列，且至少包含一列周年红利
+    var required = ['year','age','premium','cumPremium','survival','maturity','death','cashValue'];
+    for (var i = 0; i < required.length; i++) {
+      if (!groups[required[i]] || !groups[required[i]].length) return;
+    }
+    if (!groups.divProjected) return;
+    var anchors = PLAN_FIELDS.map(function(f) {
+      return groups[f] && groups[f].length ? planGroupCenter(groups[f]) : null;
+    });
+    found = { y: cand.y, anchors: anchors };
+  });
+  return found;
+}
+
+// 按 y 坐标把数字分成行
+function planGroupRows(items, limitY) {
+  var nums = [];
+  items.forEach(function(it) {
+    if (it.y >= limitY) return;
+    var v = planNum(it.s);
+    if (v === null) return;
+    nums.push({ v: v, x: it.x, y: it.y, w: it.w || 0 });
+  });
+  nums.sort(function(a, b) { return b.y - a.y || a.x - b.x; });
+  var rows = [], cur = null;
+  nums.forEach(function(it) {
+    if (!cur || Math.abs(cur.y - it.y) > 6) {
+      cur = { y: it.y, items: [] };
+      rows.push(cur);
+    }
+    cur.items.push(it);
+  });
+  return rows;
+}
+
+function planMapRow(row, anchors) {
+  var minGap = Infinity;
+  for (var i = 1; i < anchors.length; i++) {
+    if (anchors[i] !== null && anchors[i - 1] !== null) {
+      minGap = Math.min(minGap, Math.abs(anchors[i] - anchors[i - 1]));
+    }
+  }
+  if (!isFinite(minGap)) minGap = 80;
+  var maxDist = Math.min(48, minGap * 0.62);
+  if (!row.items.length) return null;
+  // 保单年度必须是该行最左侧的数字，避免把其他表的年龄列误判为年度
+  var first = row.items[0];
+  var firstCx = first.x + (first.w || 0) / 2;
+  if (anchors[0] === null || Math.abs(anchors[0] - firstCx) > maxDist) return null;
+  var rec = { year: Math.round(first.v) };
+  var bestDist = { year: Math.abs(anchors[0] - firstCx) };
+  row.items.forEach(function(it, idx) {
+    if (idx === 0) return;
+    var cx = it.x + (it.w || 0) / 2;
+    var best = -1, bd = Infinity;
+    for (var j = 1; j < anchors.length; j++) {
+      if (anchors[j] === null) continue;
+      var d = Math.abs(anchors[j] - cx);
+      if (d < bd) { bd = d; best = j; }
+    }
+    if (best < 0 || bd > maxDist) return;
+    var field = PLAN_FIELDS[best];
+    if (rec[field] === undefined || bd < (bestDist[field] === undefined ? Infinity : bestDist[field])) {
+      rec[field] = it.v;
+      bestDist[field] = bd;
+    }
+  });
+  if (rec.year < 1 || rec.year > 150) return null;
+  var count = 0;
+  PLAN_FIELDS.forEach(function(f) { if (rec[f] !== undefined) count++; });
+  if (count < 4) return null;
+  return rec;
+}
+
+// 勾稽校验
+function planValidate(rows) {
+  var checks = [];
+  function add(name, ok, detail) { checks.push({ rule: name, ok: !!ok, detail: detail || '' }); }
+  var years = rows.map(function(r) { return r.year; });
+  var continuous = true;
+  for (var i = 0; i < years.length; i++) { if (years[i] !== i + 1) continuous = false; }
+  add('保单年度连续', continuous, years.length ? (years[0] + '–' + years[years.length - 1] + '，共' + years.length + '年') : '无数据');
+
+  var payYears = rows.filter(function(r) { return (r.premium || 0) > 0; }).map(function(r) { return r.year; });
+  var lastPay = payYears.length ? Math.max.apply(null, payYears) : 0;
+  var payContinuous = true;
+  for (var p = 1; p <= lastPay; p++) { if (payYears.indexOf(p) < 0) payContinuous = false; }
+  add('缴费期连续', payYears.length > 0 && payContinuous, lastPay ? ('缴费 ' + lastPay + ' 年') : '未识别到年初保费');
+
+  var cum = 0, cumBad = [];
+  rows.forEach(function(r) {
+    cum += (r.premium || 0);
+    if (r.cumPremium === undefined || Math.abs(r.cumPremium - cum) > 1.5) cumBad.push(r.year);
+  });
+  add('累计保费=逐年累加', cumBad.length === 0, cumBad.length ? ('异常年度：' + cumBad.slice(0, 8).join(',')) : '全部一致');
+
+  var survRows = rows.filter(function(r) { return (r.survival || 0) > 0; });
+  if (survRows.length) {
+    var start = survRows[0].year;
+    var svOk = true;
+    rows.forEach(function(r) {
+      if (r.year >= start && r.year < rows[rows.length - 1].year && !(r.survival > 0)) svOk = false;
+    });
+    add('生存金起领后连续', svOk, '起领第' + start + '年（' + survRows[0].age + '岁），年额 ' + survRows[0].survival);
+  } else {
+    add('生存金起领后连续', true, '未识别到生存金列，将使用人工填写');
+  }
+
+  var neg = rows.filter(function(r) { return (r.cashValue || 0) < 0; }).map(function(r) { return r.year; });
+  add('现金价值非负', neg.length === 0, neg.length ? ('异常年度：' + neg.slice(0, 5).join(',')) : '全部非负');
+
+  var deathBad = rows.filter(function(r) { return (r.death || 0) > 0 && (r.cashValue || 0) > 0 && r.death < r.cashValue; }).map(function(r) { return r.year; });
+  add('身故保障≥现金价值', deathBad.length === 0, deathBad.length ? ('异常年度：' + deathBad.slice(0, 5).join(',')) : '全部满足');
+
+  var jumps = [];
+  for (var k = 1; k < rows.length; k++) {
+    var a = rows[k - 1].cashValue || 0, b = rows[k].cashValue || 0;
+    if (a > 0 && b > 0 && b < a && (a - b) / a > 0.20) jumps.push(rows[k].year);
+  }
+  add('现金价值无异常断崖(>20%)', jumps.length === 0, jumps.length ? ('异常年度：' + jumps.slice(0, 5).join(',')) : '未发现');
+
+  var divNeg = rows.filter(function(r) { return (r.divProjected || 0) < 0; }).map(function(r) { return r.year; });
+  add('红利非负', divNeg.length === 0, divNeg.length ? ('异常年度：' + divNeg.slice(0, 5).join(',')) : '全部非负');
+
+  return { checks: checks, lastPay: lastPay, survRows: survRows };
+}
+
+function planDeriveMeta(rows, checksInfo, genderCandidates, title) {
+  var issueAge = rows[0].age - 1;
+  var gender = '';
+  for (var i = 0; i < genderCandidates.length; i++) {
+    if (genderCandidates[i].age === issueAge) { gender = genderCandidates[i].gender === '女' ? 'female' : 'male'; break; }
+  }
+  if (!gender && genderCandidates.length) gender = genderCandidates[0].gender === '女' ? 'female' : 'male';
+  var surv = checksInfo.survRows.length ? checksInfo.survRows[0] : null;
+  return {
+    issueAge: issueAge,
+    gender: gender,
+    annualPremium: rows[0].premium || 0,
+    paymentYears: checksInfo.lastPay,
+    coverageYears: rows.length,
+    annualSurvivalBenefit: surv ? surv.survival : 0,
+    survivalStartAge: surv ? surv.age : null,
+    survivalStartYear: surv ? surv.year : null,
+    finalAge: rows[rows.length - 1].age,
+    productName: (title || '').replace(/产品组合计划书/g, '').trim(),
+    pageCount: 0
+  };
+}
+
+async function parsePlanPdf(arrayBuffer) {
+  var pdfjs = await loadPlanPdfJs();
+  var doc = await pdfjs.getDocument({ data: arrayBuffer, useWorkerFetch: false, isEvalSupported: false }).promise;
+  var rows = [];
+  var anchors = null;
+  var nextYear = 1;
+  var genderCandidates = [];
+  var title = '';
+  var mainDone = false;
+
+  for (var p = 1; p <= doc.numPages && !mainDone; p++) {
+    var page = await doc.getPage(p);
+    var textContent = await page.getTextContent();
+    var items = [];
+    textContent.items.forEach(function(it) {
+      if (!it.str || !it.str.trim()) return;
+      items.push({ s: it.str.trim(), x: it.transform[4], y: it.transform[5], w: it.width || 0 });
+    });
+
+    if (p === 1) {
+      items.slice().sort(function(a, b) { return b.y - a.y; }).slice(0, 3).forEach(function(it) {
+        if (it.s.indexOf('保险') >= 0 || title) title += it.s;
+      });
+    }
+    items.forEach(function(it) {
+      var m = it.s.match(/^(男|女)\s*(\d{1,3})\s*岁$/);
+      if (m) genderCandidates.push({ gender: m[1], age: parseInt(m[2], 10) });
+    });
+
+    var header = planFindHeader(items);
+    if (header) anchors = header.anchors;
+    if (!anchors) continue;
+
+    var groups = planGroupRows(items, header ? header.y - 8 : 1e9);
+    for (var gi = 0; gi < groups.length; gi++) {
+      var rec = planMapRow(groups[gi], anchors);
+      if (!rec) continue;
+      var y = rec.year;
+      if (y === nextYear) {
+        rows.push(rec);
+        nextYear++;
+      } else if (y === 1 && nextYear > 1) {
+        mainDone = true;
+        break; // 进入下一张表（万能账户等），停止
+      } else if (y === nextYear - 1) {
+        continue; // 重复行
+      } else if (y > nextYear) {
+        mainDone = true;
+        break; // 出现断档，停止
+      }
+    }
+  }
+
+  if (rows.length < 2) throw new Error('未识别到分红险利益演示表，请确认上传的是国寿分红型计划书');
+  var derived = planDeriveMeta(rows, checksInfoOf(rows), genderCandidates, title);
+  var info = planValidate(rows);
+  derived.pageCount = doc.numPages;
+  return {
+    rows: rows,
+    meta: derived,
+    checks: info.checks,
+    hasFail: info.checks.some(function(c) { return !c.ok; })
+  };
+}
+
+// helper: 仅用于 meta 推导
+function checksInfoOf(rows) {
+  var payYears = rows.filter(function(r) { return (r.premium || 0) > 0; }).map(function(r) { return r.year; });
+  var lastPay = payYears.length ? Math.max.apply(null, payYears) : 0;
+  var survRows = rows.filter(function(r) { return (r.survival || 0) > 0; });
+  return { lastPay: lastPay, survRows: survRows };
+}
+
+function handlePlanFile(ev) {
+  var input = ev.target;
+  var file = input.files && input.files[0];
+  if (!file) return;
+  if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') {
+    showToast('请选择 PDF 格式的计划书', 'warning');
+    input.value = '';
+    return;
+  }
+  if (file.size > 40 * 1024 * 1024) {
+    showToast('计划书文件过大（超过40MB）', 'warning');
+    input.value = '';
+    return;
+  }
+  var status = document.getElementById('planImportStatus');
+  status.innerHTML = '<span style="color:#2563eb;">正在本地解析计划书…</span>';
+  var reader = new FileReader();
+  reader.onload = function() {
+    parsePlanPdf(new Uint8Array(reader.result)).then(function(plan) {
+      planImportData = plan;
+      status.innerHTML = plan.hasFail
+        ? '<span style="color:#b91c1c;">解析完成，但勾稽校验未通过，请核对计划书</span>'
+        : '<span style="color:#15803d;">解析完成：' + plan.rows.length + ' 个保单年度，待核对</span>';
+      openPlanModal(plan);
+    }).catch(function(err) {
+      console.error(err);
+      status.innerHTML = '<span style="color:#b91c1c;">解析失败：' + (err && err.message ? err.message : '未知错误') + '</span>';
+      showToast('计划书解析失败', 'error');
+    });
+  };
+  reader.onerror = function() {
+    status.innerHTML = '<span style="color:#b91c1c;">读取文件失败</span>';
+    showToast('读取文件失败', 'error');
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function openPlanModal(plan) {
+  var m = plan.meta;
+  var overlay = document.getElementById('planModalOverlay');
+  document.getElementById('planModalDesc').textContent =
+    '已解析 ' + plan.rows.length + ' 个保单年度（第1–' + plan.rows.length + '年，至' + m.finalAge + '岁）。请核对下方参数与抽查数据，确认无误后生成试算。';
+  var checksHtml = '<div class="plan-check-list">';
+  plan.checks.forEach(function(c) {
+    checksHtml += '<div class="plan-check-item ' + (c.ok ? 'pass' : 'fail') + '">' +
+      '<span class="pc-badge">' + (c.ok ? 'PASS' : 'FAIL') + '</span>' +
+      '<span><strong>' + c.rule + '</strong>' + (c.detail ? '：' + c.detail : '') + '</span></div>';
+  });
+  checksHtml += '</div>';
+
+  var metaHtml = '<div class="plan-meta-grid">' +
+    '<label>投保年龄<input id="planMetaAge" type="number" min="0" max="100" value="' + (m.issueAge != null ? m.issueAge : '') + '"></label>' +
+    '<label>性别<select id="planMetaGender"><option value="male"' + (m.gender === 'male' ? ' selected' : '') + '>男</option><option value="female"' + (m.gender === 'female' ? ' selected' : '') + '>女</option></select></label>' +
+    '<label>年缴保费<input id="planMetaPremium" type="number" min="0" step="100" value="' + m.annualPremium + '"></label>' +
+    '<label>缴费年限<input id="planMetaPayYears" type="number" min="1" max="100" value="' + m.paymentYears + '"></label>' +
+    '<label>保障期限（年）<input id="planMetaPeriod" type="number" min="1" max="100" value="' + m.coverageYears + '"></label>' +
+    '<label>每年生存金<input id="planMetaSurvival" type="number" min="0" step="1" value="' + m.annualSurvivalBenefit + '"></label>' +
+    '<label>生存金起领年龄<input id="planMetaStartAge" type="number" min="0" max="120" value="' + (m.survivalStartAge != null ? m.survivalStartAge : '') + '"></label>' +
+    '<label>产品名称<input id="planMetaProduct" type="text" value="' + (m.productName || '') + '"></label>' +
+    '</div>';
+
+  var anchorYears = [1, 5, 10];
+  if (m.paymentYears) anchorYears.push(m.paymentYears);
+  if (m.survivalStartYear) anchorYears.push(m.survivalStartYear);
+  [40, 55, 60, 70, 80, 90].forEach(function(y) { if (y <= plan.rows.length) anchorYears.push(y); });
+  anchorYears.push(plan.rows.length);
+  var seen = {};
+  anchorYears = anchorYears.filter(function(y) { if (seen[y]) return false; seen[y] = true; return y >= 1 && y <= plan.rows.length; }).sort(function(a, b) { return a - b; });
+
+  var anchorHtml = '<div class="plan-anchor-wrap"><table class="plan-anchor-table"><thead><tr>' +
+    '<th>年度</th><th>年龄</th><th>当年保费</th><th>累计保费</th><th>生存给付</th><th>满期给付</th><th>身故保障</th><th>现金价值</th><th>红利演示</th>' +
+    '</tr></thead><tbody>';
+  anchorYears.forEach(function(y) {
+    var r = plan.rows[y - 1];
+    anchorHtml += '<tr><td>第' + y + '年</td><td>' + r.age + '</td><td>' + formatMoney(r.premium || 0) + '</td><td>' + formatMoney(r.cumPremium || 0) + '</td>' +
+      '<td>' + formatMoney(r.survival || 0) + '</td><td>' + formatMoney(r.maturity || 0) + '</td><td>' + formatMoney(r.death || 0) + '</td>' +
+      '<td style="font-weight:700;color:#0d9488;">' + formatMoney(r.cashValue || 0) + '</td><td style="color:#b45309;">' + formatMoney(r.divProjected || 0) + '</td></tr>';
+  });
+  anchorHtml += '</tbody></table></div>';
+
+  document.getElementById('planModalBody').innerHTML = metaHtml + checksHtml + anchorHtml;
+  var btn = document.getElementById('planConfirmBtn');
+  btn.disabled = !!plan.hasFail;
+  btn.style.opacity = plan.hasFail ? '0.5' : '1';
+  btn.style.cursor = plan.hasFail ? 'not-allowed' : 'pointer';
+  overlay.style.display = 'flex';
+}
+
+function closePlanModal() {
+  document.getElementById('planModalOverlay').style.display = 'none';
+}
+
+function confirmPlanImport() {
+  var plan = planImportData;
+  if (!plan || plan.hasFail) { showToast('勾稽校验未通过，不能生成试算', 'warning'); return; }
+  var age = parseFloat(document.getElementById('planMetaAge').value);
+  var premium = parseFloat(document.getElementById('planMetaPremium').value);
+  var payYears = parseInt(document.getElementById('planMetaPayYears').value, 10);
+  var period = parseInt(document.getElementById('planMetaPeriod').value, 10);
+  var survival = parseFloat(document.getElementById('planMetaSurvival').value) || 0;
+  var startAge = parseFloat(document.getElementById('planMetaStartAge').value);
+  var gender = document.getElementById('planMetaGender').value;
+  var product = document.getElementById('planMetaProduct').value;
+
+  if (!(age >= 0 && age <= 100)) { showToast('投保年龄需在0-100岁之间', 'warning'); return; }
+  if (!(premium > 0)) { showToast('年缴保费需大于0', 'warning'); return; }
+  if (!(payYears >= 1 && payYears <= period)) { showToast('缴费年限需在1-保障期限内', 'warning'); return; }
+  if (!(period >= 1 && period <= 100)) { showToast('保障期限需在1-100年之间', 'warning'); return; }
+  if (!(startAge >= age && startAge <= 120)) { showToast('生存金起领年龄需不小于投保年龄', 'warning'); return; }
+
+  document.getElementById('insuredAge').value = age;
+  document.querySelector('input[name="gender"][value="' + (gender || 'male') + '"]').checked = true;
+  document.getElementById('annualPremium').value = premium;
+  document.getElementById('guaranteePeriod').value = period;
+  document.getElementById('annualSurvivalBenefit').value = survival;
+  document.getElementById('survivalBenefitStartAge').value = startAge;
+  if (product) document.getElementById('productName').value = product;
+  document.getElementById('company').value = '国寿';
+
+  var sel = document.getElementById('paymentYears');
+  var exists = false;
+  for (var i = 0; i < sel.options.length; i++) { if (parseInt(sel.options[i].value, 10) === payYears) exists = true; }
+  if (!exists) {
+    var opt = document.createElement('option');
+    opt.value = String(payYears);
+    opt.text = payYears + '年';
+    sel.appendChild(opt);
+  }
+  sel.value = String(payYears);
+
+  document.getElementById('enableDividend').checked = true;
+  document.getElementById('dividendSection').style.display = '';
+  document.querySelector('input[name="dividendMode"][value="manual"]').checked = true;
+  document.getElementById('manualDividendInputs').style.display = '';
+  document.getElementById('sjjDividendInfo').style.display = 'none';
+
+  plan.manual = { age: age, premium: premium, payYears: payYears, period: period, survival: survival, startAge: startAge };
+
+  closePlanModal();
+  document.getElementById('planImportStatus').innerHTML = '<span style="color:#15803d;">已导入：' + plan.rows.length + ' 年 · ' + product + '</span>';
+  calculate(true);
+}
+
+// 把计划书逐年数据映射为现有结果结构
+function buildPlanScenario(plan, params) {
+  var data = [];
+  var bank = 0, totalSurvival = 0, totalDividend = 0, totalMaturity = 0;
+  var interest = (params.bankRate || 0) / 100;
+  plan.rows.forEach(function(r) {
+    var survival = 0;
+    if (params.survivalBenefitStartAge != null && r.age >= params.survivalBenefitStartAge) {
+      survival = params.annualSurvivalBenefit || 0;
+    }
+    var dividend = params.enableDividend ? (r.divProjected || 0) : 0;
+    var cash = r.cashValue || 0;
+    bank = (bank + (r.premium || 0)) * (1 + interest);
+    data.push({
+      year: r.year,
+      currentAge: r.age,
+      premium: r.premium || 0,
+      cumPremium: r.cumPremium || 0,
+      survivalBenefit: survival,
+      extraDividend: 0,
+      dividend: dividend,
+      totalReturn: survival + dividend,
+      universalBaseAccount: cash,
+      universalAddAccount: 0,
+      universalAddThisYear: 0,
+      universalAddCumulative: 0,
+      secondaryAccount: cash,
+      bankAccount: bank,
+      bankInterest: bank - (r.cumPremium || 0),
+      cashValue: cash,
+      deathBenefit: r.death || 0,
+      withdrawal: 0,
+      idleFundInterest: 0,
+      idleFundAccount: 0,
+      cumIdleFundInterest: 0,
+      planMaturity: r.maturity || 0,
+      planDivGuaranteed: r.divGuaranteed || 0
+    });
+    totalSurvival += survival;
+    totalDividend += dividend;
+    totalMaturity += r.maturity || 0;
+  });
+  var last = data[data.length - 1] || { cashValue: 0, cumPremium: 0, deathBenefit: 0 };
+  return {
+    data: data,
+    totalPremium: last.cumPremium || 0,
+    totalSurvivalBenefit: totalSurvival,
+    totalExtraDividend: 0,
+    totalDividend: totalDividend,
+    totalMaturity: totalMaturity,
+    universalAddCumulative: 0,
+    universalAddThisYear: 0,
+    universalBaseAccount: last.cashValue || 0,
+    universalAddAccount: 0,
+    finalSecondaryAccount: last.cashValue || 0,
+    totalWithdrawal: 0,
+    finalBankAccount: bank,
+    totalBankInterest: bank - (last.cumPremium || 0),
+    totalAddAmount: 0,
+    addCap: 0,
+    totalIdleFundInterest: 0,
+    planMeta: {
+      coverageYears: plan.rows.length,
+      issueAge: plan.meta.issueAge,
+      paymentYears: plan.meta.paymentYears,
+      survivalStartAge: params.survivalBenefitStartAge,
+      annualPremium: params.annualPremium,
+      productName: plan.meta.productName,
+      finalCashValue: last.cashValue || 0,
+      totalPayout: totalSurvival + totalDividend + totalMaturity
+    }
+  };
+}
+
+function isPlanMode() {
+  return !!calcResult && currentScenario === 'plan' && !!calcResult.scenarios.plan;
+}
+
 // ======== 核心计算 ========
 function calculate() {
   var params = {
@@ -1104,7 +1664,7 @@ function calculate() {
   };
 
   // 校验
-  if (params.insuredAge < 18 || params.insuredAge > 65) { showToast('投保年龄需在18-65岁之间', 'warning'); return; }
+  if (params.insuredAge < 0 || params.insuredAge > 100) { showToast('投保年龄需在0-100岁之间', 'warning'); return; }
   if (params.annualPremium < 1000) { showToast('年缴保费不能低于1000元', 'warning'); return; }
   if (params.guaranteePeriod < 1 || params.guaranteePeriod > 100) { showToast('保障期限需在1-100年之间', 'warning'); return; }
 
@@ -1158,6 +1718,14 @@ function calculate() {
         scenarioB: computeScenario(compareParams, params.dividendRateMedium)
       };
     }
+  }
+
+  // 计划书原表情景（从本地 PDF 解析出的逐年数据）
+  if (planImportData && planImportData.rows && planImportData.rows.length >= 2) {
+    params.planMode = true;
+    calcResult.scenarios.plan = buildPlanScenario(planImportData, params);
+    calcResult.plan = planImportData;
+    if (arguments[0] === true || currentScenario === 'plan') currentScenario = 'plan';
   }
 
   document.getElementById('emptyState').style.display = 'none';
@@ -1369,7 +1937,33 @@ function computeScenario(params, firstYearDividend) {
 }
 
 // ======== 汇总卡片 ========
+function renderPlanSummaryCards() {
+  var s = calcResult.scenarios.plan;
+  var meta = s.planMeta || {};
+  var last = s.data[s.data.length - 1] || {};
+  var html = '';
+  var cards = [
+    { cls: 'sc-blue', label: '总投入保费', value: formatMoney(s.totalPremium), sub: '计划书累计保费' },
+    { cls: 'sc-green', label: '累计生存金', value: formatMoney(s.totalSurvivalBenefit), sub: '按人工填写金额计算' },
+    { cls: 'sc-amber', label: '累计分红（演示）', value: formatMoney(s.totalDividend), sub: '计划书红利演示' },
+    { cls: 'sc-teal', label: '满期给付', value: formatMoney(s.totalMaturity || 0), sub: '计划书满期金' },
+    { cls: 'sc-cyan', label: '期末现金价值', value: formatMoney(meta.finalCashValue || 0), sub: '第' + s.data.length + '年退保金' },
+    { cls: 'sc-red', label: '期末身故保障', value: formatMoney(last.deathBenefit || 0), sub: '计划书身故保险金' },
+    { cls: 'sc-purple', label: '保单总返还', value: formatMoney(meta.totalPayout || 0), sub: '生存+红利+满期（未计红利生息）' },
+    { cls: 'sc-cyan', label: '银行存款对比', value: formatMoney(s.finalBankAccount), sub: '本息合计' }
+  ];
+  cards.forEach(function(c) {
+    html += '<div class="summary-card ' + c.cls + '"><div class="sc-label">' + c.label + '</div><div class="sc-value">' + c.value + '</div><div class="sc-sub">' + c.sub + '</div></div>';
+  });
+  var diff = (meta.totalPayout || 0) - s.finalBankAccount;
+  var diffCls = diff >= 0 ? 'sc-green' : 'sc-red';
+  var diffLabel = diff >= 0 ? '保单多赚' : '保单少赚';
+  html += '<div class="summary-card ' + diffCls + '"><div class="sc-label">' + diffLabel + '</div><div class="sc-value">' + formatMoney(Math.abs(diff)) + '</div><div class="sc-sub">计划书总返还 vs 银行存款</div></div>';
+  document.getElementById('summaryCards').innerHTML = html;
+}
+
 function renderSummaryCards() {
+  if (isPlanMode()) { renderPlanSummaryCards(); return; }
   var s = calcResult.scenarios[currentScenario];
   var p = calcResult.params;
   var html = '';
@@ -1418,20 +2012,28 @@ function updateScenarioTabs() {
   var tabs = document.querySelectorAll('#scenarioTabs .scenario-tab');
   var enableDiv = calcResult.params.enableDividend;
   var isSJJ = calcResult.params.dividendMode === 'sjj';
+  var hasPlan = !!calcResult.scenarios.plan;
   var container = document.getElementById('scenarioTabs');
-  // SJJ模式或未启用红利时隐藏情景切换
-  container.style.display = (enableDiv && !isSJJ) ? '' : 'none';
+  if (!hasPlan && currentScenario === 'plan') currentScenario = isSJJ ? 'sjj' : 'medium';
+  if (!enableDiv && !hasPlan && currentScenario !== 'sjj') currentScenario = 'medium';
+
   tabs.forEach(function(t) {
+    var isPlanTab = t.dataset.scenario === 'plan';
+    if (isPlanTab) {
+      t.style.display = hasPlan ? '' : 'none';
+    } else {
+      t.style.display = (isSJJ && hasPlan) ? 'none' : '';
+    }
     t.classList.toggle('active', t.dataset.scenario === currentScenario);
   });
-  // 不启用红利时固定使用中档
-  if (!enableDiv) currentScenario = 'medium';
+  container.style.display = (hasPlan || (enableDiv && !isSJJ)) ? '' : 'none';
 }
 
 document.getElementById('scenarioTabs').addEventListener('click', function(e) {
   if (e.target.classList.contains('scenario-tab')) {
     currentScenario = e.target.dataset.scenario;
     updateScenarioTabs();
+    renderSummaryCards();
     renderAllCharts();
     renderDataTable();
   }
@@ -1445,25 +2047,26 @@ function destroyChart(key) {
 function renderAllCharts() {
   renderEarningsChart();
   renderCompareChart();
-  // SJJ模式下跳过三档柱状图
+  var isPlan = isPlanMode();
+  // SJJ模式或计划书模式下跳过三档柱状图
   var isSJJ = calcResult.params.dividendMode === 'sjj';
-  if (!isSJJ) {
+  if (!isSJJ && !isPlan) {
     updateBarChart();
   }
-  // 年龄对比图
+  // 年龄对比图（计划书模式使用原表数据，不参与年龄对比）
   var ageContainer = document.getElementById('ageCompareChartContainer');
   if (ageContainer) {
-    if (calcResult.ageCompare) {
+    if (calcResult.ageCompare && !isPlan) {
       ageContainer.style.display = '';
       renderAgeCompareChart();
     } else {
       ageContainer.style.display = 'none';
     }
   }
-  // 不启用红利或SJJ模式时隐藏三档对比柱状图
+  // 不启用红利、SJJ或计划书模式时隐藏三档对比柱状图
   var barContainer = document.getElementById('barChartContainer');
   if (barContainer) {
-    barContainer.style.display = (calcResult.params.enableDividend && !isSJJ) ? '' : 'none';
+    barContainer.style.display = (!isSJJ && !isPlan && calcResult.params.enableDividend) ? '' : 'none';
   }
   // 更新柱状图标题
   var barTitle = document.getElementById('barChartTitle');
@@ -1493,6 +2096,37 @@ function renderEarningsChart() {
   destroyChart('earnings');
   var data = getScenarioData();
   var ctx = document.getElementById('earningsChart').getContext('2d');
+
+  if (isPlanMode()) {
+    charts.earnings = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: getYearLabels(),
+        datasets: [
+          { label: '累计保费', data: data.map(function(d) { return d.cumPremium; }), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.1)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2 },
+          { label: '生存金', data: data.map(function(d) { return d.survivalBenefit; }), borderColor: '#22c55e', borderWidth: 2, tension: .3, pointRadius: 0 },
+          { label: '红利（演示）', data: data.map(function(d) { return d.dividend; }), borderColor: '#f59e0b', borderWidth: 2, tension: .3, pointRadius: 0 },
+          { label: '现金价值（退保金）', data: data.map(function(d) { return d.cashValue; }), borderColor: '#0d9488', borderWidth: 2.5, tension: .3, pointRadius: 0 },
+          { label: '身故保障', data: data.map(function(d) { return d.deathBenefit; }), borderColor: '#ef4444', borderWidth: 2, tension: .3, pointRadius: 0, borderDash: [5,3] },
+          { label: '银行存款本息', data: data.map(function(d) { return d.bankAccount; }), borderColor: '#06b6d4', borderWidth: 2, tension: .3, pointRadius: 0, borderDash: [3,3] }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16, font: { size: 11 }, usePointStyle: true } },
+          tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + formatCurrency(c.parsed.y); } } }
+        },
+        scales: {
+          y: { ticks: { callback: function(v) { return formatMoney(v); } }, grid: { color: '#f3f4f6' } },
+          x: { ticks: { maxTicksLimit: 15, font: { size: 10 } }, grid: { display: false } }
+        }
+      }
+    });
+    return;
+  }
 
   charts.earnings = new Chart(ctx, {
     type: 'line',
@@ -1540,6 +2174,35 @@ function renderCompareChart() {
   destroyChart('compare');
   var data = getScenarioData();
   var ctx = document.getElementById('compareChart').getContext('2d');
+
+  if (isPlanMode()) {
+    charts.compare = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: getYearLabels(),
+        datasets: [
+          { label: '保单现金价值', data: data.map(function(d) { return d.cashValue; }), borderColor: '#0d9488', backgroundColor: 'rgba(13,148,136,.08)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2.5 },
+          { label: '本金保障（累计保费）', data: data.map(function(d) { return d.cumPremium; }), borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,.06)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2.5, borderDash: [3,3] },
+          { label: '累计生存金+红利', data: data.map(function(d) { return d.survivalBenefit + d.dividend; }), borderColor: '#f59e0b', borderWidth: 2, tension: .3, pointRadius: 0 },
+          { label: '银行存款本息', data: data.map(function(d) { return d.bankAccount; }), borderColor: '#06b6d4', borderWidth: 2, tension: .3, pointRadius: 0, borderDash: [5,3] }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16, font: { size: 11 }, usePointStyle: true } },
+          tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + formatCurrency(c.parsed.y); } } }
+        },
+        scales: {
+          y: { ticks: { callback: function(v) { return formatMoney(v); } }, grid: { color: '#f3f4f6' } },
+          x: { ticks: { maxTicksLimit: 15, font: { size: 10 } }, grid: { display: false } }
+        }
+      }
+    });
+    return;
+  }
 
   charts.compare = new Chart(ctx, {
     type: 'line',
@@ -1722,6 +2385,29 @@ function renderDataTable() {
   var data = getScenarioData();
   if (!data || data.length === 0) {
     document.getElementById('dataTableWrap').innerHTML = '<p style="text-align:center;padding:20px;color:var(--gray-500);">暂无数据</p>';
+    return;
+  }
+  if (isPlanMode()) {
+    var planCumSurvival = 0, planCumDiv = 0;
+    var planHtml = '<table><thead><tr><th>保单年度</th><th>年末年龄</th><th>年初保费</th><th>累计保费</th><th>生存给付</th><th>满期给付</th><th>身故保障</th><th>现金价值</th><th>红利演示</th><th>累计生存+红利</th></tr></thead><tbody>';
+    data.forEach(function(d) {
+      planCumSurvival += d.survivalBenefit || 0;
+      planCumDiv += d.dividend || 0;
+      planHtml += '<tr>';
+      planHtml += '<td>第' + d.year + '年</td>';
+      planHtml += '<td>' + d.currentAge + '</td>';
+      planHtml += '<td>' + formatMoney(d.premium) + '</td>';
+      planHtml += '<td>' + formatMoney(d.cumPremium) + '</td>';
+      planHtml += '<td>' + formatMoney(d.survivalBenefit) + '</td>';
+      planHtml += '<td>' + formatMoney(d.planMaturity || 0) + '</td>';
+      planHtml += '<td>' + formatMoney(d.deathBenefit) + '</td>';
+      planHtml += '<td style="font-weight:700;color:#0d9488;">' + formatMoney(d.cashValue) + '</td>';
+      planHtml += '<td style="color:#b45309;">' + formatMoney(d.dividend) + '</td>';
+      planHtml += '<td>' + formatMoney(planCumSurvival + planCumDiv) + '</td>';
+      planHtml += '</tr>';
+    });
+    planHtml += '</tbody></table>';
+    document.getElementById('dataTableWrap').innerHTML = planHtml;
     return;
   }
   var enableDiv = calcResult.params.enableDividend;
@@ -1919,6 +2605,7 @@ function dismissUrlNotice() {
 // ======== 分享链接弹窗 ========
 function openShareLinkModal() {
   if (!calcResult) { showToast('请先点击「开始计算」', 'warning'); return; }
+  if (isPlanMode()) { showToast('计划书原表结果来自本地PDF，无法通过链接复现，请切换到中档/高档后再分享', 'warning'); return; }
   var url = buildShareUrl();
 
   // 同步更新地址栏（不刷新）
@@ -2026,11 +2713,12 @@ function buildAndExportShareImage() {
   });
 
   // 场景名称
-  var scenarioNames = { low: '低档（保底）', medium: '中档（平均）', high: '高档（理想）', sjj: 'SJJ模型' };
+  var scenarioNames = { low: '低档（保底）', medium: '中档（平均）', high: '高档（理想）', sjj: 'SJJ模型', plan: '计划书原表' };
   var scName = scenarioNames[currentScenario] || currentScenario;
 
   // 关键指标
-  var insuranceTotal = s.finalSecondaryAccount + s.totalPremium + (p.enableIdleFundCalc ? s.totalIdleFundInterest : 0);
+  var planNow = isPlanMode();
+  var insuranceTotal = planNow && s.planMeta ? s.planMeta.totalPayout : (s.finalSecondaryAccount + s.totalPremium + (p.enableIdleFundCalc ? s.totalIdleFundInterest : 0));
   var diff = insuranceTotal - s.finalBankAccount;
   var diffTxt = diff >= 0 ? '保单比银行多赚 ' + formatMoney(Math.abs(diff)) : '保单比银行少赚 ' + formatMoney(Math.abs(diff));
 
@@ -2044,7 +2732,7 @@ function buildAndExportShareImage() {
   // 指标卡片
   var metrics = [
     { label: '总投入保费', value: formatMoney(s.totalPremium), color: '#1d4ed8', bg: '#eff6ff' },
-    { label: '万能账户总计', value: formatMoney(s.finalSecondaryAccount), color: '#0891b2', bg: '#ecfeff' },
+    { label: planNow ? '期末现金价值' : '万能账户总计', value: formatMoney(s.finalSecondaryAccount), color: '#0891b2', bg: '#ecfeff' },
     { label: '累计生存金', value: formatMoney(s.totalSurvivalBenefit), color: '#16a34a', bg: '#f0fdf4' },
     { label: '银行存款对比', value: formatMoney(s.finalBankAccount), color: '#6b7280', bg: '#f9fafb' }
   ];
@@ -2235,6 +2923,14 @@ function resetAll() {
   document.getElementById('sjjDividendInfo').style.display = 'none';
 
   calcResult = null;
+  planImportData = null;
+  var planFile = document.getElementById('planFileInput');
+  if (planFile) planFile.value = '';
+  var planStatus = document.getElementById('planImportStatus');
+  if (planStatus) planStatus.textContent = '';
+  var planTab = document.getElementById('planTab');
+  if (planTab) planTab.style.display = 'none';
+  closePlanModal();
   document.getElementById('emptyState').style.display = '';
   document.getElementById('resultContent').style.display = 'none';
   Object.keys(charts).forEach(function(k) { destroyChart(k); });
