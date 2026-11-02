@@ -143,6 +143,11 @@ body {
   border-color: var(--blue-500);
   box-shadow: 0 0 0 3px rgba(59,130,246,.15);
 }
+.form-group input:disabled, .form-group select:disabled {
+  background: var(--gray-50);
+  color: var(--gray-500);
+  cursor: not-allowed;
+}
 .form-group .input-suffix {
   position: relative;
 }
@@ -197,6 +202,7 @@ body {
   box-shadow: var(--shadow-sm);
 }
 .radio-group label span { display: block; padding: 4px 0; border-radius: 5px; }
+.radio-group input:disabled + span { opacity: .55; cursor: not-allowed; }
 /* Buttons */
 .btn {
   width: 100%;
@@ -675,7 +681,7 @@ body {
     <!-- 险种模型：上传计划书与建模在同一个规则条目 -->
     <div class="card section-purple">
       <div class="card-header"><span class="icon-dot" style="background:#a855f7;"></span>险种模型（可选）</div>
-      <div class="form-hint" style="margin-bottom:10px;font-size:12px;color:var(--gray-500);line-height:1.6;">一个险种只有一个模型。上传同一险种、不同年龄/性别的计划书会自动归入同一模型；至少 2 份不同年龄或性别的样本才算「已验证」。也可以导入 Excel/CSV、粘贴表格或直接改数。计划书仅在本机解析，不会上传服务器。</div>
+      <div class="form-hint" style="margin-bottom:10px;font-size:12px;color:var(--gray-500);line-height:1.6;">一个险种只有一个模型。上传同一险种、不同年龄/性别的计划书会自动归入同一模型；至少 2 份不同年龄或性别的样本才算「已验证」。应用模型后只需填写年龄、性别、年缴保费，其余产品参数由模型自动带出并按保费比例换算；没有完全匹配的样本时，按最接近的同性别样本近似。计划书仅在本机解析，不会上传服务器。</div>
       <label class="plan-file-btn">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         上传计划书 PDF（自动加入险种模型）
@@ -716,10 +722,13 @@ body {
     <!-- 投保参数 -->
     <div class="card section-green">
       <div class="card-header"><span class="icon-dot" style="background:#22c55e;"></span>投保参数</div>
+      <div id="modelParamLockHint" class="form-hint" style="display:none;padding:8px 10px;background:#faf5ff;border:1px solid #e9d5ff;border-radius:6px;color:#7c3aed;margin-bottom:10px;line-height:1.6;">
+        模型模式：缴费年限、保障期限、每年生存金、生存金起领年龄由模型样本自动带出。你只需修改投保年龄、性别和年缴保费。
+      </div>
       <div class="form-row">
         <div class="form-group">
           <label>投保年龄</label>
-          <div class="input-suffix"><input type="number" id="insuredAge" value="30" min="18" max="65"><span class="suffix">岁</span></div>
+          <div class="input-suffix"><input type="number" id="insuredAge" value="30" min="0" max="100"><span class="suffix">岁</span></div>
         </div>
         <div class="form-group">
           <label>性别</label>
@@ -1749,6 +1758,7 @@ function handlePlanFile(ev) {
     parsePlanPdf(new Uint8Array(reader.result)).then(function(plan) {
       planImportData = plan;
       plan.meta.isModel = false;
+      setModelParamLock(false);
       updatePlanTabLabel();
       syncPlanModeDividendUI();
       status.innerHTML = plan.hasFail
@@ -1885,6 +1895,7 @@ function confirmPlanImport() {
   plan.meta.survivalStartAge = startAge;
   if (product) plan.meta.productName = product;
   plan.manual = { age: age, premium: premium, payYears: payYears, period: period, survival: survival, startAge: startAge };
+  setModelParamLock(false);
   var addedModel = upsertPlanSample(plan);
   syncPlanModeDividendUI();
 
@@ -1893,81 +1904,109 @@ function confirmPlanImport() {
   calculate(true);
 }
 
-// 把计划书逐年数据映射为现有结果结构
+// 把计划书 / 模型逐年数据映射为现有结果结构（含万能账户滚存）
 function buildPlanScenario(plan, params) {
   var data = [];
-  var bank = 0, totalSurvival = 0, totalDividend = 0, totalMaturity = 0;
-  var interest = (params.bankRate || 0) / 100;
+  var bank = 0, totalSurvival = 0, totalExtra = 0, totalDividend = 0, totalMaturity = 0, totalWithdrawal = 0;
+  var universalAccount = 0;
+  var bankRate = (params.bankRate || 0) / 100;
+  var accountRate = (params.secondaryInterestRate || 0) / 100;
+  var withdrawal = params.annualWithdrawal || 0;
+  var extraRate = params.extraDividendRate || 0;
+  var extraDividendPaid = false;
+  var isModel = !!(plan.meta && plan.meta.isModel);
+
   plan.rows.forEach(function(r) {
+    var premium = r.premium || 0;
     var survival = 0;
-    var useRowSurvival = plan.meta && plan.meta.isModel && (r.survival || 0) > 0;
-    if (useRowSurvival) {
+    if (isModel && (r.survival || 0) > 0) {
       survival = r.survival;
     } else if (params.survivalBenefitStartAge != null && r.age >= params.survivalBenefitStartAge) {
       survival = params.annualSurvivalBenefit || 0;
     }
     var dividend = (params.planMode || params.enableDividend) ? (r.divProjected || 0) : 0;
+    var extraDividend = 0;
+    if (params.survivalBenefitStartAge != null && r.age >= params.survivalBenefitStartAge && !extraDividendPaid) {
+      extraDividend = (params.annualPremium || 0) * extraRate / 100;
+      extraDividendPaid = true;
+    }
+
+    // 万能账户：上年末余额计息 + 当年生存金/额外派息/红利 - 提取
+    universalAccount = universalAccount * (1 + accountRate) + survival + extraDividend + dividend - withdrawal;
+    if (universalAccount < 0) universalAccount = 0;
+
     var cash = r.cashValue || 0;
-    bank = (bank + (r.premium || 0)) * (1 + interest);
+    bank = (bank + premium) * (1 + bankRate);
+
     data.push({
       year: r.year,
       currentAge: r.age,
-      premium: r.premium || 0,
+      premium: premium,
       cumPremium: r.cumPremium || 0,
       survivalBenefit: survival,
-      extraDividend: 0,
+      extraDividend: extraDividend,
       dividend: dividend,
-      totalReturn: survival + dividend,
-      universalBaseAccount: cash,
+      totalReturn: survival + extraDividend + dividend,
+      universalBaseAccount: universalAccount,
       universalAddAccount: 0,
       universalAddThisYear: 0,
       universalAddCumulative: 0,
-      secondaryAccount: cash,
+      secondaryAccount: universalAccount,
       bankAccount: bank,
       bankInterest: bank - (r.cumPremium || 0),
       cashValue: cash,
       deathBenefit: r.death || 0,
-      withdrawal: 0,
+      withdrawal: withdrawal,
       idleFundInterest: 0,
       idleFundAccount: 0,
       cumIdleFundInterest: 0,
       planMaturity: r.maturity || 0,
       planDivGuaranteed: r.divGuaranteed || 0
     });
+
     totalSurvival += survival;
+    totalExtra += extraDividend;
     totalDividend += dividend;
     totalMaturity += r.maturity || 0;
+    totalWithdrawal += withdrawal;
   });
+
   var last = data[data.length - 1] || { cashValue: 0, cumPremium: 0, deathBenefit: 0 };
+  var totalPayout = totalSurvival + totalExtra + totalDividend + totalMaturity;
   return {
     data: data,
     totalPremium: last.cumPremium || 0,
     totalSurvivalBenefit: totalSurvival,
-    totalExtraDividend: 0,
+    totalExtraDividend: totalExtra,
     totalDividend: totalDividend,
     totalMaturity: totalMaturity,
+    totalPayout: totalPayout,
+    totalPayoutWithInterest: universalAccount + totalMaturity + totalWithdrawal,
     universalAddCumulative: 0,
     universalAddThisYear: 0,
-    universalBaseAccount: last.cashValue || 0,
+    universalBaseAccount: universalAccount,
     universalAddAccount: 0,
-    finalSecondaryAccount: last.cashValue || 0,
-    totalWithdrawal: 0,
+    finalSecondaryAccount: universalAccount,
+    totalWithdrawal: totalWithdrawal,
     finalBankAccount: bank,
     totalBankInterest: bank - (last.cumPremium || 0),
     totalAddAmount: 0,
     addCap: 0,
     totalIdleFundInterest: 0,
     planMeta: {
-      coverageYears: (plan.meta && plan.meta.isModel) ? (parseInt(last.year, 10) || plan.rows.length) : plan.rows.length,
+      coverageYears: isModel ? (parseInt(last.year, 10) || plan.rows.length) : plan.rows.length,
       issueAge: plan.meta.issueAge,
       paymentYears: plan.meta.paymentYears,
       survivalStartAge: params.survivalBenefitStartAge,
       annualPremium: params.annualPremium,
       productName: plan.meta.productName,
       name: plan.meta.name || '',
-      isModel: !!(plan.meta && plan.meta.isModel),
+      isModel: isModel,
       finalCashValue: last.cashValue || 0,
-      totalPayout: totalSurvival + totalDividend + totalMaturity
+      totalPayout: totalPayout,
+      basePremium: plan.meta.basePremium,
+      scaleFactor: plan.meta.scaleFactor,
+      sampleName: plan.meta.sampleName
     }
   };
 }
@@ -2592,8 +2631,32 @@ function saveModel(applyNow) {
   }
 }
 
-function buildModelPlanData(model, sample) {
+function sampleBasePremium(sample) {
+  var rows = (sample && sample.rows) || [];
+  for (var i = 0; i < rows.length; i++) {
+    if ((rows[i].premium || 0) > 0) return rows[i].premium;
+  }
+  return ((sample && sample.meta) || {}).annualPremium || 0;
+}
+
+// 按输入保费同比缩放样本的逐年金额，样本本身保持原始数据不变
+function buildScaledModelRows(sample, inputPremium) {
+  var base = sampleBasePremium(sample);
+  var factor = (base > 0 && inputPremium > 0) ? (inputPremium / base) : 1;
   var rows = normalizeModelRows(sample.rows, sample.meta);
+  return rows.map(function(r) {
+    var out = { year: r.year, age: r.age };
+    ['premium', 'cumPremium', 'survival', 'maturity', 'death', 'cashValue', 'divProjected', 'divGuaranteed'].forEach(function(f) {
+      out[f] = (r[f] || 0) * factor;
+    });
+    return out;
+  });
+}
+
+function buildModelPlanData(model, sample, inputPremium) {
+  var base = sampleBasePremium(sample);
+  var factor = (base > 0 && inputPremium > 0) ? (inputPremium / base) : 1;
+  var rows = buildScaledModelRows(sample, inputPremium);
   var meta = Object.assign({}, sample.meta);
   if (rows.length) {
     meta.coverageYears = rows[rows.length - 1].year;
@@ -2604,6 +2667,10 @@ function buildModelPlanData(model, sample) {
   meta.modelName = model.name;
   meta.sampleId = sample.id;
   meta.sampleName = sample.name;
+  meta.basePremium = base;
+  meta.scaleFactor = factor;
+  meta.annualPremium = inputPremium;
+  if (meta.annualSurvivalBenefit > 0) meta.annualSurvivalBenefit = meta.annualSurvivalBenefit * factor;
   meta.productName = meta.productName || model.productName || model.name;
   meta.name = model.name;
   return { rows: rows, meta: meta, checks: [], hasFail: false, isModel: true };
@@ -2620,18 +2687,41 @@ function applyModelToCalc(model, sampleId) {
     sample = pickModelSample(model, modelNumber(document.getElementById('insuredAge').value), getRadioVal('gender') || 'male');
   }
   if (!sample) { showToast('该模型没有可用样本', 'warning'); return false; }
-  var built = buildModelPlanData(model, sample);
+  var inputPremium = getVal('annualPremium');
+  if (!(inputPremium > 0)) inputPremium = sampleBasePremium(sample);
+  var built = buildModelPlanData(model, sample, inputPremium);
   if (built.rows.length < 2) { showToast('样本「' + (sample.name || '') + '」数据不足 2 行，无法试算', 'warning'); return false; }
   planImportData = built;
   fillMainFormFromModelMeta(built.meta);
+  setModelParamLock(true);
   updatePlanTabLabel();
   syncPlanModeDividendUI();
   var sel = document.getElementById('savedModelSelect');
   if (sel) sel.value = model.id;
   var status = document.getElementById('modelStatus');
-  if (status) status.textContent = '已应用模型：' + model.name + '（样本 ' + sample.name + '）';
+  if (status) status.textContent = modelStatusText(model, sample, built.meta);
   calculate(true);
   return true;
+}
+
+function modelStatusText(model, sample, meta) {
+  var m = meta || {};
+  var scaleText = '';
+  if (m.basePremium > 0 && isFinite(m.scaleFactor)) {
+    scaleText = '，按保费 ' + formatMoney(m.annualPremium || 0) + ' 缩放（样本基准 ' + formatMoney(m.basePremium) + '）';
+  }
+  return '已应用模型：' + model.name + '（样本 ' + sample.name + scaleText + '）';
+}
+
+function setModelParamLock(locked) {
+  ['paymentYears', 'guaranteePeriod', 'annualSurvivalBenefit', 'survivalBenefitStartAge'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.disabled = !!locked;
+  });
+  var methods = document.getElementsByName('payMethod');
+  for (var i = 0; i < methods.length; i++) methods[i].disabled = !!locked;
+  var hint = document.getElementById('modelParamLockHint');
+  if (hint) hint.style.display = locked ? '' : 'none';
 }
 
 function fillMainFormFromModelMeta(meta) {
@@ -2645,6 +2735,8 @@ function fillMainFormFromModelMeta(meta) {
   if (meta.annualSurvivalBenefit != null) document.getElementById('annualSurvivalBenefit').value = meta.annualSurvivalBenefit;
   if (meta.survivalStartAge != null) document.getElementById('survivalBenefitStartAge').value = meta.survivalStartAge;
   if (meta.productName) document.getElementById('productName').value = meta.productName;
+  var annualPay = document.querySelector('input[name="payMethod"][value="annual"]');
+  if (annualPay) annualPay.checked = true;
 
   var sel = document.getElementById('paymentYears');
   var payYears = meta.paymentYears;
@@ -2691,6 +2783,7 @@ function deleteSavedModel() {
   savedModels = savedModels.filter(function(m) { return m.id !== model.id; });
   if (planImportData && planImportData.meta && planImportData.meta.modelId === model.id) {
     planImportData = null;
+    setModelParamLock(false);
     updatePlanTabLabel();
     syncPlanModeDividendUI();
   }
@@ -2709,6 +2802,7 @@ function deleteEditingModel() {
   savedModels = savedModels.filter(function(m) { return m.id !== model.id; });
   if (planImportData && planImportData.meta && planImportData.meta.modelId === model.id) {
     planImportData = null;
+    setModelParamLock(false);
     updatePlanTabLabel();
     syncPlanModeDividendUI();
   }
@@ -2749,31 +2843,35 @@ function calculate() {
     compareSurvivalBenefit: getVal('compareSurvivalBenefit')
   };
 
-  // 模型模式：年龄/性别改动后，自动切换为最接近的样本，避免继续使用旧样本的分红数据
+  // 模型模式：按当前年龄/性别选最接近样本，并按当前年缴保费重新缩放模型数据
   if (planImportData && planImportData.meta && planImportData.meta.isModel) {
     var activeModel = getSavedModel(planImportData.meta.modelId);
     if (activeModel && isModelValidated(activeModel)) {
       var matchedSample = pickModelSample(activeModel, params.insuredAge, params.insuredGender);
-      if (matchedSample && matchedSample.id !== planImportData.meta.sampleId) {
-        planImportData = buildModelPlanData(activeModel, matchedSample);
+      if (matchedSample) {
+        planImportData = buildModelPlanData(activeModel, matchedSample, params.annualPremium);
         fillMainFormFromModelMeta(planImportData.meta);
+        setModelParamLock(true);
         updatePlanTabLabel();
         syncPlanModeDividendUI();
+        if (planImportData.meta.issueAge != null) params.insuredAge = planImportData.meta.issueAge;
+        if (planImportData.meta.gender) params.insuredGender = planImportData.meta.gender;
         params.annualPremium = planImportData.meta.annualPremium || params.annualPremium;
         params.paymentYears = planImportData.meta.paymentYears || params.paymentYears;
         params.guaranteePeriod = planImportData.meta.coverageYears || params.guaranteePeriod;
         params.annualSurvivalBenefit = planImportData.meta.annualSurvivalBenefit || 0;
         if (planImportData.meta.survivalStartAge != null) params.survivalBenefitStartAge = planImportData.meta.survivalStartAge;
         var modelStatus = document.getElementById('modelStatus');
-        if (modelStatus) modelStatus.textContent = '已应用模型：' + activeModel.name + '（样本 ' + matchedSample.name + '）';
+        if (modelStatus) modelStatus.textContent = modelStatusText(activeModel, matchedSample, planImportData.meta);
       }
     }
   }
 
   // 校验
+  var isModelData = planImportData && planImportData.meta && planImportData.meta.isModel;
   var hasImportedRows = planImportData && planImportData.rows && planImportData.rows.length >= 2;
   if (params.insuredAge < 0 || params.insuredAge > 100) { showToast('投保年龄需在0-100岁之间', 'warning'); return; }
-  if (params.annualPremium < 1000 && !hasImportedRows) { showToast('年缴保费不能低于1000元', 'warning'); return; }
+  if (params.annualPremium < 1000 && (!hasImportedRows || isModelData)) { showToast('模型试算需填写年缴保费，且不能低于1000元', 'warning'); return; }
   if (params.guaranteePeriod < 1 || params.guaranteePeriod > 100) { showToast('保障期限需在1-100年之间', 'warning'); return; }
 
   Decimal.set({ precision: 20, rounding: Decimal.ROUND_HALF_UP });
@@ -3047,27 +3145,31 @@ function computeScenario(params, firstYearDividend) {
 // ======== 汇总卡片 ========
 function renderPlanSummaryCards() {
   var s = calcResult.scenarios.plan;
+  var p = calcResult.params || {};
   var meta = s.planMeta || {};
   var last = s.data[s.data.length - 1] || {};
   var src = meta.isModel ? '模型' : '计划书';
+  var totalWithInterest = s.totalPayoutWithInterest != null ? s.totalPayoutWithInterest : ((s.finalSecondaryAccount || 0) + (s.totalMaturity || 0));
   var html = '';
   var cards = [
-    { cls: 'sc-blue', label: '总投入保费', value: formatMoney(s.totalPremium), sub: src + '累计保费' },
-    { cls: 'sc-green', label: '累计生存金', value: formatMoney(s.totalSurvivalBenefit), sub: meta.isModel ? '模型数据/人工参数' : '按人工填写金额计算' },
+    { cls: 'sc-blue', label: '总投入保费', value: formatMoney(s.totalPremium), sub: meta.isModel ? '按输入保费缩放' : '计划书累计保费' },
+    { cls: 'sc-green', label: '累计生存金', value: formatMoney(s.totalSurvivalBenefit), sub: meta.isModel ? '模型数据按保费缩放' : '按人工填写金额计算' },
     { cls: 'sc-amber', label: '累计分红（演示）', value: formatMoney(s.totalDividend), sub: src + '红利演示' },
+    { cls: 'sc-teal', label: '额外派息（一次性）', value: formatMoney(s.totalExtraDividend || 0), sub: '保费 × ' + (p.extraDividendRate || 0) + '%' },
     { cls: 'sc-teal', label: '满期给付', value: formatMoney(s.totalMaturity || 0), sub: src + '满期金' },
     { cls: 'sc-cyan', label: '期末现金价值', value: formatMoney(meta.finalCashValue || 0), sub: '第' + (last.year || s.data.length) + '年退保金' },
     { cls: 'sc-red', label: '期末身故保障', value: formatMoney(last.deathBenefit || 0), sub: src + '身故保险金' },
-    { cls: 'sc-purple', label: '保单总返还', value: formatMoney(meta.totalPayout || 0), sub: '生存+红利+满期（未计红利生息）' },
+    { cls: 'sc-purple', label: '万能账户（生存+红利滚存）', value: formatMoney(s.finalSecondaryAccount || 0), sub: '账户利率 ' + (p.secondaryInterestRate || 0) + '%' },
+    { cls: 'sc-purple', label: '保单总返还', value: formatMoney(totalWithInterest), sub: '万能账户 + 满期（已计账户生息）' },
     { cls: 'sc-cyan', label: '银行存款对比', value: formatMoney(s.finalBankAccount), sub: '本息合计' }
   ];
   cards.forEach(function(c) {
     html += '<div class="summary-card ' + c.cls + '"><div class="sc-label">' + c.label + '</div><div class="sc-value">' + c.value + '</div><div class="sc-sub">' + c.sub + '</div></div>';
   });
-  var diff = (meta.totalPayout || 0) - s.finalBankAccount;
+  var diff = totalWithInterest - s.finalBankAccount;
   var diffCls = diff >= 0 ? 'sc-green' : 'sc-red';
   var diffLabel = diff >= 0 ? '保单多赚' : '保单少赚';
-  html += '<div class="summary-card ' + diffCls + '"><div class="sc-label">' + diffLabel + '</div><div class="sc-value">' + formatMoney(Math.abs(diff)) + '</div><div class="sc-sub">' + src + '总返还 vs 银行存款</div></div>';
+  html += '<div class="summary-card ' + diffCls + '"><div class="sc-label">' + diffLabel + '</div><div class="sc-value">' + formatMoney(Math.abs(diff)) + '</div><div class="sc-sub">' + src + '总返还（含账户生息）vs 银行存款</div></div>';
   document.getElementById('summaryCards').innerHTML = html;
 }
 
@@ -3218,6 +3320,7 @@ function renderEarningsChart() {
           { label: '生存金', data: data.map(function(d) { return d.survivalBenefit; }), borderColor: '#22c55e', borderWidth: 2, tension: .3, pointRadius: 0 },
           { label: '红利（演示）', data: data.map(function(d) { return d.dividend; }), borderColor: '#f59e0b', borderWidth: 2, tension: .3, pointRadius: 0 },
           { label: '现金价值（退保金）', data: data.map(function(d) { return d.cashValue; }), borderColor: '#0d9488', borderWidth: 2.5, tension: .3, pointRadius: 0 },
+          { label: '万能账户（生存+红利滚存）', data: data.map(function(d) { return d.secondaryAccount; }), borderColor: '#a855f7', borderWidth: 2.5, tension: .3, pointRadius: 0 },
           { label: '身故保障', data: data.map(function(d) { return d.deathBenefit; }), borderColor: '#ef4444', borderWidth: 2, tension: .3, pointRadius: 0, borderDash: [5,3] },
           { label: '银行存款本息', data: data.map(function(d) { return d.bankAccount; }), borderColor: '#06b6d4', borderWidth: 2, tension: .3, pointRadius: 0, borderDash: [3,3] }
         ]
@@ -3294,7 +3397,8 @@ function renderCompareChart() {
         datasets: [
           { label: '保单现金价值', data: data.map(function(d) { return d.cashValue; }), borderColor: '#0d9488', backgroundColor: 'rgba(13,148,136,.08)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2.5 },
           { label: '本金保障（累计保费）', data: data.map(function(d) { return d.cumPremium; }), borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,.06)', fill: true, tension: .3, pointRadius: 0, borderWidth: 2.5, borderDash: [3,3] },
-          { label: '累计生存金+红利', data: data.map(function(d) { return d.survivalBenefit + d.dividend; }), borderColor: '#f59e0b', borderWidth: 2, tension: .3, pointRadius: 0 },
+          { label: '累计生存金+红利（未计息）', data: data.map(function(d) { return d.survivalBenefit + d.dividend + d.extraDividend; }), borderColor: '#f59e0b', borderWidth: 2, tension: .3, pointRadius: 0 },
+          { label: '万能账户（含生存+红利生息）', data: data.map(function(d) { return d.secondaryAccount; }), borderColor: '#a855f7', borderWidth: 2.5, tension: .3, pointRadius: 0 },
           { label: '银行存款本息', data: data.map(function(d) { return d.bankAccount; }), borderColor: '#06b6d4', borderWidth: 2, tension: .3, pointRadius: 0, borderDash: [5,3] }
         ]
       },
@@ -3500,7 +3604,7 @@ function renderDataTable() {
   }
   if (isPlanMode()) {
     var planCumSurvival = 0, planCumDiv = 0;
-    var planHtml = '<table><thead><tr><th>保单年度</th><th>年末年龄</th><th>年初保费</th><th>累计保费</th><th>生存给付</th><th>满期给付</th><th>身故保障</th><th>现金价值</th><th>红利演示</th><th>累计生存+红利</th></tr></thead><tbody>';
+    var planHtml = '<table><thead><tr><th>保单年度</th><th>年末年龄</th><th>年初保费</th><th>累计保费</th><th>生存给付</th><th>额外派息</th><th>满期给付</th><th>身故保障</th><th>现金价值</th><th>红利演示</th><th>万能账户</th><th>累计生存+红利</th></tr></thead><tbody>';
     data.forEach(function(d) {
       planCumSurvival += d.survivalBenefit || 0;
       planCumDiv += d.dividend || 0;
@@ -3510,10 +3614,12 @@ function renderDataTable() {
       planHtml += '<td>' + formatMoney(d.premium) + '</td>';
       planHtml += '<td>' + formatMoney(d.cumPremium) + '</td>';
       planHtml += '<td>' + formatMoney(d.survivalBenefit) + '</td>';
+      planHtml += '<td style="color:#0d9488;">' + formatMoney(d.extraDividend || 0) + '</td>';
       planHtml += '<td>' + formatMoney(d.planMaturity || 0) + '</td>';
       planHtml += '<td>' + formatMoney(d.deathBenefit) + '</td>';
       planHtml += '<td style="font-weight:700;color:#0d9488;">' + formatMoney(d.cashValue) + '</td>';
       planHtml += '<td style="color:#b45309;">' + formatMoney(d.dividend) + '</td>';
+      planHtml += '<td style="font-weight:700;color:#a855f7;">' + formatMoney(d.secondaryAccount || 0) + '</td>';
       planHtml += '<td>' + formatMoney(planCumSurvival + planCumDiv) + '</td>';
       planHtml += '</tr>';
     });
@@ -3829,7 +3935,7 @@ function buildAndExportShareImage() {
 
   // 关键指标
   var planNow = isPlanMode();
-  var insuranceTotal = planNow && s.planMeta ? s.planMeta.totalPayout : (s.finalSecondaryAccount + s.totalPremium + (p.enableIdleFundCalc ? s.totalIdleFundInterest : 0));
+  var insuranceTotal = planNow && s.planMeta ? (s.totalPayoutWithInterest != null ? s.totalPayoutWithInterest : s.planMeta.totalPayout) : (s.finalSecondaryAccount + s.totalPremium + (p.enableIdleFundCalc ? s.totalIdleFundInterest : 0));
   var diff = insuranceTotal - s.finalBankAccount;
   var diffTxt = diff >= 0 ? '保单比银行多赚 ' + formatMoney(Math.abs(diff)) : '保单比银行少赚 ' + formatMoney(Math.abs(diff));
 
@@ -3843,12 +3949,22 @@ function buildAndExportShareImage() {
   // 指标卡片
   var metrics = [
     { label: '总投入保费', value: formatMoney(s.totalPremium), color: '#1d4ed8', bg: '#eff6ff' },
-    { label: planNow ? '期末现金价值' : '万能账户总计', value: formatMoney(s.finalSecondaryAccount), color: '#0891b2', bg: '#ecfeff' },
-    { label: '累计生存金', value: formatMoney(s.totalSurvivalBenefit), color: '#16a34a', bg: '#f0fdf4' },
     { label: '银行存款对比', value: formatMoney(s.finalBankAccount), color: '#6b7280', bg: '#f9fafb' }
   ];
+  if (planNow) {
+    metrics.splice(1, 0,
+      { label: '期末现金价值', value: formatMoney((s.planMeta && s.planMeta.finalCashValue) || 0), color: '#0d9488', bg: '#f0fdfa' },
+      { label: '万能账户（滚存）', value: formatMoney(s.finalSecondaryAccount), color: '#7c3aed', bg: '#faf5ff' },
+      { label: '累计生存金', value: formatMoney(s.totalSurvivalBenefit), color: '#16a34a', bg: '#f0fdf4' }
+    );
+  } else {
+    metrics.splice(1, 0,
+      { label: '万能账户总计', value: formatMoney(s.finalSecondaryAccount), color: '#0891b2', bg: '#ecfeff' },
+      { label: '累计生存金', value: formatMoney(s.totalSurvivalBenefit), color: '#16a34a', bg: '#f0fdf4' }
+    );
+  }
   if (p.enableDividend) {
-    metrics.splice(3, 0, { label: '累计分红', value: formatMoney(s.totalDividend), color: '#d97706', bg: '#fffbeb' });
+    metrics.splice(metrics.length - 1, 0, { label: '累计分红', value: formatMoney(s.totalDividend), color: '#d97706', bg: '#fffbeb' });
   }
 
   var today = new Date();
@@ -4032,6 +4148,7 @@ function resetAll() {
 
   calcResult = null;
   planImportData = null;
+  setModelParamLock(false);
   var planFile = document.getElementById('planFileInput');
   if (planFile) planFile.value = '';
   var planStatus = document.getElementById('planImportStatus');
