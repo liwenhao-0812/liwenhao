@@ -2592,6 +2592,23 @@ function saveModel(applyNow) {
   }
 }
 
+function buildModelPlanData(model, sample) {
+  var rows = normalizeModelRows(sample.rows, sample.meta);
+  var meta = Object.assign({}, sample.meta);
+  if (rows.length) {
+    meta.coverageYears = rows[rows.length - 1].year;
+    meta.finalAge = rows[rows.length - 1].age;
+  }
+  meta.isModel = true;
+  meta.modelId = model.id;
+  meta.modelName = model.name;
+  meta.sampleId = sample.id;
+  meta.sampleName = sample.name;
+  meta.productName = meta.productName || model.productName || model.name;
+  meta.name = model.name;
+  return { rows: rows, meta: meta, checks: [], hasFail: false, isModel: true };
+}
+
 function applyModelToCalc(model, sampleId) {
   if (!model) return false;
   if (!isModelValidated(model)) {
@@ -2603,20 +2620,10 @@ function applyModelToCalc(model, sampleId) {
     sample = pickModelSample(model, modelNumber(document.getElementById('insuredAge').value), getRadioVal('gender') || 'male');
   }
   if (!sample) { showToast('该模型没有可用样本', 'warning'); return false; }
-  var rows = normalizeModelRows(sample.rows, sample.meta);
-  if (rows.length < 2) { showToast('样本「' + (sample.name || '') + '」数据不足 2 行，无法试算', 'warning'); return false; }
-  var meta = Object.assign({}, sample.meta);
-  meta.coverageYears = rows[rows.length - 1].year;
-  meta.finalAge = rows[rows.length - 1].age;
-  meta.isModel = true;
-  meta.modelId = model.id;
-  meta.modelName = model.name;
-  meta.sampleId = sample.id;
-  meta.sampleName = sample.name;
-  meta.productName = meta.productName || model.productName || model.name;
-  meta.name = model.name;
-  planImportData = { rows: rows, meta: meta, checks: [], hasFail: false, isModel: true };
-  fillMainFormFromModelMeta(meta);
+  var built = buildModelPlanData(model, sample);
+  if (built.rows.length < 2) { showToast('样本「' + (sample.name || '') + '」数据不足 2 行，无法试算', 'warning'); return false; }
+  planImportData = built;
+  fillMainFormFromModelMeta(built.meta);
   updatePlanTabLabel();
   syncPlanModeDividendUI();
   var sel = document.getElementById('savedModelSelect');
@@ -2742,6 +2749,27 @@ function calculate() {
     compareSurvivalBenefit: getVal('compareSurvivalBenefit')
   };
 
+  // 模型模式：年龄/性别改动后，自动切换为最接近的样本，避免继续使用旧样本的分红数据
+  if (planImportData && planImportData.meta && planImportData.meta.isModel) {
+    var activeModel = getSavedModel(planImportData.meta.modelId);
+    if (activeModel && isModelValidated(activeModel)) {
+      var matchedSample = pickModelSample(activeModel, params.insuredAge, params.insuredGender);
+      if (matchedSample && matchedSample.id !== planImportData.meta.sampleId) {
+        planImportData = buildModelPlanData(activeModel, matchedSample);
+        fillMainFormFromModelMeta(planImportData.meta);
+        updatePlanTabLabel();
+        syncPlanModeDividendUI();
+        params.annualPremium = planImportData.meta.annualPremium || params.annualPremium;
+        params.paymentYears = planImportData.meta.paymentYears || params.paymentYears;
+        params.guaranteePeriod = planImportData.meta.coverageYears || params.guaranteePeriod;
+        params.annualSurvivalBenefit = planImportData.meta.annualSurvivalBenefit || 0;
+        if (planImportData.meta.survivalStartAge != null) params.survivalBenefitStartAge = planImportData.meta.survivalStartAge;
+        var modelStatus = document.getElementById('modelStatus');
+        if (modelStatus) modelStatus.textContent = '已应用模型：' + activeModel.name + '（样本 ' + matchedSample.name + '）';
+      }
+    }
+  }
+
   // 校验
   var hasImportedRows = planImportData && planImportData.rows && planImportData.rows.length >= 2;
   if (params.insuredAge < 0 || params.insuredAge > 100) { showToast('投保年龄需在0-100岁之间', 'warning'); return; }
@@ -2800,12 +2828,12 @@ function calculate() {
     }
   }
 
-  // 计划书原表情景（从本地 PDF 解析出的逐年数据）
+  // 计划书 / 模型情景（从本地 PDF 或险种模型解析出的逐年数据）
   if (planImportData && planImportData.rows && planImportData.rows.length >= 2) {
     params.planMode = true;
     calcResult.scenarios.plan = buildPlanScenario(planImportData, params);
     calcResult.plan = planImportData;
-    if (arguments[0] === true || currentScenario === 'plan') currentScenario = 'plan';
+    currentScenario = 'plan';
   }
 
   document.getElementById('emptyState').style.display = 'none';
@@ -3104,7 +3132,8 @@ function updateScenarioTabs() {
     if (isPlanTab) {
       t.style.display = hasPlan ? '' : 'none';
     } else {
-      t.style.display = (isSJJ && hasPlan) ? 'none' : '';
+      // 模型/计划书模式下只保留「模型试算 / 计划书原表」，避免与导入的红利数据混淆
+      t.style.display = hasPlan ? 'none' : (isSJJ ? 'none' : '');
     }
     t.classList.toggle('active', t.dataset.scenario === currentScenario);
   });
@@ -3687,7 +3716,7 @@ function dismissUrlNotice() {
 // ======== 分享链接弹窗 ========
 function openShareLinkModal() {
   if (!calcResult) { showToast('请先点击「开始计算」', 'warning'); return; }
-  if (isPlanMode()) { showToast('计划书原表结果来自本地PDF，无法通过链接复现，请切换到中档/高档后再分享', 'warning'); return; }
+  if (isPlanMode()) { showToast('模型/计划书结果来自本地数据，无法通过链接复现，请改用「生成分享图片」', 'warning'); return; }
   var url = buildShareUrl();
 
   // 同步更新地址栏（不刷新）
