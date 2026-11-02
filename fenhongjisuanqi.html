@@ -681,7 +681,7 @@ body {
     <!-- 险种模型：上传计划书与建模在同一个规则条目 -->
     <div class="card section-purple">
       <div class="card-header"><span class="icon-dot" style="background:#a855f7;"></span>险种模型（可选）</div>
-      <div class="form-hint" style="margin-bottom:10px;font-size:12px;color:var(--gray-500);line-height:1.6;">一个险种只有一个模型。上传同一险种、不同年龄/性别的计划书会自动归入同一模型；至少 2 份不同年龄或性别的样本才算「已验证」。应用模型后只需填写年龄、性别、年缴保费，其余产品参数由模型自动带出并按保费比例换算；没有完全匹配的样本时，按最接近的同性别样本近似。计划书仅在本机解析，不会上传服务器。</div>
+      <div class="form-hint" style="margin-bottom:10px;font-size:12px;color:var(--gray-500);line-height:1.6;">一个险种只有一个模型。上传同一险种、不同年龄/性别的计划书会自动归入同一模型；至少 2 份不同年龄或性别的样本才算「已验证」。应用模型后只需填写年龄、性别、年缴保费，产品参数会自动带出但可以手动修改；没有完全匹配的样本时，按最接近的同性别样本拟合。计划书仅在本机解析，不会上传服务器。</div>
       <label class="plan-file-btn">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         上传计划书 PDF（自动加入险种模型）
@@ -723,7 +723,7 @@ body {
     <div class="card section-green">
       <div class="card-header"><span class="icon-dot" style="background:#22c55e;"></span>投保参数</div>
       <div id="modelParamLockHint" class="form-hint" style="display:none;padding:8px 10px;background:#faf5ff;border:1px solid #e9d5ff;border-radius:6px;color:#7c3aed;margin-bottom:10px;line-height:1.6;">
-        模型模式：缴费年限、保障期限、每年生存金、生存金起领年龄由模型样本自动带出。你只需修改投保年龄、性别和年缴保费。
+        模型已自动带出缴费年限、保障期限、每年生存金、生存金起领年龄。这些参数可以手动修改，修改后会按新参数重新计算。
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -1371,19 +1371,6 @@ function modelValidationText(m) {
   var names = m.samples.map(function(s) { return sampleDisplayName(s.meta); });
   return '已验证：' + n + ' 份样本（' + names.join('、') + '）';
 }
-function pickModelSample(m, age, gender) {
-  if (!m || !m.samples || !m.samples.length) return null;
-  var g = gender === 'female' ? 'female' : 'male';
-  var sameGender = m.samples.filter(function(s) { return (s.meta.gender === 'female' ? 'female' : 'male') === g; });
-  var pool = sameGender.length ? sameGender : m.samples;
-  var targetAge = isFinite(age) ? age : (pool[0].meta.issueAge || 0);
-  var best = pool[0], bestDiff = Infinity;
-  pool.forEach(function(s) {
-    var d = Math.abs((s.meta.issueAge != null ? s.meta.issueAge : 0) - targetAge);
-    if (d < bestDiff) { bestDiff = d; best = s; }
-  });
-  return best;
-}
 function getSampleById(m, id) {
   if (!m || !m.samples) return null;
   for (var i = 0; i < m.samples.length; i++) { if (m.samples[i].id === id) return m.samples[i]; }
@@ -1450,7 +1437,7 @@ function onModelSelectChange() {
   var model = sel && sel.value ? getSavedModel(sel.value) : null;
   var status = document.getElementById('modelStatus');
   if (!status) return;
-  status.textContent = model ? (model.name + '：' + modelValidationText(model)) : (savedModels.length ? '已保存 ' + savedModels.length + ' 个险种模型' : '暂无险种模型');
+  status.textContent = model ? ('已选择：' + model.name + '（点击「应用」后生效） · ' + modelValidationText(model)) : (savedModels.length ? '已保存 ' + savedModels.length + ' 个险种模型' : '暂无险种模型');
 }
 function getSavedModel(id) {
   for (var i = 0; i < savedModels.length; i++) { if (savedModels[i].id === id) return savedModels[i]; }
@@ -1758,7 +1745,7 @@ function handlePlanFile(ev) {
     parsePlanPdf(new Uint8Array(reader.result)).then(function(plan) {
       planImportData = plan;
       plan.meta.isModel = false;
-      setModelParamLock(false);
+      showModelAutoFillHint(false);
       updatePlanTabLabel();
       syncPlanModeDividendUI();
       status.innerHTML = plan.hasFail
@@ -1895,7 +1882,7 @@ function confirmPlanImport() {
   plan.meta.survivalStartAge = startAge;
   if (product) plan.meta.productName = product;
   plan.manual = { age: age, premium: premium, payYears: payYears, period: period, survival: survival, startAge: startAge };
-  setModelParamLock(false);
+  showModelAutoFillHint(false);
   var addedModel = upsertPlanSample(plan);
   syncPlanModeDividendUI();
 
@@ -2639,40 +2626,168 @@ function sampleBasePremium(sample) {
   return ((sample && sample.meta) || {}).annualPremium || 0;
 }
 
-// 按输入保费同比缩放样本的逐年金额，样本本身保持原始数据不变
-function buildScaledModelRows(sample, inputPremium) {
+// 取最接近的同性别样本（没有同性别样本时取最接近的全部样本）
+function pickModelSampleWeights(model, age, gender) {
+  var all = ((model && model.samples) || []).filter(function(s) { return s.rows && s.rows.length; });
+  if (!all.length) return [];
+  var g = gender === 'female' ? 'female' : 'male';
+  var same = all.filter(function(s) { return (s.meta.gender === 'female' ? 'female' : 'male') === g; });
+  var pool = same.length ? same : all;
+  var target = isFinite(age) ? age : (pool[0].meta.issueAge || 0);
+  var nearest = pool[0], best = Infinity;
+  pool.forEach(function(s) {
+    var d = Math.abs((s.meta.issueAge || 0) - target);
+    if (d < best) { best = d; nearest = s; }
+  });
+  return [{ sample: nearest, weight: 1 }];
+}
+
+// 把样本逐年金额按输入保费归一化
+function buildBlendedBaseRows(weights, inputPremium) {
+  var prepared = weights.map(function(w) {
+    var base = sampleBasePremium(w.sample);
+    var factor = (base > 0 && inputPremium > 0) ? (inputPremium / base) : 1;
+    var rows = normalizeModelRows(w.sample.rows, w.sample.meta);
+    var map = {}, maxYear = 0;
+    rows.forEach(function(r) {
+      map[r.year] = r;
+      if (r.year > maxYear) maxYear = r.year;
+    });
+    return { weight: w.weight, factor: factor, map: map, maxYear: maxYear };
+  });
+  var maxYear = 0;
+  prepared.forEach(function(p) { if (p.maxYear > maxYear) maxYear = p.maxYear; });
+  var fields = ['premium', 'cumPremium', 'survival', 'maturity', 'death', 'cashValue', 'divProjected', 'divGuaranteed'];
+  var out = [];
+  for (var y = 1; y <= maxYear; y++) {
+    var acc = { year: y };
+    fields.forEach(function(f) { acc[f] = 0; });
+    var sumW = 0;
+    prepared.forEach(function(p) {
+      var row = p.map[y];
+      if (!row) {
+        for (var yy = y - 1; yy >= 1; yy--) { if (p.map[yy]) { row = p.map[yy]; break; } }
+      }
+      if (!row) return;
+      sumW += p.weight;
+      fields.forEach(function(f) { acc[f] += (row[f] || 0) * p.factor * p.weight; });
+    });
+    if (sumW > 0) {
+      fields.forEach(function(f) { acc[f] = acc[f] / sumW; });
+    }
+    out.push(acc);
+  }
+  return out;
+}
+
+function estimateGrowth(rows, field) {
+  var ratios = [];
+  for (var i = 1; i < rows.length; i++) {
+    var a = rows[i - 1][field] || 0;
+    var b = rows[i][field] || 0;
+    if (a > 0 && b > 0) ratios.push(b / a);
+  }
+  if (!ratios.length) return 1;
+  var recent = ratios.slice(-3);
+  var avg = recent.reduce(function(s, x) { return s + x; }, 0) / recent.length;
+  return Math.max(0.9, Math.min(1.35, avg));
+}
+
+// 拟合公式：样本形态 + 输入保费/缴费年限/保障期限/生存金重新生成逐年数据
+function fitModelRows(baseRows, input) {
+  var years = input.coverageYears > 0 ? Math.round(input.coverageYears) : baseRows.length;
+  var payYears = input.paymentYears > 0 ? Math.round(input.paymentYears) : years;
+  var premium = input.annualPremium || 0;
+  var startAge = input.survivalStartAge;
+  var annualSurvival = input.annualSurvivalBenefit || 0;
+  var baseLen = baseRows.length;
+  var last = baseRows[baseLen - 1] || {};
+  var divGrowth = estimateGrowth(baseRows, 'divProjected');
+  var cashGrowth = estimateGrowth(baseRows, 'cashValue');
+  var maturityYear = 0, maturityAmount = 0;
+  baseRows.forEach(function(r) {
+    if ((r.maturity || 0) > 0) { maturityYear = r.year; maturityAmount = r.maturity; }
+  });
+  var rows = [];
+  for (var y = 1; y <= years; y++) {
+    var base = baseRows[y - 1] || last;
+    var extra = y > baseLen ? y - baseLen : 0;
+    var newPremium = y <= payYears ? premium : 0;
+    var newCum = premium * Math.min(y, payYears);
+    var sampleCum = base.cumPremium || 0;
+    var cumAdjust = (sampleCum > 0 && newCum > 0) ? (newCum / sampleCum) : 1;
+    var cash = (base.cashValue || 0) * Math.pow(cashGrowth, extra) * cumAdjust;
+    var div = (base.divProjected || 0) * Math.pow(divGrowth, extra) * cumAdjust;
+    var divG = (base.divGuaranteed || 0) * cumAdjust;
+    var death = (base.death || 0) * cumAdjust;
+    var maturity = 0;
+    if (y === years && maturityAmount > 0 && years >= maturityYear) maturity = maturityAmount;
+    var age = (input.issueAge || 0) + y;
+    var survival = (startAge != null && age >= startAge) ? annualSurvival : 0;
+    rows.push({
+      year: y, age: age,
+      premium: newPremium, cumPremium: newCum,
+      survival: survival, maturity: maturity, death: death,
+      cashValue: cash, divProjected: div, divGuaranteed: divG
+    });
+  }
+  return rows;
+}
+
+// 应用模型时从样本带出的产品参数（只带出，不锁定，可手动修改）
+function sampleProductMeta(sample, inputPremium) {
+  var meta = Object.assign({}, sample.meta || {});
   var base = sampleBasePremium(sample);
   var factor = (base > 0 && inputPremium > 0) ? (inputPremium / base) : 1;
   var rows = normalizeModelRows(sample.rows, sample.meta);
-  return rows.map(function(r) {
-    var out = { year: r.year, age: r.age };
-    ['premium', 'cumPremium', 'survival', 'maturity', 'death', 'cashValue', 'divProjected', 'divGuaranteed'].forEach(function(f) {
-      out[f] = (r[f] || 0) * factor;
-    });
-    return out;
-  });
+  if (!(meta.paymentYears > 0)) {
+    var lastPay = 0;
+    rows.forEach(function(r) { if ((r.premium || 0) > 0) lastPay = r.year; });
+    meta.paymentYears = lastPay || rows.length;
+  }
+  if (!(meta.coverageYears > 0)) meta.coverageYears = rows.length ? rows[rows.length - 1].year : 0;
+  var surv = meta.annualSurvivalBenefit;
+  if (!(surv > 0)) {
+    rows.some(function(r) { if ((r.survival || 0) > 0) { surv = r.survival; return true; } return false; });
+  }
+  meta.annualSurvivalBenefit = (surv || 0) * factor;
+  if (meta.survivalStartAge == null) {
+    var srow = null;
+    rows.some(function(r) { if ((r.survival || 0) > 0) { srow = r; return true; } return false; });
+    meta.survivalStartAge = srow ? srow.age : null;
+  }
+  meta.basePremium = base;
+  meta.scaleFactor = factor;
+  return meta;
 }
 
-function buildModelPlanData(model, sample, inputPremium) {
-  var base = sampleBasePremium(sample);
-  var factor = (base > 0 && inputPremium > 0) ? (inputPremium / base) : 1;
-  var rows = buildScaledModelRows(sample, inputPremium);
-  var meta = Object.assign({}, sample.meta);
+function buildModelPlanData(model, weights, input) {
+  var prepared = (weights || []).filter(function(w) { return w && w.sample; });
+  if (!prepared.length) return null;
+  var primary = prepared.slice().sort(function(a, b) { return b.weight - a.weight; })[0].sample;
+  var baseRows = buildBlendedBaseRows(prepared, input.annualPremium);
+  var rows = fitModelRows(baseRows, input);
+  var meta = Object.assign({}, primary.meta || {});
+  meta.issueAge = input.issueAge;
+  meta.gender = input.gender;
+  meta.annualPremium = input.annualPremium;
+  meta.paymentYears = input.paymentYears;
+  meta.coverageYears = input.coverageYears;
+  if (input.annualSurvivalBenefit != null) meta.annualSurvivalBenefit = input.annualSurvivalBenefit;
+  if (input.survivalStartAge != null) meta.survivalStartAge = input.survivalStartAge;
+  meta.isModel = true;
+  meta.modelId = model.id;
+  meta.modelName = model.name;
+  meta.sampleId = prepared.length === 1 ? primary.id : null;
+  meta.sampleName = prepared.map(function(w) { return w.sample.name; }).filter(Boolean).join(' + ');
+  meta.basePremium = sampleBasePremium(primary);
+  meta.scaleFactor = meta.basePremium > 0 && input.annualPremium > 0 ? input.annualPremium / meta.basePremium : 1;
+  meta.productName = meta.productName || model.productName || model.name;
+  meta.name = model.name;
   if (rows.length) {
     meta.coverageYears = rows[rows.length - 1].year;
     meta.finalAge = rows[rows.length - 1].age;
   }
-  meta.isModel = true;
-  meta.modelId = model.id;
-  meta.modelName = model.name;
-  meta.sampleId = sample.id;
-  meta.sampleName = sample.name;
-  meta.basePremium = base;
-  meta.scaleFactor = factor;
-  meta.annualPremium = inputPremium;
-  if (meta.annualSurvivalBenefit > 0) meta.annualSurvivalBenefit = meta.annualSurvivalBenefit * factor;
-  meta.productName = meta.productName || model.productName || model.name;
-  meta.name = model.name;
   return { rows: rows, meta: meta, checks: [], hasFail: false, isModel: true };
 }
 
@@ -2682,79 +2797,91 @@ function applyModelToCalc(model, sampleId) {
     showToast('该险种模型尚未验证：至少需要 2 份不同年龄或性别的计划书样本，请再上传一份后再应用', 'warning');
     return false;
   }
-  var sample = sampleId ? getSampleById(model, sampleId) : null;
-  if (!sample) {
-    sample = pickModelSample(model, modelNumber(document.getElementById('insuredAge').value), getRadioVal('gender') || 'male');
+  var weights = null;
+  if (sampleId) {
+    var chosen = getSampleById(model, sampleId);
+    if (chosen) weights = [{ sample: chosen, weight: 1 }];
   }
-  if (!sample) { showToast('该模型没有可用样本', 'warning'); return false; }
+  if (!weights) {
+    weights = pickModelSampleWeights(model, modelNumber(document.getElementById('insuredAge').value), getRadioVal('gender') || 'male');
+  }
+  if (!weights.length) { showToast('该模型没有可用样本', 'warning'); return false; }
+  var primary = weights.slice().sort(function(a, b) { return b.weight - a.weight; })[0].sample;
   var inputPremium = getVal('annualPremium');
-  if (!(inputPremium > 0)) inputPremium = sampleBasePremium(sample);
-  var built = buildModelPlanData(model, sample, inputPremium);
-  if (built.rows.length < 2) { showToast('样本「' + (sample.name || '') + '」数据不足 2 行，无法试算', 'warning'); return false; }
+  if (!(inputPremium > 0)) {
+    inputPremium = sampleBasePremium(primary);
+    document.getElementById('annualPremium').value = inputPremium;
+  }
+  // 自动带出样本的产品参数，之后允许用户手动修改
+  fillModelProductParams(sampleProductMeta(primary, inputPremium));
+  var input = modelInputFromForm();
+  var built = buildModelPlanData(model, weights, input);
+  if (!built || built.rows.length < 2) { showToast('模型数据不足 2 行，无法试算', 'warning'); return false; }
   planImportData = built;
-  fillMainFormFromModelMeta(built.meta);
-  setModelParamLock(true);
+  showModelAutoFillHint(true);
   updatePlanTabLabel();
   syncPlanModeDividendUI();
   var sel = document.getElementById('savedModelSelect');
   if (sel) sel.value = model.id;
-  var status = document.getElementById('modelStatus');
-  if (status) status.textContent = modelStatusText(model, sample, built.meta);
+  setModelStatus(model, weights, built.meta);
   calculate(true);
   return true;
 }
 
-function modelStatusText(model, sample, meta) {
-  var m = meta || {};
-  var scaleText = '';
-  if (m.basePremium > 0 && isFinite(m.scaleFactor)) {
-    scaleText = '，按保费 ' + formatMoney(m.annualPremium || 0) + ' 缩放（样本基准 ' + formatMoney(m.basePremium) + '）';
-  }
-  return '已应用模型：' + model.name + '（样本 ' + sample.name + scaleText + '）';
+function modelInputFromForm() {
+  return {
+    issueAge: getVal('insuredAge'),
+    gender: getRadioVal('gender') || 'male',
+    annualPremium: getVal('annualPremium'),
+    paymentYears: parseInt(document.getElementById('paymentYears').value, 10) || 0,
+    coverageYears: getVal('guaranteePeriod'),
+    annualSurvivalBenefit: getVal('annualSurvivalBenefit'),
+    survivalStartAge: getVal('survivalBenefitStartAge')
+  };
 }
 
-function setModelParamLock(locked) {
+function setModelStatus(model, weights, meta) {
+  var names = (weights || []).map(function(w) { return w.sample ? w.sample.name : ''; }).filter(Boolean).join(' + ');
+  var m = meta || {};
+  var scaleText = m.basePremium > 0 ? '，按保费 ' + formatMoney(m.annualPremium || 0) + ' 拟合（样本基准 ' + formatMoney(m.basePremium) + '）' : '';
+  var status = document.getElementById('modelStatus');
+  if (status) status.textContent = '已应用模型：' + model.name + '（样本 ' + names + scaleText + '）';
+}
+
+// 只显示“已自动带出”提示，不锁定任何输入
+function showModelAutoFillHint(show) {
   ['paymentYears', 'guaranteePeriod', 'annualSurvivalBenefit', 'survivalBenefitStartAge'].forEach(function(id) {
     var el = document.getElementById(id);
-    if (el) el.disabled = !!locked;
+    if (el) el.disabled = false;
   });
   var methods = document.getElementsByName('payMethod');
-  for (var i = 0; i < methods.length; i++) methods[i].disabled = !!locked;
+  for (var i = 0; i < methods.length; i++) methods[i].disabled = false;
   var hint = document.getElementById('modelParamLockHint');
-  if (hint) hint.style.display = locked ? '' : 'none';
+  if (hint) hint.style.display = show ? '' : 'none';
 }
 
-function fillMainFormFromModelMeta(meta) {
-  if (meta.issueAge != null) document.getElementById('insuredAge').value = meta.issueAge;
-  if (meta.gender) {
-    var g = document.querySelector('input[name="gender"][value="' + (meta.gender === 'female' ? 'female' : 'male') + '"]');
-    if (g) g.checked = true;
-  }
-  if (meta.annualPremium > 0) document.getElementById('annualPremium').value = meta.annualPremium;
-  if (meta.coverageYears > 0) document.getElementById('guaranteePeriod').value = meta.coverageYears;
-  if (meta.annualSurvivalBenefit != null) document.getElementById('annualSurvivalBenefit').value = meta.annualSurvivalBenefit;
-  if (meta.survivalStartAge != null) document.getElementById('survivalBenefitStartAge').value = meta.survivalStartAge;
-  if (meta.productName) document.getElementById('productName').value = meta.productName;
-  var annualPay = document.querySelector('input[name="payMethod"][value="annual"]');
-  if (annualPay) annualPay.checked = true;
-
+function fillModelProductParams(meta) {
+  var m = meta || {};
   var sel = document.getElementById('paymentYears');
-  var payYears = meta.paymentYears;
-  if (payYears > 0) {
+  if (m.paymentYears > 0) {
     var exists = false;
     for (var i = 0; i < sel.options.length; i++) {
-      if (parseInt(sel.options[i].value, 10) === payYears) exists = true;
+      if (parseInt(sel.options[i].value, 10) === m.paymentYears) { exists = true; break; }
     }
     if (!exists) {
       var opt = document.createElement('option');
-      opt.value = String(payYears);
-      opt.text = payYears + '年';
+      opt.value = String(m.paymentYears);
+      opt.text = m.paymentYears + '年';
       sel.appendChild(opt);
     }
-    sel.value = String(payYears);
+    sel.value = String(m.paymentYears);
   }
-  document.getElementById('dividendSection').style.display = '';
-  syncPlanModeDividendUI();
+  if (m.coverageYears > 0) document.getElementById('guaranteePeriod').value = m.coverageYears;
+  if (m.annualSurvivalBenefit != null) document.getElementById('annualSurvivalBenefit').value = m.annualSurvivalBenefit;
+  if (m.survivalStartAge != null) document.getElementById('survivalBenefitStartAge').value = m.survivalStartAge;
+  if (m.productName) document.getElementById('productName').value = m.productName;
+  var annualPay = document.querySelector('input[name="payMethod"][value="annual"]');
+  if (annualPay) annualPay.checked = true;
 }
 
 function editSelectedModel() {
@@ -2783,7 +2910,7 @@ function deleteSavedModel() {
   savedModels = savedModels.filter(function(m) { return m.id !== model.id; });
   if (planImportData && planImportData.meta && planImportData.meta.modelId === model.id) {
     planImportData = null;
-    setModelParamLock(false);
+    showModelAutoFillHint(false);
     updatePlanTabLabel();
     syncPlanModeDividendUI();
   }
@@ -2802,7 +2929,7 @@ function deleteEditingModel() {
   savedModels = savedModels.filter(function(m) { return m.id !== model.id; });
   if (planImportData && planImportData.meta && planImportData.meta.modelId === model.id) {
     planImportData = null;
-    setModelParamLock(false);
+    showModelAutoFillHint(false);
     updatePlanTabLabel();
     syncPlanModeDividendUI();
   }
@@ -2843,26 +2970,28 @@ function calculate() {
     compareSurvivalBenefit: getVal('compareSurvivalBenefit')
   };
 
-  // 模型模式：按当前年龄/性别选最接近样本，并按当前年缴保费重新缩放模型数据
+  // 模型模式：按当前年龄/性别选样本，用拟合公式按当前输入重新生成逐年数据
   if (planImportData && planImportData.meta && planImportData.meta.isModel) {
     var activeModel = getSavedModel(planImportData.meta.modelId);
     if (activeModel && isModelValidated(activeModel)) {
-      var matchedSample = pickModelSample(activeModel, params.insuredAge, params.insuredGender);
-      if (matchedSample) {
-        planImportData = buildModelPlanData(activeModel, matchedSample, params.annualPremium);
-        fillMainFormFromModelMeta(planImportData.meta);
-        setModelParamLock(true);
-        updatePlanTabLabel();
-        syncPlanModeDividendUI();
-        if (planImportData.meta.issueAge != null) params.insuredAge = planImportData.meta.issueAge;
-        if (planImportData.meta.gender) params.insuredGender = planImportData.meta.gender;
-        params.annualPremium = planImportData.meta.annualPremium || params.annualPremium;
-        params.paymentYears = planImportData.meta.paymentYears || params.paymentYears;
-        params.guaranteePeriod = planImportData.meta.coverageYears || params.guaranteePeriod;
-        params.annualSurvivalBenefit = planImportData.meta.annualSurvivalBenefit || 0;
-        if (planImportData.meta.survivalStartAge != null) params.survivalBenefitStartAge = planImportData.meta.survivalStartAge;
-        var modelStatus = document.getElementById('modelStatus');
-        if (modelStatus) modelStatus.textContent = modelStatusText(activeModel, matchedSample, planImportData.meta);
+      var weights = pickModelSampleWeights(activeModel, params.insuredAge, params.insuredGender);
+      if (weights.length) {
+        var built = buildModelPlanData(activeModel, weights, {
+          issueAge: params.insuredAge,
+          gender: params.insuredGender,
+          annualPremium: params.annualPremium,
+          paymentYears: params.paymentYears,
+          coverageYears: params.guaranteePeriod,
+          annualSurvivalBenefit: params.annualSurvivalBenefit,
+          survivalStartAge: params.survivalBenefitStartAge
+        });
+        if (built) {
+          planImportData = built;
+          showModelAutoFillHint(true);
+          updatePlanTabLabel();
+          syncPlanModeDividendUI();
+          setModelStatus(activeModel, weights, built.meta);
+        }
       }
     }
   }
@@ -3152,8 +3281,8 @@ function renderPlanSummaryCards() {
   var totalWithInterest = s.totalPayoutWithInterest != null ? s.totalPayoutWithInterest : ((s.finalSecondaryAccount || 0) + (s.totalMaturity || 0));
   var html = '';
   var cards = [
-    { cls: 'sc-blue', label: '总投入保费', value: formatMoney(s.totalPremium), sub: meta.isModel ? '按输入保费缩放' : '计划书累计保费' },
-    { cls: 'sc-green', label: '累计生存金', value: formatMoney(s.totalSurvivalBenefit), sub: meta.isModel ? '模型数据按保费缩放' : '按人工填写金额计算' },
+    { cls: 'sc-blue', label: '总投入保费', value: formatMoney(s.totalPremium), sub: meta.isModel ? '按拟合公式计算' : '计划书累计保费' },
+    { cls: 'sc-green', label: '累计生存金', value: formatMoney(s.totalSurvivalBenefit), sub: meta.isModel ? '模型拟合数据' : '按人工填写金额计算' },
     { cls: 'sc-amber', label: '累计分红（演示）', value: formatMoney(s.totalDividend), sub: src + '红利演示' },
     { cls: 'sc-teal', label: '额外派息（一次性）', value: formatMoney(s.totalExtraDividend || 0), sub: '保费 × ' + (p.extraDividendRate || 0) + '%' },
     { cls: 'sc-teal', label: '满期给付', value: formatMoney(s.totalMaturity || 0), sub: src + '满期金' },
@@ -4148,7 +4277,7 @@ function resetAll() {
 
   calcResult = null;
   planImportData = null;
-  setModelParamLock(false);
+  showModelAutoFillHint(false);
   var planFile = document.getElementById('planFileInput');
   if (planFile) planFile.value = '';
   var planStatus = document.getElementById('planImportStatus');
