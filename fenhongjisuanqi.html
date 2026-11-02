@@ -579,8 +579,29 @@ body {
 .plan-file-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; border: 1.5px dashed var(--blue-500); border-radius: 10px; background: var(--blue-50); color: var(--blue-700); font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s; }
 .plan-file-btn:active { background: var(--blue-100); }
 .plan-file-btn input { display: none; }
+/* 模型库 */
+.model-mini-btn { padding: 10px 12px; border-radius: 8px; border: 1.5px solid var(--gray-300); background: #fff; color: var(--gray-600); font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.model-mini-btn:active { background: var(--gray-100); }
+.model-mini-btn.primary { background: linear-gradient(135deg, #7c3aed, #a855f7); border: none; color: #fff; }
+.model-modal { max-width: 1100px; max-height: 92vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.model-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.model-toolbar .model-mini-btn { flex: 0 0 auto; }
+.model-toolbar .model-file-btn { display: inline-flex; align-items: center; gap: 6px; }
+.model-toolbar .model-file-btn input { display: none; }
+.model-paste-area { display: none; margin-bottom: 10px; }
+.model-paste-area textarea { width: 100%; height: 96px; padding: 10px; border: 1.5px solid var(--gray-300); border-radius: 8px; font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; resize: vertical; }
+.model-paste-area textarea:focus { outline: none; border-color: var(--blue-500); }
+.model-table-wrap { overflow: auto; max-height: 46vh; border: 1px solid var(--gray-200); border-radius: 8px; }
+.model-table { border-collapse: collapse; font-size: 12px; width: 100%; }
+.model-table th { position: sticky; top: 0; z-index: 1; background: var(--gray-50); color: var(--gray-600); font-weight: 700; padding: 7px 6px; border-bottom: 2px solid var(--gray-200); white-space: nowrap; text-align: center; }
+.model-table td { padding: 3px 4px; border-bottom: 1px solid var(--gray-100); text-align: center; }
+.model-table input { width: 86px; padding: 6px; border: 1px solid var(--gray-200); border-radius: 6px; font-size: 12px; text-align: right; font-family: inherit; color: var(--gray-800); background: #fff; }
+.model-table input:focus { outline: none; border-color: var(--blue-500); }
+.model-table .mt-del { width: 30px; border: none; background: transparent; color: var(--red-500); font-size: 15px; cursor: pointer; }
+.model-row-count { font-size: 12px; color: var(--gray-500); margin: 8px 0; }
 @media (max-width: 600px) {
   .plan-meta-grid { grid-template-columns: 1fr; }
+  .model-table input { width: 70px; }
 }
 /* Share image generation loading */
 .share-loading-overlay {
@@ -658,6 +679,20 @@ body {
         <input type="file" id="planFileInput" accept="application/pdf,.pdf" onchange="handlePlanFile(event)">
       </label>
       <div id="planImportStatus" class="form-hint" style="margin-top:8px;font-size:12px;color:var(--gray-500);"></div>
+    </div>
+
+    <!-- 我的模型 -->
+    <div class="card section-purple">
+      <div class="card-header"><span class="icon-dot" style="background:#a855f7;"></span>我的模型（可选）</div>
+      <div class="form-hint" style="margin-bottom:10px;font-size:12px;color:var(--gray-500);line-height:1.6;">把计划书或任意逐年数据保存为模型，可反复试算。支持 Excel/CSV、粘贴表格或页面内直接改数。</div>
+      <button class="model-mini-btn primary" style="width:100%;margin-bottom:8px;" onclick="openModelEditor(null, true)">新建模型（用当前数据预填）</button>
+      <select id="savedModelSelect" style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-300);border-radius:8px;font-size:13px;color:var(--gray-700);background:#fff;font-family:inherit;margin-bottom:8px;"></select>
+      <div style="display:flex;gap:8px;">
+        <button class="model-mini-btn" style="flex:1;" onclick="editSelectedModel()">编辑</button>
+        <button class="model-mini-btn" style="flex:1;" onclick="applySavedModel()">应用</button>
+        <button class="model-mini-btn" style="flex:1;" onclick="deleteSavedModel()">删除</button>
+      </div>
+      <div id="modelStatus" class="form-hint" style="margin-top:8px;font-size:12px;color:var(--gray-500);"></div>
     </div>
 
     <!-- 产品信息 -->
@@ -965,6 +1000,55 @@ body {
   </div>
 </div>
 
+<!-- 模型编辑弹窗 -->
+<div class="share-modal-overlay" id="modelModalOverlay" style="display:none;">
+  <div class="share-modal model-modal">
+    <h3>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      模型编辑
+    </h3>
+    <div class="modal-desc" id="modelModalDesc">模型是一套可反复使用的逐年利益数据。可先导入计划书/Excel/CSV，再在表格中直接改数。</div>
+    <div class="plan-meta-grid">
+      <label>模型名称<input id="modelName" type="text" placeholder="如：30岁男·鑫泰金生"></label>
+      <label>产品名称<input id="modelProduct" type="text" placeholder="可选"></label>
+      <label>投保年龄<input id="modelAge" type="number" min="0" max="100" value="30"></label>
+      <label>性别<select id="modelGender"><option value="male">男</option><option value="female">女</option></select></label>
+      <label>年缴保费<input id="modelPremium" type="number" min="0" step="1" value="12000"></label>
+      <label>缴费年限<input id="modelPayYears" type="number" min="1" max="100" value="10"></label>
+      <label>保障期限（年）<input id="modelPeriod" type="number" min="1" max="100" value="70"></label>
+      <label>每年生存金<input id="modelSurvival" type="number" min="0" step="1" value="3870"></label>
+      <label>生存金起领年龄<input id="modelStartAge" type="number" min="0" max="120" value="60"></label>
+    </div>
+    <div class="model-toolbar">
+      <label class="model-mini-btn model-file-btn">导入 Excel/CSV<input type="file" id="modelImportFile" accept=".csv,.xlsx,.xls,text/csv" onchange="handleModelImportFile(event)"></label>
+      <button class="model-mini-btn" onclick="toggleModelPaste()">粘贴表格</button>
+      <button class="model-mini-btn" onclick="downloadModelTemplate()">下载CSV模板</button>
+      <button class="model-mini-btn" onclick="modelAddRow()">新增一行</button>
+      <button class="model-mini-btn" onclick="modelClearRows()">清空数据</button>
+    </div>
+    <div class="model-paste-area" id="modelPasteArea">
+      <textarea id="modelPasteText" placeholder="从 Excel 复制整块数据粘贴到这里，支持表头。列名参考：保单年度、年末年龄、年初保费、累计保费、生存给付、满期给付、身故保障、现金价值、红利演示"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="model-mini-btn primary" onclick="importModelPaste()">解析粘贴数据</button>
+        <button class="model-mini-btn" onclick="toggleModelPaste()">收起</button>
+      </div>
+    </div>
+    <div id="modelRowCount" class="model-row-count">共 0 行</div>
+    <div class="model-table-wrap">
+      <table class="model-table">
+        <thead><tr><th>年度</th><th>年龄</th><th>年初保费</th><th>累计保费</th><th>生存给付</th><th>满期给付</th><th>身故保障</th><th>现金价值</th><th>红利演示</th><th></th></tr></thead>
+        <tbody id="modelTableBody"></tbody>
+      </table>
+    </div>
+    <div class="modal-close-bar" style="flex-wrap:wrap;">
+      <button class="modal-close-btn" id="modelDeleteBtn" style="display:none;color:#dc2626;" onclick="deleteEditingModel()">删除此模型</button>
+      <button class="modal-close-btn" onclick="closeModelModal()">取消</button>
+      <button class="copy-btn" onclick="saveModel(false)">保存</button>
+      <button class="copy-btn" style="background:linear-gradient(135deg,#7c3aed,#a855f7);" onclick="saveModel(true)">保存并试算</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ======== 全局状态 ========
 var calcResult = null;
@@ -1131,6 +1215,39 @@ function updateAddCapHint() {
 var PLAN_FIELDS = ['year','age','premium','cumPremium','survival','maturity','death','cashValue','divGuaranteed','divProjected'];
 var planImportData = null;
 var planPdfJsPromise = null;
+
+// ======== 我的模型 ========
+var MODEL_STORAGE_KEY = 'fh_models_v1';
+var MODEL_FIELDS = ['year','age','premium','cumPremium','survival','maturity','death','cashValue','divProjected'];
+var savedModels = loadSavedModels();
+var editingModelId = null;
+var modelEditorRows = [];
+
+function loadSavedModels() {
+  try {
+    var raw = localStorage.getItem(MODEL_STORAGE_KEY);
+    var list = raw ? JSON.parse(raw) : [];
+    return Array.isArray(list) ? list : [];
+  } catch (e) { return []; }
+}
+function persistSavedModels() {
+  try { localStorage.setItem(MODEL_STORAGE_KEY, JSON.stringify(savedModels)); } catch (e) {}
+}
+function refreshModelSelect() {
+  var sel = document.getElementById('savedModelSelect');
+  if (!sel) return;
+  var html = '<option value="">选择已保存模型…</option>';
+  savedModels.forEach(function(m) {
+    html += '<option value="' + m.id + '">' + m.name + '（' + m.rows.length + '年）</option>';
+  });
+  sel.innerHTML = html;
+  var status = document.getElementById('modelStatus');
+  if (status) status.textContent = savedModels.length ? '已保存 ' + savedModels.length + ' 个模型' : '暂无保存的模型';
+}
+function getSavedModel(id) {
+  for (var i = 0; i < savedModels.length; i++) { if (savedModels[i].id === id) return savedModels[i]; }
+  return null;
+}
 
 // 按需加载 pdf.js（仅在用户上传计划书时加载）
 function loadPlanPdfJs() {
@@ -1432,6 +1549,8 @@ function handlePlanFile(ev) {
   reader.onload = function() {
     parsePlanPdf(new Uint8Array(reader.result)).then(function(plan) {
       planImportData = plan;
+      plan.meta.isModel = false;
+      updatePlanTabLabel();
       status.innerHTML = plan.hasFail
         ? '<span style="color:#b91c1c;">解析完成，但勾稽校验未通过，请核对计划书</span>'
         : '<span style="color:#15803d;">解析完成：' + plan.rows.length + ' 个保单年度，待核对</span>';
@@ -1562,7 +1681,10 @@ function buildPlanScenario(plan, params) {
   var interest = (params.bankRate || 0) / 100;
   plan.rows.forEach(function(r) {
     var survival = 0;
-    if (params.survivalBenefitStartAge != null && r.age >= params.survivalBenefitStartAge) {
+    var useRowSurvival = plan.meta && plan.meta.isModel && (r.survival || 0) > 0;
+    if (useRowSurvival) {
+      survival = r.survival;
+    } else if (params.survivalBenefitStartAge != null && r.age >= params.survivalBenefitStartAge) {
       survival = params.annualSurvivalBenefit || 0;
     }
     var dividend = params.enableDividend ? (r.divProjected || 0) : 0;
@@ -1617,12 +1739,14 @@ function buildPlanScenario(plan, params) {
     addCap: 0,
     totalIdleFundInterest: 0,
     planMeta: {
-      coverageYears: plan.rows.length,
+      coverageYears: (plan.meta && plan.meta.isModel) ? (parseInt(last.year, 10) || plan.rows.length) : plan.rows.length,
       issueAge: plan.meta.issueAge,
       paymentYears: plan.meta.paymentYears,
       survivalStartAge: params.survivalBenefitStartAge,
       annualPremium: params.annualPremium,
       productName: plan.meta.productName,
+      name: plan.meta.name || '',
+      isModel: !!(plan.meta && plan.meta.isModel),
       finalCashValue: last.cashValue || 0,
       totalPayout: totalSurvival + totalDividend + totalMaturity
     }
@@ -1631,6 +1755,546 @@ function buildPlanScenario(plan, params) {
 
 function isPlanMode() {
   return !!calcResult && currentScenario === 'plan' && !!calcResult.scenarios.plan;
+}
+
+function updatePlanTabLabel() {
+  var tab = document.getElementById('planTab');
+  if (!tab) return;
+  tab.textContent = (planImportData && planImportData.meta && planImportData.meta.isModel) ? '模型试算' : '计划书原表';
+}
+
+// ======== 模型编辑与导入 ========
+function modelNumber(v) {
+  if (v == null) return null;
+  if (typeof v === 'number') return isFinite(v) ? v : null;
+  var s = String(v).replace(/[,\s，￥¥元]/g, '');
+  if (!s) return null;
+  if (!/^-?\d+(\.\d+)?$/.test(s)) return null;
+  var n = parseFloat(s);
+  return isFinite(n) ? n : null;
+}
+
+function metaFromLeftForm() {
+  var paySel = document.getElementById('paymentYears');
+  var ageVal = parseInt(getVal('insuredAge'), 10);
+  var survVal = parseFloat(getVal('annualSurvivalBenefit'));
+  var startVal = parseFloat(getVal('survivalBenefitStartAge'));
+  return {
+    name: '',
+    productName: getVal('productName') || '',
+    issueAge: isFinite(ageVal) ? ageVal : 30,
+    gender: getRadioVal('gender') || 'male',
+    annualPremium: parseFloat(getVal('annualPremium')) || 12000,
+    paymentYears: parseInt(paySel && paySel.value, 10) || 10,
+    coverageYears: parseInt(getVal('guaranteePeriod'), 10) || 70,
+    annualSurvivalBenefit: isFinite(survVal) ? survVal : 0,
+    survivalStartAge: isFinite(startVal) ? startVal : 60
+  };
+}
+
+function fillModelMetaFields(meta) {
+  var m = meta || {};
+  document.getElementById('modelName').value = m.name || '';
+  document.getElementById('modelProduct').value = m.productName || '';
+  document.getElementById('modelAge').value = m.issueAge != null ? m.issueAge : 30;
+  document.getElementById('modelGender').value = m.gender === 'female' ? 'female' : 'male';
+  document.getElementById('modelPremium').value = m.annualPremium != null ? m.annualPremium : 12000;
+  document.getElementById('modelPayYears').value = m.paymentYears != null ? m.paymentYears : 10;
+  document.getElementById('modelPeriod').value = m.coverageYears != null ? m.coverageYears : 70;
+  document.getElementById('modelSurvival').value = m.annualSurvivalBenefit != null ? m.annualSurvivalBenefit : 0;
+  document.getElementById('modelStartAge').value = m.survivalStartAge != null ? m.survivalStartAge : 60;
+}
+
+function collectModelMeta() {
+  return {
+    name: document.getElementById('modelName').value.trim(),
+    productName: document.getElementById('modelProduct').value.trim(),
+    issueAge: modelNumber(document.getElementById('modelAge').value),
+    gender: document.getElementById('modelGender').value,
+    annualPremium: modelNumber(document.getElementById('modelPremium').value) || 0,
+    paymentYears: modelNumber(document.getElementById('modelPayYears').value) || 0,
+    coverageYears: modelNumber(document.getElementById('modelPeriod').value) || 0,
+    annualSurvivalBenefit: modelNumber(document.getElementById('modelSurvival').value) || 0,
+    survivalStartAge: modelNumber(document.getElementById('modelStartAge').value)
+  };
+}
+
+function modelInput(v) {
+  return v == null || !isFinite(v) ? '' : String(v);
+}
+
+function renderModelRows(rows) {
+  modelEditorRows = (rows || []).map(function(r) { return Object.assign({}, r); });
+  var tbody = document.getElementById('modelTableBody');
+  var html = '';
+  modelEditorRows.forEach(function(r) {
+    html += '<tr>' +
+      '<td><input type="number" data-f="year" value="' + modelInput(r.year) + '"></td>' +
+      '<td><input type="number" data-f="age" value="' + modelInput(r.age) + '"></td>' +
+      '<td><input type="number" data-f="premium" value="' + modelInput(r.premium) + '"></td>' +
+      '<td><input type="number" data-f="cumPremium" value="' + modelInput(r.cumPremium) + '"></td>' +
+      '<td><input type="number" data-f="survival" value="' + modelInput(r.survival) + '"></td>' +
+      '<td><input type="number" data-f="maturity" value="' + modelInput(r.maturity) + '"></td>' +
+      '<td><input type="number" data-f="death" value="' + modelInput(r.death) + '"></td>' +
+      '<td><input type="number" data-f="cashValue" value="' + modelInput(r.cashValue) + '"></td>' +
+      '<td><input type="number" data-f="divProjected" value="' + modelInput(r.divProjected) + '"></td>' +
+      '<td><button class="mt-del" type="button" onclick="removeModelRow(this)">×</button></td>' +
+      '</tr>';
+  });
+  tbody.innerHTML = html;
+  updateModelRowCount();
+}
+
+function updateModelRowCount() {
+  var el = document.getElementById('modelRowCount');
+  if (el) el.textContent = '共 ' + modelEditorRows.length + ' 行';
+}
+
+function collectModelRowsFromTable() {
+  var rows = [];
+  var trs = document.querySelectorAll('#modelTableBody tr');
+  Array.prototype.forEach.call(trs, function(tr) {
+    var rec = {};
+    Array.prototype.forEach.call(tr.querySelectorAll('input[data-f]'), function(inp) {
+      var v = modelNumber(inp.value);
+      if (v !== null) rec[inp.getAttribute('data-f')] = v;
+    });
+    if (rec.year != null) rows.push(rec);
+  });
+  return rows;
+}
+
+function normalizeModelRows(rows, meta) {
+  var map = {}, list = [];
+  (rows || []).forEach(function(r) {
+    var y = Math.round(r.year);
+    if (!isFinite(y) || y < 1) return;
+    var rec = map[y] || { year: y };
+    MODEL_FIELDS.forEach(function(f) {
+      if (f === 'year') return;
+      var v = modelNumber(r[f]);
+      if (v !== null) rec[f] = v;
+    });
+    map[y] = rec;
+  });
+  Object.keys(map).map(Number).sort(function(a, b) { return a - b; }).forEach(function(y) { list.push(map[y]); });
+  var cum = 0;
+  list.forEach(function(r) {
+    if (r.age == null) r.age = (meta.issueAge || 0) + r.year;
+    if (r.premium == null) r.premium = r.year <= (meta.paymentYears || 0) ? (meta.annualPremium || 0) : 0;
+    cum += r.premium;
+    if (r.cumPremium == null || r.cumPremium <= 0) r.cumPremium = cum;
+    else cum = r.cumPremium;
+    r.survival = r.survival || 0;
+    r.maturity = r.maturity || 0;
+    r.death = r.death || 0;
+    r.cashValue = r.cashValue || 0;
+    r.divProjected = r.divProjected || 0;
+    r.divGuaranteed = r.divGuaranteed || 0;
+  });
+  return list;
+}
+
+function openModelEditor(prefillModel, forceNew) {
+  var model = null;
+  if (prefillModel && typeof prefillModel === 'object') model = prefillModel;
+  else if (typeof prefillModel === 'string' && prefillModel) model = getSavedModel(prefillModel);
+  else if (!forceNew) {
+    var sel = document.getElementById('savedModelSelect');
+    if (sel && sel.value) model = getSavedModel(sel.value);
+  }
+  var meta, rows;
+  if (model) {
+    editingModelId = model.id;
+    meta = Object.assign({}, model.meta);
+    rows = model.rows || [];
+    document.getElementById('modelModalDesc').textContent = '正在编辑模型：' + model.name + '。修改后保存会覆盖该模型。';
+    document.getElementById('modelDeleteBtn').style.display = '';
+  } else {
+    editingModelId = null;
+    if (planImportData && planImportData.rows && planImportData.rows.length >= 2) {
+      meta = Object.assign({}, planImportData.meta || {});
+      meta.name = meta.name || ((meta.productName || '计划书') + ' · ' + (meta.issueAge != null ? meta.issueAge + '岁' : '模板'));
+      rows = planImportData.rows.map(function(r) { return Object.assign({}, r); });
+      document.getElementById('modelModalDesc').textContent = '已用当前' + (meta.isModel ? '模型' : '计划书') + '数据预填 ' + rows.length + ' 行，可改数、导入或另存为新模型。';
+    } else {
+      meta = metaFromLeftForm();
+      meta.name = (meta.productName || '新模型') + ' · ' + meta.issueAge + '岁';
+      rows = [];
+      document.getElementById('modelModalDesc').textContent = '空白模型：可导入 Excel/CSV、粘贴表格，或在下方表格新增行后手动填数。';
+    }
+    document.getElementById('modelDeleteBtn').style.display = 'none';
+  }
+  fillModelMetaFields(meta);
+  renderModelRows(rows);
+  document.getElementById('modelPasteArea').style.display = 'none';
+  document.getElementById('modelImportFile').value = '';
+  document.getElementById('modelModalOverlay').style.display = 'flex';
+}
+
+function closeModelModal() {
+  document.getElementById('modelModalOverlay').style.display = 'none';
+}
+
+function toggleModelPaste() {
+  var area = document.getElementById('modelPasteArea');
+  area.style.display = area.style.display === 'block' ? 'none' : 'block';
+}
+
+function removeModelRow(btn) {
+  var tr = btn.parentNode.parentNode;
+  if (tr) tr.parentNode.removeChild(tr);
+  modelEditorRows = collectModelRowsFromTable();
+  updateModelRowCount();
+}
+
+function modelAddRow() {
+  modelEditorRows = collectModelRowsFromTable();
+  var meta = collectModelMeta();
+  var last = modelEditorRows[modelEditorRows.length - 1];
+  var year = last ? (Math.round(last.year) + 1) : 1;
+  var premium = year <= (meta.paymentYears || 0) ? (meta.annualPremium || 0) : 0;
+  modelEditorRows.push({
+    year: year,
+    age: (meta.issueAge || 0) + year,
+    premium: premium,
+    cumPremium: (last ? (last.cumPremium || 0) : 0) + premium,
+    survival: 0, maturity: 0, death: 0,
+    cashValue: last ? (last.cashValue || 0) : 0,
+    divProjected: 0
+  });
+  renderModelRows(modelEditorRows);
+}
+
+function modelClearRows() {
+  if (modelEditorRows.length && !confirm('确定清空当前所有数据行？')) return;
+  modelEditorRows = [];
+  renderModelRows([]);
+}
+
+function modelParseDelimited(text, delim) {
+  var rows = [], row = [], cur = '', quoted = false;
+  text = String(text || '').replace(/\r\n?/g, '\n');
+  for (var i = 0; i < text.length; i++) {
+    var ch = text.charAt(i);
+    if (quoted) {
+      if (ch === '"') {
+        if (text.charAt(i + 1) === '"') { cur += '"'; i++; }
+        else quoted = false;
+      } else cur += ch;
+    } else if (ch === '"') {
+      quoted = true;
+    } else if (ch === delim) {
+      row.push(cur); cur = '';
+    } else if (ch === '\n') {
+      row.push(cur); rows.push(row); row = []; cur = '';
+    } else cur += ch;
+  }
+  row.push(cur);
+  if (row.length && !(row.length === 1 && row[0] === '')) rows.push(row);
+  return rows.filter(function(r) {
+    return r.some(function(c) { return String(c).trim() !== ''; });
+  });
+}
+
+var MODEL_COLUMN_RULES = [
+  ['cumPremium', /累计(保费|缴费|所交)/],
+  ['cashValue', /(退保金|现金价值)/],
+  ['maturity', /满期/],
+  ['survival', /(生存|年金)/],
+  ['death', /(身故|身故保障|身故保险金)/],
+  ['premium', /(年初保费|当年保费|年缴保费|保费)/],
+  ['age', /年龄/],
+  ['year', /(保单年度|年度|年份|保单年)/]
+];
+
+function mapModelHeaderRow(cells) {
+  var map = {}, divCols = [];
+  (cells || []).forEach(function(cell, idx) {
+    var s = String(cell == null ? '' : cell).replace(/\s/g, '');
+    if (!s) return;
+    if (/红利|分红/.test(s)) { divCols.push(idx); return; }
+    for (var i = 0; i < MODEL_COLUMN_RULES.length; i++) {
+      if (MODEL_COLUMN_RULES[i][1].test(s) && map[MODEL_COLUMN_RULES[i][0]] == null) {
+        map[MODEL_COLUMN_RULES[i][0]] = idx;
+        break;
+      }
+    }
+  });
+  if (divCols.length === 1) map.divProjected = divCols[0];
+  else if (divCols.length >= 2) { map.divGuaranteed = divCols[0]; map.divProjected = divCols[1]; }
+  return Object.keys(map).length >= 3 ? map : null;
+}
+
+function applyImportedMatrix(matrix) {
+  var headerIdx = -1, map = null;
+  for (var i = 0; i < Math.min(matrix.length, 5); i++) {
+    map = mapModelHeaderRow(matrix[i]);
+    if (map) { headerIdx = i; break; }
+  }
+  if (!map) {
+    map = { year: 0, age: 1, premium: 2, cumPremium: 3, survival: 4, maturity: 5, death: 6, cashValue: 7 };
+    var width = 0;
+    matrix.forEach(function(row) { if (row && row.length > width) width = row.length; });
+    if (width >= 10) { map.divGuaranteed = 8; map.divProjected = 9; }
+    else map.divProjected = 8;
+    headerIdx = -1;
+  }
+  var rows = [];
+  for (var r = headerIdx + 1; r < matrix.length; r++) {
+    var cells = matrix[r] || [];
+    var rec = {};
+    Object.keys(map).forEach(function(f) {
+      var v = modelNumber(cells[map[f]]);
+      if (v !== null) rec[f] = v;
+    });
+    if (rec.year != null) rows.push(rec);
+  }
+  if (!rows.length) { showToast('未识别到有效数据行，请检查表格格式', 'warning'); return; }
+  rows.sort(function(a, b) { return a.year - b.year; });
+
+  var meta = collectModelMeta();
+  if (rows[0].age != null) meta.issueAge = Math.max(0, rows[0].age - (rows[0].year || 1));
+  if (rows[0].premium != null && rows[0].premium > 0) meta.annualPremium = rows[0].premium;
+  var lastPay = 0, survRow = null;
+  rows.forEach(function(x) {
+    if (x.premium > 0 && x.year > lastPay) lastPay = x.year;
+    if (!survRow && x.survival > 0) survRow = x;
+  });
+  var span = rows[rows.length - 1].year - rows[0].year + 1;
+  var sparse = span > 0 && rows.length < span * 0.5;
+  if (lastPay && !(sparse && lastPay <= 1)) meta.paymentYears = lastPay;
+  meta.coverageYears = rows[rows.length - 1].year;
+  if (survRow) { meta.annualSurvivalBenefit = survRow.survival; meta.survivalStartAge = survRow.age; }
+  fillModelMetaFields(meta);
+
+  var normalized = normalizeModelRows(rows, collectModelMeta());
+  renderModelRows(normalized);
+  document.getElementById('modelModalDesc').textContent = '已导入 ' + normalized.length + ' 行' + (headerIdx >= 0 ? '（已识别表头）' : '（无表头，按默认列序）') + '，请核对数据后保存或试算。';
+  showToast('已导入 ' + normalized.length + ' 行数据', 'success');
+}
+
+function handleModelImportFile(ev) {
+  var input = ev.target;
+  var file = input.files && input.files[0];
+  if (!file) return;
+  var name = file.name.toLowerCase();
+  var reset = function() { input.value = ''; };
+  if (/\.(xlsx|xls)$/.test(name)) {
+    loadXlsxLib().then(function(XLSX) {
+      var reader = new FileReader();
+      reader.onload = function() {
+        try {
+          var wb = XLSX.read(new Uint8Array(reader.result), { type: 'array' });
+          var ws = wb.Sheets[wb.SheetNames[0]];
+          var matrix = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
+          applyImportedMatrix(matrix);
+        } catch (e) {
+          console.error(e);
+          showToast('Excel 解析失败，请检查文件', 'error');
+        }
+        reset();
+      };
+      reader.onerror = function() { showToast('读取文件失败', 'error'); reset(); };
+      reader.readAsArrayBuffer(file);
+    }).catch(function() {
+      showToast('Excel 解析组件加载失败，请改用 CSV 或粘贴表格', 'error');
+      reset();
+    });
+  } else {
+    var r = new FileReader();
+    r.onload = function() {
+      var text = String(r.result || '');
+      var delim = text.indexOf('\t') >= 0 ? '\t' : ',';
+      applyImportedMatrix(modelParseDelimited(text, delim));
+      reset();
+    };
+    r.onerror = function() { showToast('读取文件失败', 'error'); reset(); };
+    r.readAsText(file, 'UTF-8');
+  }
+}
+
+function loadXlsxLib() {
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  if (window.__xlsxPromise) return window.__xlsxPromise;
+  window.__xlsxPromise = new Promise(function(resolve, reject) {
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload = function() {
+      if (window.XLSX) resolve(window.XLSX);
+      else reject(new Error('XLSX 加载失败'));
+    };
+    s.onerror = function() { reject(new Error('XLSX 加载失败')); };
+    document.head.appendChild(s);
+  });
+  return window.__xlsxPromise;
+}
+
+function importModelPaste() {
+  var text = document.getElementById('modelPasteText').value;
+  if (!text.trim()) { showToast('请先粘贴表格数据', 'warning'); return; }
+  applyImportedMatrix(modelParseDelimited(text, text.indexOf('\t') >= 0 ? '\t' : ','));
+}
+
+function downloadModelTemplate() {
+  var headers = ['保单年度', '年末年龄', '年初保费', '累计保费', '生存给付', '满期给付', '身故保障', '现金价值', '红利演示'];
+  var meta = collectModelMeta();
+  var rows = collectModelRowsFromTable();
+  if (!rows.length) {
+    var cum = 0;
+    for (var y = 1; y <= 5; y++) {
+      var prem = y <= (meta.paymentYears || 0) ? (meta.annualPremium || 0) : 0;
+      cum += prem;
+      rows.push({ year: y, age: (meta.issueAge || 30) + y, premium: prem, cumPremium: cum, survival: 0, maturity: 0, death: 0, cashValue: 0, divProjected: 0 });
+    }
+  }
+  var lines = [headers.join(',')];
+  rows.forEach(function(r) {
+    lines.push([r.year, r.age, r.premium, r.cumPremium, r.survival, r.maturity, r.death, r.cashValue, r.divProjected].join(','));
+  });
+  var blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '模型数据模板.csv';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function() { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
+function saveModel(applyNow) {
+  var meta = collectModelMeta();
+  if (!meta.name) meta.name = (meta.productName || '新模型') + ' · ' + (meta.issueAge != null ? meta.issueAge + '岁' : '');
+  var rows = collectModelRowsFromTable();
+  if (rows.length < 2) { showToast('至少需要 2 行逐年数据', 'warning'); return; }
+  var normalized = normalizeModelRows(rows, meta);
+  meta.coverageYears = normalized[normalized.length - 1].year;
+  if (meta.paymentYears > meta.coverageYears) meta.paymentYears = meta.coverageYears;
+
+  var model = {
+    id: editingModelId || ('m_' + Date.now() + '_' + Math.floor(Math.random() * 1000)),
+    name: meta.name,
+    meta: meta,
+    rows: normalized,
+    createdAt: editingModelId ? (getSavedModel(editingModelId) || {}).createdAt || Date.now() : Date.now(),
+    updatedAt: Date.now()
+  };
+  var exists = editingModelId && getSavedModel(editingModelId);
+  if (exists) {
+    for (var i = 0; i < savedModels.length; i++) { if (savedModels[i].id === editingModelId) { savedModels[i] = model; break; } }
+  } else {
+    savedModels.push(model);
+  }
+  editingModelId = model.id;
+  persistSavedModels();
+  refreshModelSelect();
+  document.getElementById('savedModelSelect').value = model.id;
+  closeModelModal();
+  if (applyNow) applyModelToCalc(model);
+  else {
+    document.getElementById('modelStatus').textContent = '已保存模型：' + model.name;
+    showToast('模型已保存：' + model.name, 'success');
+  }
+}
+
+function applyModelToCalc(model) {
+  if (!model) return;
+  var rows = normalizeModelRows(model.rows, model.meta);
+  if (rows.length < 2) { showToast('该模型数据不足 2 行，无法试算', 'warning'); return; }
+  var meta = Object.assign({}, model.meta);
+  meta.coverageYears = rows[rows.length - 1].year;
+  meta.finalAge = rows[rows.length - 1].age;
+  meta.isModel = true;
+  meta.name = model.name;
+  meta.modelId = model.id;
+  meta.productName = meta.productName || model.name;
+  planImportData = { rows: rows, meta: meta, checks: [], hasFail: false, isModel: true };
+  fillMainFormFromModelMeta(meta);
+  updatePlanTabLabel();
+  document.getElementById('savedModelSelect').value = model.id;
+  document.getElementById('modelStatus').textContent = '已应用模型：' + model.name;
+  calculate(true);
+}
+
+function fillMainFormFromModelMeta(meta) {
+  if (meta.issueAge != null) document.getElementById('insuredAge').value = meta.issueAge;
+  if (meta.gender) {
+    var g = document.querySelector('input[name="gender"][value="' + (meta.gender === 'female' ? 'female' : 'male') + '"]');
+    if (g) g.checked = true;
+  }
+  if (meta.annualPremium > 0) document.getElementById('annualPremium').value = meta.annualPremium;
+  if (meta.coverageYears > 0) document.getElementById('guaranteePeriod').value = meta.coverageYears;
+  if (meta.annualSurvivalBenefit != null) document.getElementById('annualSurvivalBenefit').value = meta.annualSurvivalBenefit;
+  if (meta.survivalStartAge != null) document.getElementById('survivalBenefitStartAge').value = meta.survivalStartAge;
+  if (meta.productName) document.getElementById('productName').value = meta.productName;
+
+  var sel = document.getElementById('paymentYears');
+  var payYears = meta.paymentYears;
+  if (payYears > 0) {
+    var exists = false;
+    for (var i = 0; i < sel.options.length; i++) {
+      if (parseInt(sel.options[i].value, 10) === payYears) exists = true;
+    }
+    if (!exists) {
+      var opt = document.createElement('option');
+      opt.value = String(payYears);
+      opt.text = payYears + '年';
+      sel.appendChild(opt);
+    }
+    sel.value = String(payYears);
+  }
+  document.getElementById('enableDividend').checked = true;
+  document.getElementById('dividendSection').style.display = '';
+  document.querySelector('input[name="dividendMode"][value="manual"]').checked = true;
+  document.getElementById('manualDividendInputs').style.display = '';
+  document.getElementById('sjjDividendInfo').style.display = 'none';
+}
+
+function editSelectedModel() {
+  var sel = document.getElementById('savedModelSelect');
+  var model = sel && sel.value ? getSavedModel(sel.value) : null;
+  if (!model) { showToast('请先选择一个已保存模型', 'warning'); return; }
+  openModelEditor(model.id);
+}
+
+function applySavedModel() {
+  var sel = document.getElementById('savedModelSelect');
+  var model = sel && sel.value ? getSavedModel(sel.value) : null;
+  if (!model) { showToast('请先选择一个已保存模型', 'warning'); return; }
+  applyModelToCalc(model);
+  showToast('已按模型试算：' + model.name, 'success');
+}
+
+function deleteSavedModel() {
+  var sel = document.getElementById('savedModelSelect');
+  var model = sel && sel.value ? getSavedModel(sel.value) : null;
+  if (!model) { showToast('请先选择要删除的模型', 'warning'); return; }
+  if (!confirm('确定删除模型「' + model.name + '」？')) return;
+  savedModels = savedModels.filter(function(m) { return m.id !== model.id; });
+  if (planImportData && planImportData.meta && planImportData.meta.modelId === model.id) {
+    planImportData = null;
+    updatePlanTabLabel();
+  }
+  persistSavedModels();
+  refreshModelSelect();
+  document.getElementById('modelStatus').textContent = '已删除模型：' + model.name;
+  showToast('模型已删除', 'success');
+}
+
+function deleteEditingModel() {
+  if (!editingModelId) return;
+  var model = getSavedModel(editingModelId);
+  if (!model) { closeModelModal(); return; }
+  if (!confirm('确定删除模型「' + model.name + '」？')) return;
+  savedModels = savedModels.filter(function(m) { return m.id !== model.id; });
+  if (planImportData && planImportData.meta && planImportData.meta.modelId === model.id) {
+    planImportData = null;
+    updatePlanTabLabel();
+  }
+  editingModelId = null;
+  persistSavedModels();
+  refreshModelSelect();
+  closeModelModal();
+  showToast('模型已删除', 'success');
 }
 
 // ======== 核心计算 ========
@@ -1664,8 +2328,9 @@ function calculate() {
   };
 
   // 校验
+  var hasImportedRows = planImportData && planImportData.rows && planImportData.rows.length >= 2;
   if (params.insuredAge < 0 || params.insuredAge > 100) { showToast('投保年龄需在0-100岁之间', 'warning'); return; }
-  if (params.annualPremium < 1000) { showToast('年缴保费不能低于1000元', 'warning'); return; }
+  if (params.annualPremium < 1000 && !hasImportedRows) { showToast('年缴保费不能低于1000元', 'warning'); return; }
   if (params.guaranteePeriod < 1 || params.guaranteePeriod > 100) { showToast('保障期限需在1-100年之间', 'warning'); return; }
 
   Decimal.set({ precision: 20, rounding: Decimal.ROUND_HALF_UP });
@@ -1941,14 +2606,15 @@ function renderPlanSummaryCards() {
   var s = calcResult.scenarios.plan;
   var meta = s.planMeta || {};
   var last = s.data[s.data.length - 1] || {};
+  var src = meta.isModel ? '模型' : '计划书';
   var html = '';
   var cards = [
-    { cls: 'sc-blue', label: '总投入保费', value: formatMoney(s.totalPremium), sub: '计划书累计保费' },
-    { cls: 'sc-green', label: '累计生存金', value: formatMoney(s.totalSurvivalBenefit), sub: '按人工填写金额计算' },
-    { cls: 'sc-amber', label: '累计分红（演示）', value: formatMoney(s.totalDividend), sub: '计划书红利演示' },
-    { cls: 'sc-teal', label: '满期给付', value: formatMoney(s.totalMaturity || 0), sub: '计划书满期金' },
-    { cls: 'sc-cyan', label: '期末现金价值', value: formatMoney(meta.finalCashValue || 0), sub: '第' + s.data.length + '年退保金' },
-    { cls: 'sc-red', label: '期末身故保障', value: formatMoney(last.deathBenefit || 0), sub: '计划书身故保险金' },
+    { cls: 'sc-blue', label: '总投入保费', value: formatMoney(s.totalPremium), sub: src + '累计保费' },
+    { cls: 'sc-green', label: '累计生存金', value: formatMoney(s.totalSurvivalBenefit), sub: meta.isModel ? '模型数据/人工参数' : '按人工填写金额计算' },
+    { cls: 'sc-amber', label: '累计分红（演示）', value: formatMoney(s.totalDividend), sub: src + '红利演示' },
+    { cls: 'sc-teal', label: '满期给付', value: formatMoney(s.totalMaturity || 0), sub: src + '满期金' },
+    { cls: 'sc-cyan', label: '期末现金价值', value: formatMoney(meta.finalCashValue || 0), sub: '第' + (last.year || s.data.length) + '年退保金' },
+    { cls: 'sc-red', label: '期末身故保障', value: formatMoney(last.deathBenefit || 0), sub: src + '身故保险金' },
     { cls: 'sc-purple', label: '保单总返还', value: formatMoney(meta.totalPayout || 0), sub: '生存+红利+满期（未计红利生息）' },
     { cls: 'sc-cyan', label: '银行存款对比', value: formatMoney(s.finalBankAccount), sub: '本息合计' }
   ];
@@ -1958,7 +2624,7 @@ function renderPlanSummaryCards() {
   var diff = (meta.totalPayout || 0) - s.finalBankAccount;
   var diffCls = diff >= 0 ? 'sc-green' : 'sc-red';
   var diffLabel = diff >= 0 ? '保单多赚' : '保单少赚';
-  html += '<div class="summary-card ' + diffCls + '"><div class="sc-label">' + diffLabel + '</div><div class="sc-value">' + formatMoney(Math.abs(diff)) + '</div><div class="sc-sub">计划书总返还 vs 银行存款</div></div>';
+  html += '<div class="summary-card ' + diffCls + '"><div class="sc-label">' + diffLabel + '</div><div class="sc-value">' + formatMoney(Math.abs(diff)) + '</div><div class="sc-sub">' + src + '总返还 vs 银行存款</div></div>';
   document.getElementById('summaryCards').innerHTML = html;
 }
 
@@ -2009,6 +2675,7 @@ function renderSummaryCards() {
 
 // ======== 情景切换 ========
 function updateScenarioTabs() {
+  updatePlanTabLabel();
   var tabs = document.querySelectorAll('#scenarioTabs .scenario-tab');
   var enableDiv = calcResult.params.enableDividend;
   var isSJJ = calcResult.params.dividendMode === 'sjj';
@@ -2713,7 +3380,7 @@ function buildAndExportShareImage() {
   });
 
   // 场景名称
-  var scenarioNames = { low: '低档（保底）', medium: '中档（平均）', high: '高档（理想）', sjj: 'SJJ模型', plan: '计划书原表' };
+  var scenarioNames = { low: '低档（保底）', medium: '中档（平均）', high: '高档（理想）', sjj: 'SJJ模型', plan: (s.planMeta && s.planMeta.isModel) ? '模型试算' : '计划书原表' };
   var scName = scenarioNames[currentScenario] || currentScenario;
 
   // 关键指标
@@ -2930,7 +3597,14 @@ function resetAll() {
   if (planStatus) planStatus.textContent = '';
   var planTab = document.getElementById('planTab');
   if (planTab) planTab.style.display = 'none';
+  updatePlanTabLabel();
+  var modelSel = document.getElementById('savedModelSelect');
+  if (modelSel) modelSel.value = '';
+  var modelStatus = document.getElementById('modelStatus');
+  if (modelStatus) modelStatus.textContent = savedModels.length ? '已保存 ' + savedModels.length + ' 个模型' : '暂无保存的模型';
+  editingModelId = null;
   closePlanModal();
+  closeModelModal();
   document.getElementById('emptyState').style.display = '';
   document.getElementById('resultContent').style.display = 'none';
   Object.keys(charts).forEach(function(k) { destroyChart(k); });
@@ -2964,6 +3638,8 @@ function resetAll() {
     }
   }, { passive: false });
 })();
+
+refreshModelSelect();
 </script>
 </body>
 </html>
