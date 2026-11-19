@@ -396,6 +396,11 @@ td a:hover{border-bottom-color:#a94a30}
   var SEQ = ['hunbei','eqxiuFree','tuguai','chuangkit','gaoding','rrx','fkw','qiantu','canva','taobao',
              'baotu','hunbei','mizhi','tuzhan','yujianni','eqxiuMem','qianku','chuangkitPaid','canva','rrx'];
 
+  Object.keys(PLATFORMS).forEach(function(k){
+    try { PLATFORMS[k].domain = new URL(PLATFORMS[k].url).hostname.replace(/^www\./, ''); }
+    catch(err){ PLATFORMS[k].domain = ''; }
+  });
+
   /* ================= motifs ================= */
   function svg(inner){ return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">' + inner + '</svg>'; }
 
@@ -619,9 +624,9 @@ td a:hover{border-bottom-color:#a94a30}
       '<div class="thumb">' + e.html + '</div>' +
       '<div class="cardbody">' +
         '<div class="rowline"><span class="idx">#' + String(e.id).padStart(3, '0') + '</span>' +
-        '<span class="price ' + e.platform.cls + '">' + e.platform.price + '</span></div>' +
+        '<span class="price ' + e.platform.cls + '" title="' + e.platform.note + '">' + e.platform.price + '</span></div>' +
         '<h3>' + e.title + '</h3>' +
-        '<div class="meta2"><span>' + e.platform.name + '</span><span class="dot">·</span><span>' + e.layout.label + '</span></div>' +
+        '<div class="meta2"><span class="src">来源：' + e.platform.name + '</span><span class="dot">·</span><span>' + e.platform.domain + '</span></div>' +
         '<div class="tags">' + e.tags.map(function(t){ return '<span class="tag">' + t + '</span>'; }).join('') + '</div>' +
         '<div class="actions"><a href="' + e.platform.url + '" target="_blank" rel="noopener">去平台看同款</a>' +
         '<button class="zoom">放大预览</button></div>' +
